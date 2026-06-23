@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Register - LinguistAI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@500;600&amp;family=Inter:wght@400&amp;family=Geist:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#c8c4d8",
+                        "surface-bright": "#393842",
+                        "on-tertiary-fixed-variant": "#733500",
+                        "on-primary-container": "#fffeff",
+                        "primary-fixed": "#e4dfff",
+                        "inverse-on-surface": "#312f39",
+                        "surface-container-highest": "#35343e",
+                        "error-container": "#93000a",
+                        "on-tertiary-fixed": "#311300",
+                        "on-primary-fixed-variant": "#3d1acf",
+                        "surface-container": "#201e28",
+                        "surface-tint": "#c6bfff",
+                        "secondary-fixed": "#e4dfff",
+                        "surface-variant": "#35343e",
+                        "surface-container-low": "#1c1a24",
+                        "surface-container-high": "#2a2933",
+                        "on-error": "#690005",
+                        "on-surface": "#e5e0ee",
+                        "surface-container-lowest": "#0e0d16",
+                        "secondary-container": "#422db2",
+                        "on-secondary-fixed": "#170065",
+                        "secondary": "#c7bfff",
+                        "outline": "#928ea1",
+                        "primary-fixed-dim": "#c6bfff",
+                        "inverse-primary": "#563fe6",
+                        "background": "#13121c",
+                        "surface-dim": "#13121c",
+                        "tertiary-container": "#bb5b00",
+                        "on-tertiary": "#512400",
+                        "tertiary-fixed": "#ffdbc7",
+                        "tertiary": "#ffb688",
+                        "primary-container": "#6e5bff",
+                        "secondary-fixed-dim": "#c7bfff",
+                        "on-tertiary-container": "#ffffff",
+                        "on-primary": "#2700a0",
+                        "surface": "#13121c",
+                        "on-primary-fixed": "#160066",
+                        "error": "#ffb4ab",
+                        "primary": "#c6bfff",
+                        "tertiary-fixed-dim": "#ffb688",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-container": "#b4abff",
+                        "on-secondary-fixed-variant": "#422db2",
+                        "on-background": "#e5e0ee",
+                        "outline-variant": "#474555",
+                        "on-secondary": "#2a039d",
+                        "inverse-surface": "#e5e0ee"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "input": "10px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "xs": "8px",
+                        "container-max": "1440px",
+                        "xl": "64px",
+                        "sm": "16px",
+                        "lg": "40px",
+                        "gutter": "24px",
+                        "md": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Hanken Grotesk"],
+                        "label-md": ["Geist"],
+                        "display": ["Hanken Grotesk"],
+                        "body-sm": ["Inter"],
+                        "code-sm": ["Geist"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "code-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #0A0A0C;
+        }
+        .form-input {
+            background-color: #15151A;
+            border: 1px solid #2A2A32;
+        }
+        .form-input:focus {
+            border-color: #6E5BFF;
+            box-shadow: 0 0 0 4px rgba(139, 124, 255, 0.2);
+            outline: none;
+        }
+        .social-btn {
+            background-color: #15151A;
+            border: 1px solid #2A2A32;
+        }
+        .social-btn:hover {
+            border-color: #474555;
+        }
+        .btn-primary {
+            background-color: #6E5BFF;
+            color: #ffffff;
+        }
+        .btn-primary:hover {
+            background-color: #563fe6;
+        }
+        .text-muted { color: #9A9AA5; }
+        .text-micro { color: #62626C; font-size: 12px; line-height: 16px; }
+        .link-accent { color: #6E5BFF; }
+        .link-accent:hover { text-decoration: underline; }
+        .text-brand { color: #F5F5F7; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-sm md:p-md text-on-surface font-body-md antialiased selection:bg-primary-container selection:text-white">
+<main class="w-full max-w-[420px] flex flex-col gap-lg">
+<header class="flex flex-col items-center text-center gap-sm">
+<div class="font-display text-body-md font-bold text-on-surface tracking-wider">LINGUIST AI</div>
+<h1 class="font-headline-lg text-headline-lg text-brand mt-xs">Create your account</h1>
+<p class="font-body-md text-body-md text-muted">Start your personalized AI learning path</p>
+</header>
+<div class="flex flex-col gap-md">
+<button class="social-btn w-full flex items-center justify-center gap-sm py-3 px-4 rounded-input font-label-md text-label-md text-on-surface transition-colors duration-200">
+<svg class="w-5 h-5" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
+</svg>
+                Sign up with Google
+            </button>
+<div class="flex items-center gap-4 w-full">
+<div class="h-px flex-1 bg-[#2A2A32]"></div>
+<span class="font-label-md text-label-md text-muted">or</span>
+<div class="h-px flex-1 bg-[#2A2A32]"></div>
+</div>
+<form action="#" class="flex flex-col gap-sm" method="POST">
+<div class="flex flex-col gap-base">
+<label class="font-label-md text-label-md text-on-surface-variant sr-only" for="name">Full Name</label>
+<input class="form-input w-full px-4 py-3 rounded-input text-on-surface placeholder:text-[#474555] font-body-md text-body-md transition-all duration-200" id="name" name="name" placeholder="Full Name" required="" type="text"/>
+</div>
+<div class="flex flex-col gap-base">
+<label class="font-label-md text-label-md text-on-surface-variant sr-only" for="email">Email Address</label>
+<input class="form-input w-full px-4 py-3 rounded-input text-on-surface placeholder:text-[#474555] font-body-md text-body-md transition-all duration-200" id="email" name="email" placeholder="Email Address" required="" type="email"/>
+</div>
+<div class="flex flex-col gap-base">
+<label class="font-label-md text-label-md text-on-surface-variant sr-only" for="password">Password</label>
+<input class="form-input w-full px-4 py-3 rounded-input text-on-surface placeholder:text-[#474555] font-body-md text-body-md transition-all duration-200" id="password" name="password" placeholder="Password" required="" type="password"/>
+<div class="flex gap-1 mt-1 px-1">
+<div class="h-1 w-full max-w-[24px] rounded-full bg-[#2A2A32] transition-colors duration-300" id="pwd-req-1"></div>
+<div class="h-1 w-full max-w-[24px] rounded-full bg-[#2A2A32] transition-colors duration-300" id="pwd-req-2"></div>
+<div class="h-1 w-full max-w-[24px] rounded-full bg-[#2A2A32] transition-colors duration-300" id="pwd-req-3"></div>
+</div>
+</div>
+<p class="text-micro mt-2">
+                    By creating an account, you agree to our 
+                    <a class="underline decoration-[#474555] hover:text-on-surface transition-colors" href="#">Terms of Service</a> and 
+                    <a class="underline decoration-[#474555] hover:text-on-surface transition-colors" href="#">Privacy Policy</a>.
+                </p>
+<button class="btn-primary w-full py-3 px-4 rounded-input font-label-md text-label-md mt-2 transition-all duration-200" type="submit">
+                    Create account
+                </button>
+</form>
+</div>
+<div class="text-center">
+<p class="font-body-sm text-body-sm text-muted">
+                Already have an account? <a class="font-label-md text-label-md link-accent" href="#">Log in</a>
+</p>
+</div>
+</main>
+<script>
+        const passwordInput = document.getElementById('password');
+        const req1 = document.getElementById('pwd-req-1');
+        const req2 = document.getElementById('pwd-req-2');
+        const req3 = document.getElementById('pwd-req-3');
+
+        passwordInput.addEventListener('input', (e) => {
+            const val = e.target.value;
+            const length = val.length;
+            const hasNum = /\d/.test(val);
+            const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(val);
+
+            // Subtle color shifts based on criteria
+            req1.style.backgroundColor = length >= 8 ? '#6E5BFF' : '#2A2A32';
+            req2.style.backgroundColor = (length >= 8 && hasNum) ? '#6E5BFF' : '#2A2A32';
+            req3.style.backgroundColor = (length >= 8 && hasNum && hasSpecial) ? '#6E5BFF' : '#2A2A32';
+            
+            // Lower opacity for subtlety
+            [req1, req2, req3].forEach(el => {
+                if(el.style.backgroundColor === 'rgb(110, 91, 255)') {
+                    el.style.opacity = '0.6';
+                } else {
+                    el.style.opacity = '1';
+                }
+            });
+        });
+    </script>
+</body></html>

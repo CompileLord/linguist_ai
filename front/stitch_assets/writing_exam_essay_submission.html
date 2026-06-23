@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Writing Exam</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Hanken+Grotesk:wght@500;600&amp;family=Geist:wght@400;500&amp;family=Lora:ital,wght@0,400;0,500;0,600;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "inverse-on-surface": "#312f39",
+                        "tertiary-fixed": "#ffdbc7",
+                        "secondary-fixed": "#e4dfff",
+                        "on-surface": "#e5e0ee",
+                        "surface-variant": "#35343e",
+                        "surface": "#13121c",
+                        "primary-fixed": "#e4dfff",
+                        "tertiary-fixed-dim": "#ffb688",
+                        "surface-bright": "#393842",
+                        "on-secondary-fixed-variant": "#422db2",
+                        "on-secondary": "#2a039d",
+                        "secondary-container": "#422db2",
+                        "on-secondary-fixed": "#170065",
+                        "on-tertiary-container": "#ffffff",
+                        "error": "#ffb4ab",
+                        "secondary": "#c7bfff",
+                        "outline": "#928ea1",
+                        "on-tertiary-fixed": "#311300",
+                        "on-primary": "#2700a0",
+                        "on-tertiary-fixed-variant": "#733500",
+                        "on-surface-variant": "#c8c4d8",
+                        "surface-container": "#201e28",
+                        "background": "#13121c",
+                        "surface-container-lowest": "#0e0d16",
+                        "on-error-container": "#ffdad6",
+                        "on-error": "#690005",
+                        "tertiary": "#ffb688",
+                        "surface-container-low": "#1c1a24",
+                        "surface-container-high": "#2a2933",
+                        "primary-container": "#6e5bff",
+                        "tertiary-container": "#bb5b00",
+                        "inverse-primary": "#563fe6",
+                        "secondary-fixed-dim": "#c7bfff",
+                        "surface-tint": "#c6bfff",
+                        "surface-container-highest": "#35343e",
+                        "error-container": "#93000a",
+                        "primary-fixed-dim": "#c6bfff",
+                        "on-primary-fixed-variant": "#3d1acf",
+                        "inverse-surface": "#e5e0ee",
+                        "on-primary-fixed": "#160066",
+                        "outline-variant": "#474555",
+                        "on-primary-container": "#fffeff",
+                        "primary": "#c6bfff",
+                        "on-background": "#e5e0ee",
+                        "surface-dim": "#13121c",
+                        "on-tertiary": "#512400",
+                        "on-secondary-container": "#b4abff"
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        full: "9999px"
+                    },
+                    spacing: {
+                        lg: "40px",
+                        gutter: "24px",
+                        xs: "8px",
+                        md: "24px",
+                        xl: "64px",
+                        sm: "16px",
+                        base: "4px",
+                        "container-max": "1440px"
+                    },
+                    fontFamily: {
+                        "label-md": ["Geist"],
+                        "code-sm": ["Geist"],
+                        "body-md": ["Inter"],
+                        "display": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "body-sm": ["Inter"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "body-lg": ["Inter"],
+                        "serif": ["Lora", "serif"]
+                    },
+                    fontSize: {
+                        "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.02em", fontWeight: "500" }],
+                        "code-sm": ["13px", { lineHeight: "18px", fontWeight: "400" }],
+                        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "display": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "600" }],
+                        "headline-md": ["24px", { lineHeight: "32px", fontWeight: "500" }],
+                        "body-sm": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+                        "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600" }],
+                        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #0A0A0C; color: #F5F5F7; }
+        .focus-glow:focus-within { border-color: #6E5BFF; box-shadow: 0 0 0 4px rgba(139, 124, 255, 0.2); }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        textarea {
+            resize: none;
+            background-color: transparent;
+            color: inherit;
+            border: none;
+            outline: none;
+            box-shadow: none;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            font-family: 'Lora', serif;
+            font-size: 1.125rem;
+            line-height: 1.7;
+            min-height: 50vh;
+        }
+        textarea:focus {
+            outline: none;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-body-md antialiased hide-scrollbar selection:bg-primary-container selection:text-white">
+<!-- TopAppBar equivalent from JSON (Simplified for exam intent) -->
+<header class="w-full flex justify-between items-center px-md h-16 transition-all duration-200 ease-out border-b border-outline-variant bg-surface sticky top-0 z-40">
+<div class="flex items-center gap-sm">
+<h1 class="text-on-surface font-headline-md font-semibold text-headline-md">Writing Exam</h1>
+</div>
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-xs text-on-surface-variant font-label-md text-label-md bg-surface-container px-sm py-base rounded-full border border-outline-variant">
+<span class="material-symbols-outlined text-[18px]">timer</span>
+<span id="timer-display">45:00</span>
+</div>
+</div>
+</header>
+<!-- Main Workspace -->
+<main class="flex-grow w-full max-w-[800px] mx-auto px-md py-xl flex flex-col relative z-10">
+<!-- Prompt Section -->
+<section class="mb-xl">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-md">The Future of Automation</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+                Discuss the ethical implications of fully autonomous systems in critical infrastructure. Consider both the potential benefits in efficiency and the risks associated with removing human oversight. Your response should be well-structured and provide specific examples.
+            </p>
+</section>
+<!-- Writing Area -->
+<section class="flex-grow relative group w-full">
+<div class="absolute -left-md top-0 bottom-0 w-[1px] bg-outline-variant opacity-0 group-focus-within:opacity-100 transition-opacity duration-300"></div>
+<textarea class="w-full h-full pb-xl placeholder:text-on-surface-variant/50" id="exam-textarea" placeholder="Begin your response here..." spellcheck="false"></textarea>
+</section>
+<!-- Bottom Controls -->
+<div class="flex justify-between items-center py-md border-t border-outline-variant mt-lg sticky bottom-0 bg-[#0A0A0C]/95 backdrop-blur-sm z-20">
+<div class="text-[#62626C] font-label-md text-label-md flex items-center gap-xs">
+<span id="word-count">0</span> words
+            </div>
+<button class="bg-primary-container text-white hover:opacity-90 transition-all duration-200 ease-out active:scale-95 px-xl py-sm rounded-lg font-label-md text-label-md flex items-center gap-sm shadow-[0_0_0_1px_#2A2A32]">
+                Submit for evaluation
+                <span class="material-symbols-outlined text-[18px]">send</span>
+</button>
+</div>
+</main>
+<script>
+        // Simple word counter
+        const textarea = document.getElementById('exam-textarea');
+        const wordCountDisplay = document.getElementById('word-count');
+
+        textarea.addEventListener('input', function() {
+            const text = this.value.trim();
+            const words = text ? text.split(/\s+/).length : 0;
+            wordCountDisplay.textContent = words;
+            
+            // Auto-resize
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // Simple Timer
+        let timeLeft = 45 * 60; // 45 minutes
+        const timerDisplay = document.getElementById('timer-display');
+        
+        setInterval(() => {
+            if(timeLeft > 0) {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }, 1000);
+    </script>
+</body></html>

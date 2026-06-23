@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Linguist AI - Placement Test</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Geist:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#c7bfff",
+                        "on-tertiary": "#512400",
+                        "surface": "#13121c",
+                        "on-tertiary-container": "#ffffff",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-fixed": "#160066",
+                        "primary-container": "#6e5bff",
+                        "on-tertiary-fixed": "#311300",
+                        "on-primary-container": "#fffeff",
+                        "primary": "#c6bfff",
+                        "primary-fixed": "#e4dfff",
+                        "on-background": "#e5e0ee",
+                        "on-surface-variant": "#c8c4d8",
+                        "inverse-primary": "#563fe6",
+                        "on-secondary-container": "#b4abff",
+                        "error-container": "#93000a",
+                        "on-secondary": "#2a039d",
+                        "on-primary": "#2700a0",
+                        "secondary-container": "#422db2",
+                        "inverse-on-surface": "#312f39",
+                        "on-tertiary-fixed-variant": "#733500",
+                        "error": "#ffb4ab",
+                        "surface-container-high": "#2a2933",
+                        "background": "#13121c",
+                        "surface-tint": "#c6bfff",
+                        "outline-variant": "#474555",
+                        "surface-container-low": "#1c1a24",
+                        "surface-container": "#201e28",
+                        "surface-dim": "#13121c",
+                        "on-surface": "#e5e0ee",
+                        "surface-variant": "#35343e",
+                        "secondary-fixed": "#e4dfff",
+                        "on-primary-fixed-variant": "#3d1acf",
+                        "tertiary": "#ffb688",
+                        "primary-fixed-dim": "#c6bfff",
+                        "outline": "#928ea1",
+                        "inverse-surface": "#e5e0ee",
+                        "secondary": "#c7bfff",
+                        "on-secondary-fixed": "#170065",
+                        "on-error": "#690005",
+                        "on-secondary-fixed-variant": "#422db2",
+                        "tertiary-fixed-dim": "#ffb688",
+                        "surface-container-lowest": "#0e0d16",
+                        "tertiary-fixed": "#ffdbc7",
+                        "surface-container-highest": "#35343e",
+                        "tertiary-container": "#bb5b00",
+                        "surface-bright": "#393842"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "64px",
+                        "md": "24px",
+                        "lg": "40px",
+                        "sm": "16px",
+                        "gutter": "24px",
+                        "container-max": "1440px",
+                        "xs": "8px",
+                        "base": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Hanken Grotesk"],
+                        "display": ["Hanken Grotesk"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Geist"],
+                        "code-sm": ["Geist"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "code-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #0A0A0C; color: #e5e0ee; }
+        .test-card { background-color: #15151A; border: 1px solid #2A2A32; border-radius: 10px; transition: all 0.2s ease-out; }
+        .test-card:hover { border-color: #6E5BFF; background-color: #1E1E24; cursor: pointer; }
+        .test-card.selected { border-color: #6E5BFF; background-color: #1E1E24; }
+        .progress-segment { height: 4px; border-radius: 2px; flex: 1; margin: 0 2px; background-color: #2A2A32; }
+        .progress-segment.filled { background-color: #6E5BFF; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface text-primary dark:text-primary docked full-width top-0 border-b border-outline-variant flat no shadows flex justify-between items-center h-16 px-xl max-w-container-max mx-auto w-full z-50 sticky">
+<div class="font-display text-headline-md font-bold text-on-surface dark:text-on-surface">
+            Linguist AI
+        </div>
+<div class="flex items-center gap-md">
+<button class="hover:bg-surface-container-high transition-colors duration-200 p-xs rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface" style="font-variation-settings: 'FILL' 0;">help_outline</span>
+</button>
+<button class="hover:bg-surface-container-high transition-colors duration-200 p-xs rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface" style="font-variation-settings: 'FILL' 0;">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col items-center justify-start pt-lg pb-xl px-md sm:px-lg max-w-[800px] mx-auto w-full">
+<!-- Progress Indicator -->
+<div class="w-full flex justify-between items-center mb-xl max-w-[480px]">
+<div class="progress-segment filled"></div>
+<div class="progress-segment filled"></div>
+<div class="progress-segment filled"></div>
+<div class="progress-segment filled"></div>
+<div class="progress-segment"></div>
+<div class="progress-segment"></div>
+<div class="progress-segment"></div>
+<div class="progress-segment"></div>
+<div class="progress-segment"></div>
+<div class="progress-segment"></div>
+<div class="progress-segment"></div>
+<div class="progress-segment"></div>
+</div>
+<!-- Question -->
+<div class="w-full text-center mb-lg">
+<h1 class="font-display text-display text-on-surface tracking-tight leading-tight">
+                If I <span class="text-primary-container border-b-2 border-primary-container inline-block w-32 translate-y-2 opacity-50"></span> more time, I would have finished the project.
+            </h1>
+</div>
+<!-- Answer Options -->
+<div class="w-full max-w-[480px] flex flex-col gap-sm">
+<button class="test-card p-sm text-left flex items-center gap-sm group">
+<div class="w-6 h-6 rounded-full border border-outline-variant flex items-center justify-center text-label-md font-label-md text-on-surface-variant group-hover:border-primary-container group-hover:text-primary-container transition-colors">A</div>
+<span class="font-body-lg text-body-lg text-on-surface">had</span>
+</button>
+<button class="test-card p-sm text-left flex items-center gap-sm group">
+<div class="w-6 h-6 rounded-full border border-outline-variant flex items-center justify-center text-label-md font-label-md text-on-surface-variant group-hover:border-primary-container group-hover:text-primary-container transition-colors">B</div>
+<span class="font-body-lg text-body-lg text-on-surface">have had</span>
+</button>
+<button class="test-card p-sm text-left flex items-center gap-sm group">
+<div class="w-6 h-6 rounded-full border border-outline-variant flex items-center justify-center text-label-md font-label-md text-on-surface-variant group-hover:border-primary-container group-hover:text-primary-container transition-colors">C</div>
+<span class="font-body-lg text-body-lg text-on-surface">would have</span>
+</button>
+<button class="test-card p-sm text-left flex items-center gap-sm group">
+<div class="w-6 h-6 rounded-full border border-outline-variant flex items-center justify-center text-label-md font-label-md text-on-surface-variant group-hover:border-primary-container group-hover:text-primary-container transition-colors">D</div>
+<span class="font-body-lg text-body-lg text-on-surface">had had</span>
+</button>
+</div>
+<!-- Skip Action -->
+<div class="mt-lg">
+<button class="font-label-md text-label-md text-[#62626C] hover:text-on-surface transition-colors duration-200 px-md py-sm">
+                Skip for now
+            </button>
+</div>
+</main>
+<script>
+        // Simple interaction for selecting answers
+        document.querySelectorAll('.test-card').forEach(card => {
+            card.addEventListener('click', function() {
+                // Remove selected class from all
+                document.querySelectorAll('.test-card').forEach(c => c.classList.remove('selected'));
+                document.querySelectorAll('.test-card .w-6').forEach(c => {
+                    c.classList.remove('bg-primary-container', 'text-on-primary-container', 'border-primary-container');
+                    c.classList.add('border-outline-variant', 'text-on-surface-variant');
+                });
+                
+                // Add to clicked
+                this.classList.add('selected');
+                const indicator = this.querySelector('.w-6');
+                indicator.classList.remove('border-outline-variant', 'text-on-surface-variant');
+                indicator.classList.add('bg-primary-container', 'text-on-primary-container', 'border-primary-container');
+            });
+        });
+    </script>
+</body></html>

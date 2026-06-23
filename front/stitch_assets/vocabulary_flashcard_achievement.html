@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Linguist AI - Vocabulary Flashcard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Hanken+Grotesk:wght@500;600&amp;family=Inter:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#170065",
+                        "surface": "#13121c",
+                        "outline": "#928ea1",
+                        "on-primary": "#2700a0",
+                        "background": "#13121c",
+                        "primary-fixed": "#e4dfff",
+                        "on-secondary": "#2a039d",
+                        "secondary-container": "#422db2",
+                        "on-tertiary-fixed-variant": "#733500",
+                        "primary-container": "#6e5bff",
+                        "on-background": "#e5e0ee",
+                        "secondary-fixed-dim": "#c7bfff",
+                        "on-error": "#690005",
+                        "tertiary": "#ffb688",
+                        "outline-variant": "#474555",
+                        "tertiary-fixed": "#ffdbc7",
+                        "on-primary-container": "#fffeff",
+                        "surface-container": "#201e28",
+                        "on-error-container": "#ffdad6",
+                        "inverse-primary": "#563fe6",
+                        "secondary-fixed": "#e4dfff",
+                        "surface-container-highest": "#35343e",
+                        "on-tertiary-fixed": "#311300",
+                        "secondary": "#c7bfff",
+                        "surface-container-high": "#2a2933",
+                        "primary": "#c6bfff",
+                        "surface-bright": "#393842",
+                        "error-container": "#93000a",
+                        "inverse-surface": "#e5e0ee",
+                        "surface-container-low": "#1c1a24",
+                        "primary-fixed-dim": "#c6bfff",
+                        "inverse-on-surface": "#312f39",
+                        "surface-dim": "#13121c",
+                        "surface-container-lowest": "#0e0d16",
+                        "on-surface-variant": "#c8c4d8",
+                        "on-tertiary-container": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb688",
+                        "on-secondary-fixed-variant": "#422db2",
+                        "tertiary-container": "#bb5b00",
+                        "surface-variant": "#35343e",
+                        "error": "#ffb4ab",
+                        "surface-tint": "#c6bfff",
+                        "on-primary-fixed": "#160066",
+                        "on-surface": "#e5e0ee",
+                        "on-primary-fixed-variant": "#3d1acf",
+                        "on-tertiary": "#512400",
+                        "on-secondary-container": "#b4abff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "40px",
+                        "base": "4px",
+                        "md": "24px",
+                        "xl": "64px",
+                        "container-max": "1440px",
+                        "sm": "16px",
+                        "gutter": "24px",
+                        "xs": "8px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Geist"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "code-sm": ["Geist"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "display": ["Hanken Grotesk"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "code-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #0A0A0C; /* Level 0 Background */
+            color: theme('colors.on-background');
+        }
+        .surface-card {
+            background-color: #15151A; /* Level 1 Surface */
+            border: 1px solid #2A2A32;
+        }
+        .reveal-gradient {
+            background: linear-gradient(180deg, rgba(21, 21, 26, 0) 0%, rgba(21, 21, 26, 1) 100%);
+        }
+        
+        /* Reveal Animation */
+        #translation-content {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-in-out;
+        }
+        #translation-content.revealed {
+            max-height: 200px; /* Arbitrary enough to fit content */
+            opacity: 1;
+            margin-top: 24px;
+        }
+        #reveal-button {
+            transition: opacity 0.2s;
+        }
+        #reveal-button.hidden-state {
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-body-md antialiased selection:bg-primary-container selection:text-on-primary-container overflow-hidden">
+<!-- TopAppBar (Simplified for learning session) -->
+<header class="fixed top-0 w-full z-50">
+<!-- Progress Bar -->
+<div class="h-1 w-full bg-surface-container-high">
+<div class="h-full bg-primary-container transition-all duration-300 ease-out" style="width: 25%;"></div>
+</div>
+<!-- App Bar Logic -->
+<div class="flex justify-between items-center px-md py-sm w-full bg-transparent">
+<div class="font-headline-md text-headline-md text-on-background">Lumina Axiom</div>
+<button aria-label="Close Session" class="text-on-surface-variant hover:text-on-background transition-colors p-2 rounded-full hover:bg-surface-container-high">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col items-center justify-center px-gutter pt-xl pb-32 max-w-[800px] mx-auto w-full relative z-10">
+<!-- Flashcard -->
+<div class="surface-card rounded-[16px] w-full max-w-md p-xl flex flex-col items-center justify-center relative shadow-sm">
+<!-- Source Word -->
+<h1 class="font-display text-display text-on-background text-center mb-md break-words w-full">
+                achievement
+            </h1>
+<!-- Interactive Reveal Area -->
+<div class="w-full flex flex-col items-center relative">
+<!-- Reveal Prompt -->
+<button class="mt-lg py-sm px-md rounded-full border border-outline-variant text-on-surface-variant hover:border-primary-container hover:text-primary-container transition-all duration-200 font-label-md text-label-md flex items-center gap-2 group focus:outline-none focus:ring-1 focus:ring-primary-container focus:ring-offset-2 focus:ring-offset-background" id="reveal-button">
+<span class="material-symbols-outlined text-[18px] group-hover:scale-110 transition-transform" data-icon="visibility">visibility</span>
+                    Tap to reveal
+                </button>
+<!-- Revealed Content (Hidden initially) -->
+<div class="w-full flex flex-col items-center" id="translation-content">
+<div class="h-[1px] w-1/2 bg-[#2A2A32] mb-md"></div>
+<div class="flex items-center gap-sm mb-xs">
+<span class="font-headline-lg text-headline-lg text-primary-fixed">достижение</span>
+</div>
+<div class="flex items-center gap-sm">
+<span class="font-code-sm text-code-sm text-[#9A9AA5]">/əˈtʃiːvmənt/</span>
+<button aria-label="Play pronunciation" class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container hover:bg-inverse-primary transition-colors focus:outline-none focus:ring-1 focus:ring-primary-fixed">
+<span class="material-symbols-outlined text-[16px]" data-icon="volume_up" data-weight="fill" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Navigation Dots -->
+<div class="mt-lg flex flex-col items-center gap-xs">
+<span class="font-label-md text-label-md text-on-surface-variant">3 / 12</span>
+<div class="flex gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-surface-container-high"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-surface-container-high"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary-container"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-surface-container-high"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-surface-container-high"></div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Structurally integrated as single action) -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-center items-center px-md py-md bg-background border-t border-outline-variant">
+<button class="bg-primary-container text-on-primary-container rounded-full px-xl py-sm font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled="" id="next-action">
+            Next
+            <span class="material-symbols-outlined text-[18px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</nav>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const revealButton = document.getElementById('reveal-button');
+            const translationContent = document.getElementById('translation-content');
+            const nextAction = document.getElementById('next-action');
+
+            revealButton.addEventListener('click', () => {
+                // Hide prompt button
+                revealButton.classList.add('hidden-state');
+                
+                // Show content
+                translationContent.classList.add('revealed');
+                
+                // Enable next button
+                nextAction.removeAttribute('disabled');
+            });
+        });
+    </script>
+</body></html>

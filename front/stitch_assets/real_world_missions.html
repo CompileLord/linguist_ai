@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>LingoMission - Real World Missions</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Geist:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#1c1a24",
+                        "on-primary-fixed": "#160066",
+                        "on-tertiary-fixed-variant": "#733500",
+                        "on-secondary-fixed": "#170065",
+                        "on-tertiary-fixed": "#311300",
+                        "on-secondary-fixed-variant": "#422db2",
+                        "surface-container-high": "#2a2933",
+                        "on-tertiary-container": "#ffffff",
+                        "outline": "#928ea1",
+                        "surface-tint": "#c6bfff",
+                        "surface-variant": "#35343e",
+                        "on-tertiary": "#512400",
+                        "background": "#13121c",
+                        "secondary-container": "#422db2",
+                        "on-surface-variant": "#c8c4d8",
+                        "on-primary-fixed-variant": "#3d1acf",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-container": "#b4abff",
+                        "primary": "#c6bfff",
+                        "error-container": "#93000a",
+                        "surface-dim": "#13121c",
+                        "surface-container-highest": "#35343e",
+                        "primary-fixed": "#e4dfff",
+                        "surface": "#13121c",
+                        "tertiary-fixed": "#ffdbc7",
+                        "surface-container-lowest": "#0e0d16",
+                        "on-surface": "#e5e0ee",
+                        "primary-fixed-dim": "#c6bfff",
+                        "on-primary-container": "#fffeff",
+                        "primary-container": "#6e5bff",
+                        "outline-variant": "#474555",
+                        "secondary-fixed-dim": "#c7bfff",
+                        "inverse-primary": "#563fe6",
+                        "on-error": "#690005",
+                        "error": "#ffb4ab",
+                        "tertiary-fixed-dim": "#ffb688",
+                        "inverse-surface": "#e5e0ee",
+                        "secondary-fixed": "#e4dfff",
+                        "on-secondary": "#2a039d",
+                        "surface-bright": "#393842",
+                        "secondary": "#c7bfff",
+                        "inverse-on-surface": "#312f39",
+                        "surface-container": "#201e28",
+                        "on-background": "#e5e0ee",
+                        "on-primary": "#2700a0",
+                        "tertiary-container": "#bb5b00",
+                        "tertiary": "#ffb688"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "24px",
+                        "gutter": "24px",
+                        "xl": "64px",
+                        "sm": "16px",
+                        "container-max": "1440px",
+                        "lg": "40px",
+                        "xs": "8px",
+                        "base": "4px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "code-sm": ["Geist"],
+                        "label-md": ["Geist"],
+                        "display": ["Hanken Grotesk"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "code-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "display": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #0A0A0C;
+            color: #e5e0ee;
+        }
+        .mission-card {
+            background-color: #15151A;
+            border: 1px solid #2A2A32;
+            border-radius: 14px;
+            transition: all 0.2s ease-out;
+        }
+        .mission-card:hover {
+            border-color: #6E5BFF;
+            box-shadow: 0 0 4px 0 rgba(139, 124, 255, 0.2);
+        }
+        .mission-card.locked {
+            opacity: 0.5;
+            filter: grayscale(100%);
+            pointer-events: none;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-badge {
+            background-color: #1C1C24;
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<nav class="hidden lg:flex flex-col h-screen fixed left-0 top-0 p-md bg-surface-container-low dark:bg-surface-container-low h-screen w-64 border-r border-outline-variant z-10">
+<div class="flex items-center gap-sm mb-xl">
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container" data-weight="fill">rocket_launch</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md text-on-surface">LingoMission</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Language Mastery</p>
+</div>
+</div>
+<ul class="flex-1 flex flex-col gap-xs font-label-md text-label-md">
+<li>
+<a class="flex items-center gap-sm p-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">home</span>
+                    Home
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-sm p-sm rounded-lg text-on-primary-container bg-primary-container active:scale-[0.98] transition-transform" href="#">
+<span class="material-symbols-outlined">explore</span>
+                    Missions
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-sm p-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">forum</span>
+                    Chat
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-sm p-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+                    Progress
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-sm p-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">person</span>
+                    Account
+                </a>
+</li>
+</ul>
+<div class="mt-auto flex flex-col gap-sm">
+<button class="w-full py-sm px-md rounded-lg bg-primary-container text-on-primary-container font-label-md text-label-md hover:opacity-90 transition-opacity active:scale-[0.98]">
+                Upgrade to Pro
+            </button>
+<ul class="flex flex-col gap-xs font-label-md text-label-md">
+<li>
+<a class="flex items-center gap-sm p-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">help</span>
+                        Help
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-sm p-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">logout</span>
+                        Sign Out
+                    </a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="flex-1 ml-0 lg:ml-64 overflow-y-auto p-md md:p-xl">
+<div class="max-w-container-max mx-auto">
+<!-- Header -->
+<header class="mb-xl">
+<h2 class="font-display text-display text-on-surface mb-xs">Real World Missions</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Practice real situations with an AI conversation partner.</p>
+</header>
+<!-- Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
+<!-- Card 1 -->
+<button class="mission-card p-lg text-left flex flex-col gap-md relative group">
+<div class="flex justify-between items-start w-full">
+<div class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant group-hover:text-primary-container group-hover:border-primary-container transition-colors">
+<span class="material-symbols-outlined text-[24px]">restaurant</span>
+</div>
+<span class="glass-badge font-code-sm text-code-sm text-on-surface px-xs py-base rounded-md">A2</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-base">Order at a Restaurant</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Navigate a menu, ask questions, and order your meal.</p>
+</div>
+</button>
+<!-- Card 2 -->
+<button class="mission-card p-lg text-left flex flex-col gap-md relative group">
+<div class="flex justify-between items-start w-full">
+<div class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant group-hover:text-primary-container group-hover:border-primary-container transition-colors">
+<span class="material-symbols-outlined text-[24px]">work</span>
+</div>
+<span class="glass-badge font-code-sm text-code-sm text-on-surface px-xs py-base rounded-md">B2</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-base">Job Interview</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Discuss your experience and answer common interview questions.</p>
+</div>
+</button>
+<!-- Card 3 -->
+<button class="mission-card p-lg text-left flex flex-col gap-md relative group">
+<div class="flex justify-between items-start w-full">
+<div class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant group-hover:text-primary-container group-hover:border-primary-container transition-colors">
+<span class="material-symbols-outlined text-[24px]">confirmation_number</span>
+</div>
+<span class="glass-badge font-code-sm text-code-sm text-on-surface px-xs py-base rounded-md">B1</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-base">Buy Train Tickets</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Inquire about schedules, platforms, and purchase tickets.</p>
+</div>
+</button>
+<!-- Card 4 -->
+<button class="mission-card p-lg text-left flex flex-col gap-md relative group">
+<div class="flex justify-between items-start w-full">
+<div class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant group-hover:text-primary-container group-hover:border-primary-container transition-colors">
+<span class="material-symbols-outlined text-[24px]">hotel</span>
+</div>
+<span class="glass-badge font-code-sm text-code-sm text-on-surface px-xs py-base rounded-md">B1</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-base">Check-in to a Hotel</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Confirm reservations and ask about hotel amenities.</p>
+</div>
+</button>
+<!-- Card 5 (Locked) -->
+<div class="mission-card locked p-lg text-left flex flex-col gap-md relative">
+<div class="flex justify-between items-start w-full">
+<div class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[24px]">co_present</span>
+</div>
+<span class="glass-badge font-code-sm text-code-sm text-on-surface px-xs py-base rounded-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">lock</span> C1
+                        </span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-base">Give a Presentation</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Deliver a formal presentation and answer Q&amp;A.</p>
+</div>
+</div>
+<!-- Card 6 -->
+<button class="mission-card p-lg text-left flex flex-col gap-md relative group">
+<div class="flex justify-between items-start w-full">
+<div class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant group-hover:text-primary-container group-hover:border-primary-container transition-colors">
+<span class="material-symbols-outlined text-[24px]">chat_bubble</span>
+</div>
+<span class="glass-badge font-code-sm text-code-sm text-on-surface px-xs py-base rounded-md">A1</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-base">Meet Someone New</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Introduce yourself and exchange basic information.</p>
+</div>
+</button>
+</div>
+</div>
+</main>
+</body></html>

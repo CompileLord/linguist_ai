@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Writing Exam Results</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Inter:wght@400;500&amp;family=Geist:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "outline-variant": "#474555",
+                        "inverse-surface": "#e5e0ee",
+                        "on-primary": "#2700a0",
+                        "error": "#ffb4ab",
+                        "surface-dim": "#13121c",
+                        "primary-fixed-dim": "#c6bfff",
+                        "primary-container": "#6e5bff",
+                        "inverse-on-surface": "#312f39",
+                        "on-surface": "#e5e0ee",
+                        "on-secondary-fixed-variant": "#422db2",
+                        "on-primary-fixed-variant": "#3d1acf",
+                        "inverse-primary": "#563fe6",
+                        "surface-container-highest": "#35343e",
+                        "secondary-fixed": "#e4dfff",
+                        "surface-container-high": "#2a2933",
+                        "primary": "#c6bfff",
+                        "secondary-fixed-dim": "#c7bfff",
+                        "on-secondary": "#2a039d",
+                        "tertiary-container": "#bb5b00",
+                        "on-tertiary-fixed": "#311300",
+                        "surface-tint": "#c6bfff",
+                        "on-primary-container": "#fffeff",
+                        "primary-fixed": "#e4dfff",
+                        "surface-container": "#201e28",
+                        "secondary": "#c7bfff",
+                        "tertiary-fixed": "#ffdbc7",
+                        "surface-bright": "#393842",
+                        "on-primary-fixed": "#160066",
+                        "on-error": "#690005",
+                        "surface-container-low": "#1c1a24",
+                        "tertiary": "#ffb688",
+                        "on-surface-variant": "#c8c4d8",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-container": "#b4abff",
+                        "on-tertiary-fixed-variant": "#733500",
+                        "outline": "#928ea1",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed": "#170065",
+                        "surface-variant": "#35343e",
+                        "on-tertiary": "#512400",
+                        "tertiary-fixed-dim": "#ffb688",
+                        "on-tertiary-container": "#ffffff",
+                        "surface-container-lowest": "#0e0d16",
+                        "secondary-container": "#422db2",
+                        "on-background": "#e5e0ee",
+                        "surface": "#13121c",
+                        "background": "#13121c",
+                        "success": "#3DD68C"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "xs": "8px",
+                        "base": "4px",
+                        "container-max": "1440px",
+                        "xl": "64px",
+                        "md": "24px",
+                        "sm": "16px",
+                        "lg": "40px",
+                        "gutter": "24px"
+                    },
+                    fontFamily: {
+                        "headline-lg": ["Hanken Grotesk"],
+                        "code-sm": ["Geist"],
+                        "display": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Geist"]
+                    },
+                    fontSize: {
+                        "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600" }],
+                        "code-sm": ["13px", { lineHeight: "18px", fontWeight: "400" }],
+                        "display": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "600" }],
+                        "headline-md": ["24px", { lineHeight: "32px", fontWeight: "500" }],
+                        "body-sm": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+                        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+                        "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.02em", fontWeight: "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #0A0A0C; color: #e5e0ee; }
+        .surface-card { background-color: #15151A; border: 1px solid #2A2A32; }
+        .btn-primary { background-color: #6E5BFF; color: white; transition: all 200ms ease-out; }
+        .btn-primary:hover { background-color: #563fe6; }
+        .btn-outline { background-color: transparent; border: 1px solid #2A2A32; color: #e5e0ee; transition: all 200ms ease-out; }
+        .btn-outline:hover { border-color: #6E5BFF; background-color: rgba(110, 91, 255, 0.05); }
+        .focus-ring:focus { outline: none; border-color: #6E5BFF; box-shadow: 0 0 0 4px rgba(139, 124, 255, 0.2); }
+        .ai-card { background-color: #15151A; border: 1px solid transparent; border-radius: 0.75rem; background-image: linear-gradient(#15151A, #15151A), linear-gradient(135deg, rgba(42,42,50,1) 0%, rgba(110,91,255,0.1) 100%); background-origin: border-box; background-clip: padding-box, border-box; }
+        .metric-track { background-color: #1C1C24; }
+        .metric-fill { background-color: #6E5BFF; }
+        .tabular-nums { font-variant-numeric: tabular-nums; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden antialiased">
+<!-- SideNavBar Prediction -->
+<nav class="h-screen w-64 fixed left-0 top-0 bg-surface-container-low dark:bg-surface-container-low border-r border-outline-variant dark:border-outline-variant flex flex-col p-sm gap-xs z-40 hidden md:flex">
+<div class="mb-lg px-xs mt-sm">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Linguist AI</h1>
+</div>
+<div class="flex items-center gap-sm p-sm mb-md rounded-lg bg-surface-container-high border border-outline-variant/30">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container-highest flex-shrink-0">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="A minimalist avatar portrait of an individual in a high-tech corporate environment, cool lighting, professional, stark dark background with subtle blue rim light, highly detailed." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAt78ebtf3TqYpy3asJWFZxvuW7x6FmMPFFX2XVGqBbuMPCE9jpPkcOtI5PMYixOkP48D_0seJO-jBurcEnNhsMiikL8K9CAlYD8fqFrP-gH-GVgiAp5PpZa5MH6oSascavAvzxzZZqT_gvHeD1Hbunxy9K5UBtRTxKmTYilptN4aXf4H_f6433pDkiaB-Qsmd9AHv_Oho-D-zmWHlw4d48R1wPyIpxtk4Qf4hf4vzB43UwM8G4WzkX56QXIKlUaX-wS9Iw5on31A"/>
+</div>
+<div>
+<div class="font-label-md text-label-md text-on-surface">Learner Profile</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Level B2 • Advanced</div>
+</div>
+</div>
+<div class="flex-grow flex flex-col gap-base">
+<!-- Tabs based on JSON labels -->
+<a class="flex items-center gap-md px-sm py-xs text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-high transition-all rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">psychology</span>
+                Tutor
+            </a>
+<a class="flex items-center gap-md px-sm py-xs text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-high transition-all rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">auto_stories</span>
+                Library
+            </a>
+<a class="flex items-center gap-md px-sm py-xs bg-secondary-container dark:bg-secondary-container text-on-secondary-container dark:text-on-secondary-container rounded-lg font-label-md text-label-md Active: opacity-80" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">analytics</span>
+                Progress
+            </a>
+<a class="flex items-center gap-md px-sm py-xs text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-high transition-all rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">group</span>
+                Community
+            </a>
+</div>
+<div class="mt-auto pt-md">
+<button class="w-full py-xs px-sm btn-primary rounded-DEFAULT font-label-md text-label-md flex justify-center items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                New Session
+            </button>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="flex-1 ml-0 md:ml-64 overflow-y-auto bg-background p-md md:p-xl flex flex-col items-center">
+<div class="w-full max-w-[800px] flex flex-col gap-lg pb-xl">
+<!-- Header -->
+<header class="flex flex-col gap-sm">
+<a class="inline-flex items-center gap-xs text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm self-start" href="#">
+<span class="material-symbols-outlined text-[16px]">arrow_back</span>
+                    Back to Exercises
+                </a>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Writing Evaluation Results</h2>
+</header>
+<!-- Section 1: Overall Performance -->
+<section class="flex flex-col gap-sm">
+<h3 class="font-headline-md text-headline-md text-on-surface">Overall Performance</h3>
+<div class="surface-card rounded-xl p-md flex flex-col gap-sm">
+<div class="flex items-center gap-md">
+<div class="w-32 font-label-md text-label-md text-on-surface-variant">Grammar</div>
+<div class="flex-1 h-2 rounded-full metric-track overflow-hidden">
+<div class="h-full metric-fill rounded-full" style="width: 85%;"></div>
+</div>
+<div class="w-16 text-right font-code-sm text-code-sm tabular-nums text-on-surface">85%</div>
+<div class="w-24 text-right font-label-md text-label-md text-success">Proficient</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="w-32 font-label-md text-label-md text-on-surface-variant">Vocabulary</div>
+<div class="flex-1 h-2 rounded-full metric-track overflow-hidden">
+<div class="h-full metric-fill rounded-full" style="width: 72%;"></div>
+</div>
+<div class="w-16 text-right font-code-sm text-code-sm tabular-nums text-on-surface">72%</div>
+<div class="w-24 text-right font-label-md text-label-md text-tertiary">Adequate</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="w-32 font-label-md text-label-md text-on-surface-variant">Cohesion</div>
+<div class="flex-1 h-2 rounded-full metric-track overflow-hidden">
+<div class="h-full metric-fill rounded-full" style="width: 90%;"></div>
+</div>
+<div class="w-16 text-right font-code-sm text-code-sm tabular-nums text-on-surface">90%</div>
+<div class="w-24 text-right font-label-md text-label-md text-success">Excellent</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="w-32 font-label-md text-label-md text-on-surface-variant">Naturalness</div>
+<div class="flex-1 h-2 rounded-full metric-track overflow-hidden">
+<div class="h-full metric-fill rounded-full" style="width: 60%;"></div>
+</div>
+<div class="w-16 text-right font-code-sm text-code-sm tabular-nums text-on-surface">60%</div>
+<div class="w-24 text-right font-label-md text-label-md text-error">Needs Work</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="w-32 font-label-md text-label-md text-on-surface-variant">Style</div>
+<div class="flex-1 h-2 rounded-full metric-track overflow-hidden">
+<div class="h-full metric-fill rounded-full" style="width: 78%;"></div>
+</div>
+<div class="w-16 text-right font-code-sm text-code-sm tabular-nums text-on-surface">78%</div>
+<div class="w-24 text-right font-label-md text-label-md text-success">Good</div>
+</div>
+</div>
+</section>
+<!-- Section 2: Suggested Improvements -->
+<section class="flex flex-col gap-sm">
+<h3 class="font-headline-md text-headline-md text-on-surface">Suggested Improvements</h3>
+<div class="flex flex-col gap-base">
+<div class="ai-card p-md flex flex-col gap-xs">
+<div class="flex flex-col gap-1">
+<div class="font-body-md text-body-md text-on-surface-variant line-through opacity-60">
+                                The project was finished by the team in a quickly manner.
+                            </div>
+<div class="font-body-md text-body-md text-success flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+                                The team quickly finished the project.
+                            </div>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant/80 mt-xs pl-md border-l border-outline-variant/30">
+                            Active voice makes the sentence more direct and engaging. "Quickly manner" is incorrect phrasing; an adverb ("quickly") is more natural here.
+                        </div>
+</div>
+<div class="ai-card p-md flex flex-col gap-xs">
+<div class="flex flex-col gap-1">
+<div class="font-body-md text-body-md text-on-surface-variant line-through opacity-60">
+                                Despite of the rain, we went to the park.
+                            </div>
+<div class="font-body-md text-body-md text-success flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+                                Despite the rain, we went to the park.
+                            </div>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant/80 mt-xs pl-md border-l border-outline-variant/30">
+                            "Despite" is never followed by "of". Alternatively, you could use "In spite of the rain...".
+                        </div>
+</div>
+</div>
+</section>
+<!-- Section 3: Collapsible Submission -->
+<section class="mt-sm">
+<details class="group surface-card rounded-xl overflow-hidden [&amp;_summary::-webkit-details-marker]:hidden">
+<summary class="flex items-center justify-between p-md cursor-pointer list-none focus-ring">
+<span class="font-label-md text-label-md text-on-surface">View full submission</span>
+<span class="material-symbols-outlined text-on-surface-variant transition-transform group-open:rotate-180">expand_more</span>
+</summary>
+<div class="p-md pt-0 border-t border-outline-variant/20 mt-2">
+<p class="font-body-md text-body-md text-on-surface-variant whitespace-pre-line">
+                            The project was finished by the team in a quickly manner. We faced many challenges, but we overcome them. Despite of the rain, we went to the park to celebrate our success. It was a good day, and everyone was happy. I think we will do even better next time because we learned a lot from this experience.
+                        </p>
+</div>
+</details>
+</section>
+<!-- Footer Action -->
+<footer class="mt-lg pt-lg border-t border-outline-variant/30 flex justify-center">
+<button class="btn-outline px-lg py-sm rounded-DEFAULT font-label-md text-label-md flex items-center gap-xs focus-ring">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+                    Try another prompt
+                </button>
+</footer>
+</div>
+</main>
+</body></html>

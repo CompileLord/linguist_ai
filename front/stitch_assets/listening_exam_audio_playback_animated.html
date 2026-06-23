@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Listening Exam - Lumina Axiom</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@500;600&amp;family=Geist:wght@400;500&amp;family=Inter:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed-variant": "#733500",
+                        "on-secondary-fixed": "#170065",
+                        "surface-container-low": "#1c1a24",
+                        "on-tertiary-container": "#ffffff",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-highest": "#35343e",
+                        "tertiary": "#ffb688",
+                        "primary-fixed": "#e4dfff",
+                        "on-secondary-fixed-variant": "#422db2",
+                        "outline": "#928ea1",
+                        "tertiary-fixed": "#ffdbc7",
+                        "secondary-fixed": "#e4dfff",
+                        "surface-container": "#201e28",
+                        "surface": "#13121c",
+                        "primary-container": "#6e5bff",
+                        "primary": "#c6bfff",
+                        "secondary": "#c7bfff",
+                        "surface-dim": "#13121c",
+                        "outline-variant": "#474555",
+                        "on-secondary": "#2a039d",
+                        "on-primary": "#2700a0",
+                        "on-tertiary": "#512400",
+                        "inverse-on-surface": "#312f39",
+                        "background": "#13121c",
+                        "on-primary-fixed": "#160066",
+                        "error-container": "#93000a",
+                        "surface-bright": "#393842",
+                        "surface-variant": "#35343e",
+                        "surface-tint": "#c6bfff",
+                        "error": "#ffb4ab",
+                        "on-primary-fixed-variant": "#3d1acf",
+                        "secondary-fixed-dim": "#c7bfff",
+                        "on-surface-variant": "#c8c4d8",
+                        "on-secondary-container": "#b4abff",
+                        "inverse-surface": "#e5e0ee",
+                        "on-tertiary-fixed": "#311300",
+                        "secondary-container": "#422db2",
+                        "on-background": "#e5e0ee",
+                        "inverse-primary": "#563fe6",
+                        "surface-container-lowest": "#0e0d16",
+                        "on-surface": "#e5e0ee",
+                        "on-primary-container": "#fffeff",
+                        "tertiary-container": "#bb5b00",
+                        "surface-container-high": "#2a2933",
+                        "on-error": "#690005",
+                        "tertiary-fixed-dim": "#ffb688",
+                        "primary-fixed-dim": "#c6bfff",
+                        "background-level-0": "#0A0A0C",
+                        "accent-glow": "#8B7CFF"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "xl": "64px",
+                        "lg": "40px",
+                        "md": "24px",
+                        "sm": "16px",
+                        "container-max": "1440px",
+                        "base": "4px",
+                        "xs": "8px"
+                    },
+                    "fontFamily": {
+                        "display": ["Hanken Grotesk"],
+                        "label-md": ["Geist"],
+                        "code-sm": ["Geist"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-md": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "code-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #0A0A0C;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 20px 5px rgba(139, 124, 255, 0.2);
+            }
+            50% {
+                box-shadow: 0 0 40px 15px rgba(139, 124, 255, 0.4);
+            }
+        }
+
+        @keyframes glow-pulse {
+            0%, 100% {
+                box-shadow: 0 0 40px rgba(139, 124, 255, 0.2);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 0 60px rgba(139, 124, 255, 0.5);
+                transform: scale(1.05);
+            }
+        }
+        
+        .ambient-glow {
+            animation: glow-pulse 4s infinite ease-in-out;
+        }
+
+        .active-playback-glow {
+            animation: pulse-glow 3s infinite ease-in-out;
+        }
+
+        .playing .play-icon { display: none; }
+        .playing .pause-icon { display: block; }
+        .paused .play-icon { display: block; }
+        .paused .pause-icon { display: none; }
+    </style>
+</head>
+<body class="text-on-background min-h-screen flex flex-col font-body-md overflow-hidden relative selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar from JSON -->
+<header class="fixed top-0 w-full flex justify-between items-center px-md py-sm bg-background dark:bg-background transition-all duration-200 ease-out z-50">
+<div class="flex items-center gap-sm">
+<span class="font-headline-md text-headline-md text-on-background font-bold tracking-tight">Listening Exam</span>
+</div>
+<div class="flex items-center gap-sm">
+<!-- Timer Indicator -->
+<div class="flex items-center gap-xs px-sm py-xs rounded-full border border-outline-variant bg-surface-container-low text-on-surface-variant font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">timer</span>
+<span>12:45</span>
+</div>
+<button aria-label="Close" class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-container-high transition-colors text-on-surface-variant border border-transparent hover:border-outline-variant">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-grow flex flex-col items-center justify-center pt-xl relative z-10 w-full max-w-container-max mx-auto px-md">
+<!-- Focused Center Content -->
+<div class="flex flex-col items-center justify-center space-y-xl max-w-[800px] w-full text-center">
+<!-- Play Button Container -->
+<div class="relative group cursor-pointer ambient-glow rounded-full" id="play-container">
+<!-- Ambient Glow Layer -->
+<div class="absolute inset-0 rounded-full bg-accent-glow opacity-0 transition-opacity duration-700 ease-in-out blur-xl group-hover:opacity-20" id="glow-layer"></div>
+<!-- Main Button -->
+<button class="paused relative z-10 w-32 h-32 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center transition-transform duration-300 ease-out hover:scale-105 active:scale-95 shadow-[0_0_0_1px_#2A2A32]" id="play-button">
+<span class="material-symbols-outlined text-display play-icon" data-icon="play_arrow" data-weight="fill" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+<span class="material-symbols-outlined text-display pause-icon hidden" data-icon="pause" data-weight="fill" style="font-variation-settings: 'FILL' 1;">pause</span>
+</button>
+</div>
+<!-- Contextual Text -->
+<div class="space-y-base max-w-md mx-auto">
+<p class="font-body-md text-body-md text-on-surface-variant opacity-80 transition-opacity duration-500" id="status-text">
+                    Listen carefully — the transcript will be available after the questions
+                </p>
+</div>
+</div>
+</main>
+<!-- Bottom Actions -->
+<footer class="fixed bottom-0 right-0 p-lg w-full flex justify-end z-40 bg-gradient-to-t from-background-level-0 to-transparent pointer-events-none">
+<button class="pointer-events-auto px-lg py-sm rounded-lg bg-surface text-on-surface-variant border border-outline-variant font-label-md text-label-md transition-all duration-300 ease-out opacity-30 cursor-not-allowed flex items-center gap-sm" disabled="" id="continue-btn">
+<span>Continue to questions</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</footer>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const playButton = document.getElementById('play-button');
+            const glowLayer = document.getElementById('glow-layer');
+            const statusText = document.getElementById('status-text');
+            const continueBtn = document.getElementById('continue-btn');
+            const playContainer = document.getElementById('play-container');
+            let isPlaying = false;
+            let hasPlayed = false;
+
+            playButton.addEventListener('click', () => {
+                isPlaying = !isPlaying;
+                hasPlayed = true;
+                
+                if (isPlaying) {
+                    playButton.classList.remove('paused');
+                    playButton.classList.add('playing');
+                    glowLayer.classList.add('active-playback-glow');
+                    glowLayer.classList.remove('opacity-0');
+                    glowLayer.classList.add('opacity-40');
+                    statusText.textContent = "Audio playing...";
+                    playContainer.classList.remove('ambient-glow');
+                    
+                    // Simulate unlocking the continue button after some play time
+                    setTimeout(() => {
+                        continueBtn.disabled = false;
+                        continueBtn.classList.remove('opacity-30', 'cursor-not-allowed', 'bg-surface', 'text-on-surface-variant');
+                        continueBtn.classList.add('bg-primary-container', 'text-on-primary-container', 'hover:bg-inverse-primary', 'cursor-pointer');
+                    }, 3000);
+
+                } else {
+                    playButton.classList.remove('playing');
+                    playButton.classList.add('paused');
+                    glowLayer.classList.remove('active-playback-glow');
+                    glowLayer.classList.add('opacity-0');
+                    glowLayer.classList.remove('opacity-40');
+                    statusText.textContent = "Audio paused.";
+                    playContainer.classList.add('ambient-glow');
+                }
+            });
+        });
+    </script>
+</body></html>

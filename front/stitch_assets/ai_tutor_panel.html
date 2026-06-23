@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Linguist AI - Tutor</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Hanken+Grotesk:wght@500;600;700&amp;family=Geist:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#393842",
+                        "surface-container-highest": "#35343e",
+                        "tertiary-container": "#bb5b00",
+                        "tertiary-fixed": "#ffdbc7",
+                        "tertiary-fixed-dim": "#ffb688",
+                        "surface-container-lowest": "#0e0d16",
+                        "on-secondary-fixed-variant": "#422db2",
+                        "on-secondary-fixed": "#170065",
+                        "on-error": "#690005",
+                        "secondary": "#c7bfff",
+                        "inverse-surface": "#e5e0ee",
+                        "outline": "#928ea1",
+                        "primary-fixed-dim": "#c6bfff",
+                        "tertiary": "#ffb688",
+                        "on-primary-fixed-variant": "#3d1acf",
+                        "surface-variant": "#35343e",
+                        "secondary-fixed": "#e4dfff",
+                        "surface-container-low": "#1c1a24",
+                        "surface-container": "#201e28",
+                        "surface-dim": "#13121c",
+                        "on-surface": "#e5e0ee",
+                        "surface-tint": "#c6bfff",
+                        "outline-variant": "#474555",
+                        "background": "#13121c",
+                        "surface-container-high": "#2a2933",
+                        "on-tertiary-fixed-variant": "#733500",
+                        "error": "#ffb4ab",
+                        "on-primary": "#2700a0",
+                        "secondary-container": "#422db2",
+                        "inverse-on-surface": "#312f39",
+                        "on-secondary": "#2a039d",
+                        "error-container": "#93000a",
+                        "on-surface-variant": "#c8c4d8",
+                        "inverse-primary": "#563fe6",
+                        "on-secondary-container": "#b4abff",
+                        "primary-fixed": "#e4dfff",
+                        "on-background": "#e5e0ee",
+                        "primary": "#c6bfff",
+                        "on-primary-fixed": "#160066",
+                        "primary-container": "#6e5bff",
+                        "on-tertiary-fixed": "#311300",
+                        "on-primary-container": "#fffeff",
+                        "on-tertiary-container": "#ffffff",
+                        "on-error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#c7bfff",
+                        "on-tertiary": "#512400",
+                        "surface": "#13121c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "64px",
+                        "sm": "16px",
+                        "gutter": "24px",
+                        "container-max": "1440px",
+                        "xs": "8px",
+                        "base": "4px",
+                        "md": "24px",
+                        "lg": "40px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "body-sm": ["Inter"],
+                        "label-md": ["Geist"],
+                        "code-sm": ["Geist"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "display": ["Hanken Grotesk"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "code-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "display": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .ai-typing-pulse {
+            background: linear-gradient(90deg, transparent, #6E5BFF, #8B7CFF, #6E5BFF, transparent);
+            background-size: 200% 100%;
+            animation: pulse-line 2s infinite linear;
+        }
+        @keyframes pulse-line {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
+        /* Custom scrollbar for chat panel */
+        .chat-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .chat-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .chat-scroll::-webkit-scrollbar-thumb {
+            background: #2a2933;
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex overflow-hidden font-body-md">
+<!-- SideNavBar (Shared Component) -->
+<nav class="fixed left-0 top-0 h-screen w-64 bg-surface-container-lowest border-r border-outline-variant/30 flex flex-col py-lg px-sm z-40 hidden md:flex">
+<div class="mb-lg flex items-center gap-xs px-xs">
+<span class="material-symbols-outlined text-headline-md text-primary" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+<span class="text-headline-md font-headline-md text-primary tracking-tight">Linguist AI</span>
+</div>
+<div class="flex-1 flex flex-col gap-xs">
+<a class="flex items-center gap-sm px-sm py-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-headline-sm">dashboard</span>
+<span class="text-label-md font-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-headline-sm">explore</span>
+<span class="text-label-md font-label-md">Missions</span>
+</a>
+<!-- Active Tab -->
+<a class="flex items-center gap-sm px-sm py-xs rounded-lg bg-surface-container text-primary font-bold border-r-2 border-primary scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-headline-sm" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+<span class="text-label-md font-label-md">Tutor</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-headline-sm">leaderboard</span>
+<span class="text-label-md font-label-md">Progress</span>
+</a>
+</div>
+<div class="mt-auto">
+<div class="px-sm py-xs mb-xs">
+<p class="text-label-md font-label-md text-on-surface-variant">Mastery Level 4</p>
+</div>
+<button class="w-full py-xs px-sm bg-primary-container text-on-primary-container rounded-lg text-label-md font-label-md hover:bg-primary transition-colors duration-200 flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-body-sm">play_arrow</span>
+                Start Lesson
+            </button>
+</div>
+</nav>
+<!-- Main Canvas Area -->
+<div class="flex-1 ml-0 md:ml-64 flex flex-col relative h-screen">
+<!-- TopNavBar (Shared Component) - Rendered conceptually within the main area for layout stability -->
+<header class="fixed top-0 w-full md:w-[calc(100%-16rem)] z-30 bg-surface/80 backdrop-blur-md dark:bg-surface/80 border-b border-outline-variant/30 h-16 flex justify-between items-center px-gutter mx-auto transition-all">
+<div class="flex items-center gap-sm">
+<!-- Mobile Menu Trigger -->
+<button class="md:hidden text-on-surface-variant hover:text-primary transition-colors duration-200">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="text-headline-md font-headline-md text-on-surface hidden md:block">Active Mission: Subjunctive Mood</h1>
+</div>
+<div class="flex items-center gap-sm">
+<button class="text-on-surface-variant hover:text-primary transition-colors duration-200 flex items-center justify-center p-xs rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined">local_fire_department</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors duration-200 flex items-center justify-center p-xs rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined">military_tech</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-surface-container-high border border-outline-variant overflow-hidden ml-xs cursor-pointer hover:border-primary transition-colors">
+<img alt="User avatar" class="w-full h-full object-cover" data-alt="A stylized, minimalist 3D rendering of a futuristic geometric avatar face, using soft glowing purple and silver tones on a dark background, highly detailed." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNgUixm1m7gAC0mytCfgt91bgECWktqNrZkERCb9s6zH8Xo6gsTtaN2cj1vEcL64UwYs4WJu8E4lD1jG5r0_g1ZXDaD3jQ78BXSMqrEpNI6-CSZUex063mCvDChs9T1N6gfl7InW9mocvqWtj0_THeuZODWgc1Rbp2kAYx1BqayPwcMxbyP0IrarbHqO-fLywXWr-23TkszNXJgI34dASZpLJ5FnAwRdkaVTyMFAM_ixOYigAYeoFpKDDLinJOpxkAnlaUzQw4MA"/>
+</div>
+</div>
+</header>
+<!-- Dimmed Background Content to simulate the overlay effect -->
+<main class="flex-1 pt-24 px-gutter pb-xl overflow-y-auto opacity-40 blur-[2px] transition-all duration-500 pointer-events-none">
+<div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-md">
+<div class="col-span-full mb-lg">
+<h2 class="text-display font-display text-on-surface mb-xs">Continue Learning</h2>
+<p class="text-body-lg font-body-lg text-on-surface-variant">You are 60% through the intermediate module.</p>
+</div>
+<!-- Dummy Bento Cards -->
+<div class="md:col-span-2 h-64 bg-surface-container-low rounded-xl border border-outline-variant/30 p-md flex flex-col justify-end" style="background-image: linear-gradient(to top right, #1c1a24, #2a2933);">
+<h3 class="text-headline-md font-headline-md text-on-surface">Grammar Exercise 4</h3>
+</div>
+<div class="h-64 bg-surface-container rounded-xl border border-outline-variant/30 p-md flex flex-col items-center justify-center">
+<div class="w-24 h-24 rounded-full border-4 border-primary-container flex items-center justify-center mb-sm">
+<span class="text-headline-lg font-headline-lg text-primary">60%</span>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- AI Tutor Slide-over Panel -->
+<aside class="fixed right-0 top-0 h-screen w-full sm:w-[400px] lg:w-[40%] xl:w-[35%] max-w-2xl bg-surface/75 backdrop-blur-2xl border-l border-outline-variant/50 shadow-2xl z-50 flex flex-col transform transition-transform duration-500 ease-out translate-x-0">
+<!-- Panel Header -->
+<div class="flex items-center justify-between p-gutter border-b border-outline-variant/20 flex-shrink-0">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+<h2 class="text-headline-md font-headline-md text-on-surface">AI Tutor</h2>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface p-base rounded-lg hover:bg-surface-container transition-colors focus:outline-none focus:ring-1 focus:ring-primary">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Chat History -->
+<div class="flex-1 overflow-y-auto chat-scroll p-gutter flex flex-col gap-lg">
+<!-- AI Message (Left aligned, no card, text on background) -->
+<div class="flex flex-col items-start gap-xs max-w-[90%]">
+<div class="flex items-center gap-xs text-on-surface-variant mb-base">
+<span class="material-symbols-outlined text-[16px]">smart_toy</span>
+<span class="text-label-md font-label-md">Linguist AI</span>
+</div>
+<div class="text-body-md font-body-md text-on-surface leading-relaxed whitespace-pre-wrap">Hola! Ready to continue practicing the subjunctive mood? 
+
+Last time we focused on expressions of doubt. A quick reminder: we use the subjunctive after phrases like "Dudo que..." (I doubt that).</div>
+</div>
+<!-- User Message (Right aligned, compact flat card) -->
+<div class="flex flex-col items-end gap-xs self-end max-w-[85%] mt-sm">
+<div class="bg-surface-container rounded-2xl rounded-tr-sm px-sm py-xs border border-outline-variant/20 shadow-sm">
+<p class="text-body-md font-body-md text-on-surface">Can you give me an example sentence? I always get confused when to use indicative vs subjunctive there.</p>
+</div>
+</div>
+<!-- AI Message -->
+<div class="flex flex-col items-start gap-xs max-w-[95%] mt-sm">
+<div class="flex items-center gap-xs text-on-surface-variant mb-base">
+<span class="material-symbols-outlined text-[16px]">smart_toy</span>
+<span class="text-label-md font-label-md">Linguist AI</span>
+</div>
+<div class="text-body-md font-body-md text-on-surface leading-relaxed">
+                    Absolutely. Here is the breakdown:
+
+                    <strong class="text-primary-fixed block mt-xs mb-base">Indicative (Certainty/Belief):</strong>
+                    "Creo que <em>es</em> verdad." (I believe that it is true.)
+                    Here, you are stating a belief as a fact in your mind.
+                    
+                    <strong class="text-primary-fixed block mt-xs mb-base">Subjunctive (Doubt/Uncertainty):</strong>
+                    "Dudo que <em>sea</em> verdad." (I doubt that it is true.)
+                    Because there is doubt, the reality of the statement is questioned, triggering the subjunctive form of 'ser' (sea).
+                </div>
+<!-- Inline Interactive Element within AI response -->
+<div class="mt-sm bg-surface-container-low border border-outline-variant/30 rounded-lg p-sm w-full">
+<p class="text-label-md font-label-md text-on-surface-variant mb-xs">Try it: Translate "I don't think he comes today."</p>
+</div>
+</div>
+<!-- Spacer for bottom padding -->
+<div class="h-4"></div>
+</div>
+<!-- Input Area Container -->
+<div class="p-gutter border-t border-outline-variant/20 bg-surface/50 backdrop-blur-md flex-shrink-0">
+<!-- Generation State Indicator (Hidden by default, shown here for visual spec) -->
+<div class="h-[2px] w-full mb-sm rounded-full overflow-hidden opacity-100">
+<div class="w-full h-full ai-typing-pulse"></div>
+</div>
+<!-- Suggestion Chips -->
+<div class="flex items-center gap-xs overflow-x-auto no-scrollbar mb-sm pb-base">
+<button class="whitespace-nowrap bg-surface-container border border-outline-variant/30 hover:border-primary-container text-on-surface-variant hover:text-on-surface px-sm py-[6px] rounded-full text-label-md font-label-md transition-all duration-200">
+                    Explain this rule
+                </button>
+<button class="whitespace-nowrap bg-surface-container border border-outline-variant/30 hover:border-primary-container text-on-surface-variant hover:text-on-surface px-sm py-[6px] rounded-full text-label-md font-label-md transition-all duration-200">
+                    Give an example
+                </button>
+<button class="whitespace-nowrap bg-surface-container border border-outline-variant/30 hover:border-primary-container text-on-surface-variant hover:text-on-surface px-sm py-[6px] rounded-full text-label-md font-label-md transition-all duration-200">
+                    Give me an exercise
+                </button>
+</div>
+<!-- Chat Input Form -->
+<form class="relative group" onsubmit="event.preventDefault();">
+<div class="bg-surface-container border border-outline-variant/40 group-focus-within:border-primary-container group-focus-within:ring-1 group-focus-within:ring-primary-container/50 rounded-xl flex items-end p-xs transition-all duration-200 shadow-sm">
+<textarea class="flex-1 bg-transparent border-none text-on-surface text-body-md font-body-md placeholder-on-surface-variant/50 focus:ring-0 resize-none py-xs px-sm max-h-32 overflow-y-auto" placeholder="Type your message..." rows="1" style="min-height: 44px;"></textarea>
+<div class="flex items-center gap-xs px-xs pb-xs">
+<button class="text-on-surface-variant hover:text-primary p-base rounded-md transition-colors" title="Attach file" type="button">
+<span class="material-symbols-outlined text-[20px]">attach_file</span>
+</button>
+<button class="bg-primary-container text-on-primary-container p-xs rounded-lg hover:bg-inverse-primary transition-colors flex items-center justify-center shadow-md" type="submit">
+<span class="material-symbols-outlined text-[20px]">send</span>
+</button>
+</div>
+</div>
+<div class="text-center mt-xs">
+<span class="text-[11px] text-on-surface-variant/60 font-label-md">AI Tutor can make mistakes. Verify important information.</span>
+</div>
+</form>
+</div>
+</aside>
+</body></html>
