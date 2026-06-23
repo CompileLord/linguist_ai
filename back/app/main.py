@@ -35,7 +35,7 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-if settings.APP_ENV == "development":
+if settings.CORS_ALLOW_ALL:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],

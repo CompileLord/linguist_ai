@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     RATE_LIMIT_WINDOW_SECONDS: int = 60
     
     CORS_ORIGINS: List[str] = []
+    CORS_ALLOW_ALL: bool = True
     
     LOCAL_STORAGE_DIR: str = "media/audio"
 

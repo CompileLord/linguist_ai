@@ -1,6 +1,6 @@
 import uuid
 from fastapi import Depends
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db_session
 from app.core.exceptions import UnauthorizedException, ForbiddenException
@@ -8,15 +8,17 @@ from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.services.token_service import get_token_service, TokenService
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login", auto_error=False)
+security_scheme = HTTPBearer(auto_error=False)
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(security_scheme),
     db: AsyncSession = Depends(get_db_session),
     token_service: TokenService = Depends(get_token_service)
 ) -> User:
-    if not token:
+    if not credentials or not credentials.credentials:
         raise UnauthorizedException(detail="Not authenticated", error_code="NOT_AUTHENTICATED")
+    
+    token = credentials.credentials
     
     payload = token_service.decode_token(token)
     repo = UserRepository(db)
