@@ -1,0 +1,871 @@
+{
+  "project": "LinguistAI Backend",
+  "file": "tasks_phase_1.json",
+  "description": "Detailed backend development tasks for Phases 0 (Infrastructure & Core Architecture) and 1 (Onboarding & Content Engine) of the LinguistAI AI-powered language learning platform. Built with FastAPI (full OOP, SOLID principles, no code comments), PostgreSQL via async SQLAlchemy, and Google Vertex AI through the google-genai SDK.",
+  "phases": [
+    {
+      "id": "phase-0",
+      "name": "Infrastructure & Core Architecture",
+      "description": "Establish the foundational project structure, database layer, authentication system, configuration management, and Vertex AI integration backbone. Every subsequent feature depends on this phase being rock-solid.",
+      "modules": [
+        {
+          "id": "mod-0.1",
+          "name": "Project Scaffolding",
+          "description": "Initialize the FastAPI project with a clean, SOLID-compliant directory layout, dependency management, base abstractions, custom exceptions, and structured logging.",
+          "tasks": [
+            {
+              "id": "task-0.1.1",
+              "title": "Initialize FastAPI project with canonical directory structure",
+              "description": "Create the top-level FastAPI application entry point and the full directory tree: api/ (routers and dependencies), services/ (business logic layer), repositories/ (data access layer), models/ (SQLAlchemy ORM models), schemas/ (Pydantic request/response schemas), core/ (config, security, exceptions, logging). Each package must contain an __init__.py that re-exports its public interface. The main application factory must wire up lifespan events, exception handlers, and the top-level APIRouter.",
+              "acceptance_criteria": [
+                "Running `uvicorn app.main:app --reload` starts the server on port 8000 without errors",
+                "Directory tree contains api/, services/, repositories/, models/, schemas/, core/ packages with __init__.py files",
+                "Application factory function creates and returns a configured FastAPI instance with a lifespan context manager",
+                "A root GET / endpoint returns {\"service\": \"LinguistAI\", \"status\": \"ok\"}"
+              ],
+              "depends_on": [],
+              "priority": "critical",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-0.1.2",
+              "title": "Configure pyproject.toml with all project dependencies",
+              "description": "Create pyproject.toml using the [project] table with all required runtime dependencies: fastapi, uvicorn[standard], sqlalchemy[asyncio], asyncpg, alembic, pydantic>=2.0, pydantic-settings, google-genai, google-cloud-texttospeech, google-cloud-speech, google-cloud-storage, python-jose[cryptography], passlib[bcrypt], httpx. Add optional dev dependency groups for pytest, pytest-asyncio, httpx (test client), ruff, mypy. Pin minimum versions for critical packages.",
+              "acceptance_criteria": [
+                "pyproject.toml is valid and parseable by pip/uv/poetry without errors",
+                "All 14 runtime dependencies are listed with minimum version constraints",
+                "A [project.optional-dependencies] dev group includes pytest, pytest-asyncio, ruff, and mypy",
+                "`pip install -e .` or `uv pip install -e .` installs the project and all dependencies successfully",
+                "A scripts entry or Makefile target exists for `dev` (uvicorn with reload) and `test` (pytest)"
+              ],
+              "depends_on": ["task-0.1.1"],
+              "priority": "critical",
+              "estimated_hours": 1
+            },
+            {
+              "id": "task-0.1.3",
+              "title": "Create base abstract classes (AbstractRepository, AbstractService)",
+              "description": "Define AbstractRepository as a generic abstract base class parameterized by model type and primary key type, with abstract methods: get_by_id, get_all, create, update, delete. Define AbstractService as an abstract base class that receives a repository instance via constructor injection. Both classes must enforce the contract through Python's abc.ABC and @abstractmethod. AbstractRepository should accept an AsyncSession via constructor to support unit-of-work patterns.",
+              "acceptance_criteria": [
+                "AbstractRepository is generic over ModelType and PKType with all five CRUD abstract methods declared",
+                "AbstractRepository constructor accepts an AsyncSession parameter and stores it as a protected attribute",
+                "AbstractService constructor accepts an AbstractRepository instance and stores it as a protected attribute",
+                "Attempting to instantiate either abstract class directly raises TypeError",
+                "A concrete subclass that omits any abstract method raises TypeError at instantiation"
+              ],
+              "depends_on": ["task-0.1.1"],
+              "priority": "critical",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-0.1.4",
+              "title": "Create custom exception hierarchy",
+              "description": "Implement a layered exception hierarchy in core/exceptions.py. Base: AppException with status_code, detail, and error_code fields. Subclasses: NotFoundException (404), ConflictException (409), UnauthorizedException (401), ForbiddenException (403), ValidationException (422), ExternalServiceException (502), RateLimitException (429). Register a global exception handler on the FastAPI app that catches AppException subclasses and returns a consistent JSON error envelope: {\"error\": {\"code\": str, \"message\": str, \"details\": Any | null}}.",
+              "acceptance_criteria": [
+                "AppException base class carries status_code, detail, and error_code attributes with sensible defaults",
+                "At least seven concrete exception subclasses exist with correct HTTP status codes",
+                "Global exception handler is registered on the FastAPI app and returns the specified JSON envelope",
+                "Raising NotFoundException inside a route returns 404 with the error envelope format",
+                "Unhandled Python exceptions are caught by a fallback handler returning 500 with a generic error envelope"
+              ],
+              "depends_on": ["task-0.1.1"],
+              "priority": "high",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-0.1.5",
+              "title": "Configure structured logging",
+              "description": "Set up structured JSON logging using Python's built-in logging module with a custom JSON formatter. Create a LoggerFactory in core/logging.py that produces named loggers with consistent formatting. Log entries must include timestamp (ISO 8601), level, logger name, message, and optional extra fields (request_id, user_id). Integrate a middleware that assigns a unique request_id (UUID4) to each incoming request and attaches it to the log context via contextvars. In development mode, output human-readable colored logs; in production, output JSON lines.",
+              "acceptance_criteria": [
+                "LoggerFactory.get_logger(name) returns a configured Logger instance with the JSON formatter attached",
+                "Every HTTP request generates an access log entry containing method, path, status_code, duration_ms, and request_id",
+                "request_id is propagated to all log entries emitted during the same request lifecycle via contextvars",
+                "Setting APP_ENV=development switches output to human-readable colored format",
+                "Setting APP_ENV=production outputs one JSON object per line to stdout"
+              ],
+              "depends_on": ["task-0.1.1", "task-0.1.4"],
+              "priority": "high",
+              "estimated_hours": 3
+            }
+          ]
+        },
+        {
+          "id": "mod-0.2",
+          "name": "Database Foundation",
+          "description": "Configure the async SQLAlchemy engine, session management, declarative base model, Alembic migrations, and a health check endpoint to verify database connectivity.",
+          "tasks": [
+            {
+              "id": "task-0.2.1",
+              "title": "Configure SQLAlchemy async engine and session factory",
+              "description": "Create a DatabaseManager class in core/database.py that initializes an async SQLAlchemy engine (create_async_engine) from the DATABASE_URL setting. The manager must expose an async_session_factory (async_sessionmaker bound to the engine) and provide an async context manager get_session() that yields an AsyncSession with automatic commit-on-success and rollback-on-error semantics. Register a FastAPI dependency that calls get_session() so routes can inject AsyncSession.",
+              "acceptance_criteria": [
+                "DatabaseManager.engine is created with create_async_engine using the configured DATABASE_URL",
+                "DatabaseManager.get_session() is an async context manager that yields AsyncSession, commits on clean exit, and rolls back on exception",
+                "A FastAPI Depends callable is available that provides an AsyncSession per request",
+                "Engine creation uses pool_size, max_overflow, and pool_timeout parameters from configuration",
+                "DatabaseManager exposes an async close() method that disposes of the engine and is called during app shutdown"
+              ],
+              "depends_on": ["task-0.1.1", "task-0.1.2"],
+              "priority": "critical",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-0.2.2",
+              "title": "Create base SQLAlchemy declarative model",
+              "description": "Define a Base declarative model using SQLAlchemy 2.0's DeclarativeBase. Create a TimestampMixin that adds created_at (server_default=now()) and updated_at (onupdate=now()) columns. Create an IDMixin that provides a UUID primary key column with server-side default. All future models will inherit from Base and include both mixins. The Base.metadata must set a naming convention for constraints (ix_, uq_, ck_, fk_, pk_) to ensure Alembic auto-generates deterministic migration names.",
+              "acceptance_criteria": [
+                "Base class extends DeclarativeBase and is importable from models/base.py",
+                "TimestampMixin adds created_at (DateTime with timezone, server_default) and updated_at (DateTime with timezone, onupdate) columns",
+                "IDMixin adds an id column of type UUID with server_default=gen_random_uuid() as the primary key",
+                "Base.metadata.naming_convention is set with patterns for ix, uq, ck, fk, and pk",
+                "A trivial test model inheriting Base + both mixins produces a valid CREATE TABLE statement"
+              ],
+              "depends_on": ["task-0.2.1"],
+              "priority": "critical",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-0.2.3",
+              "title": "Implement database connection manager with connection pooling",
+              "description": "Extend DatabaseManager to support configurable connection pooling: pool_size (default 10), max_overflow (default 20), pool_timeout (default 30s), pool_recycle (default 1800s), pool_pre_ping (True). Add an async method check_connection() that executes SELECT 1 and returns True/False. Add a method get_pool_status() that returns current pool size, checked-out connections, and overflow count for monitoring. Wire pool settings from the Pydantic Settings class.",
+              "acceptance_criteria": [
+                "Engine is created with pool_size, max_overflow, pool_timeout, pool_recycle, and pool_pre_ping from config",
+                "check_connection() executes a lightweight query and returns a boolean without raising exceptions",
+                "get_pool_status() returns a dict with keys: pool_size, checked_out, overflow, checkedin",
+                "Connection pool parameters are configurable via environment variables through Pydantic Settings",
+                "Pool recycle is set to prevent stale connections from causing OperationalError on long-idle deployments"
+              ],
+              "depends_on": ["task-0.2.1", "task-0.4.1"],
+              "priority": "high",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-0.2.4",
+              "title": "Create Alembic configuration and initial migration scaffold",
+              "description": "Initialize Alembic with `alembic init` and configure alembic.ini and env.py for async operation. env.py must import Base.metadata and use run_async to run migrations. Configure the sqlalchemy.url to be read from the same DATABASE_URL environment variable used by the app. Create an initial empty migration (revision) as a baseline. Add a Makefile target or script: `make migrate` (alembic upgrade head), `make migration msg=...` (alembic revision --autogenerate -m ...).",
+              "acceptance_criteria": [
+                "alembic.ini and migrations/ directory exist at the project root",
+                "env.py uses async engine and imports target_metadata from the application Base",
+                "Running `alembic upgrade head` on an empty database succeeds without errors",
+                "Running `alembic revision --autogenerate -m 'test'` detects model changes and generates a migration file",
+                "Database URL in Alembic is sourced from the same environment variable as the application"
+              ],
+              "depends_on": ["task-0.2.2"],
+              "priority": "critical",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-0.2.5",
+              "title": "Implement health check endpoint",
+              "description": "Create a /health API endpoint that returns the overall system health. The endpoint must check database connectivity via DatabaseManager.check_connection() and return a structured response: {\"status\": \"healthy|degraded|unhealthy\", \"checks\": {\"database\": {\"status\": \"up|down\", \"latency_ms\": float}, \"timestamp\": str}}. If the database is down, return HTTP 503 with status=unhealthy. This endpoint must not require authentication.",
+              "acceptance_criteria": [
+                "GET /health returns 200 with status=healthy when the database is reachable",
+                "GET /health returns 503 with status=unhealthy when the database is unreachable",
+                "Response includes database check latency in milliseconds",
+                "Response includes an ISO 8601 timestamp",
+                "The endpoint is excluded from authentication middleware"
+              ],
+              "depends_on": ["task-0.2.1", "task-0.2.3"],
+              "priority": "high",
+              "estimated_hours": 1
+            }
+          ]
+        },
+        {
+          "id": "mod-0.3",
+          "name": "Authentication System",
+          "description": "Full JWT-based authentication flow: User model, password hashing, token issuance/refresh, auth repository, auth service, auth API routes, and a FastAPI dependency for extracting the current authenticated user.",
+          "tasks": [
+            {
+              "id": "task-0.3.1",
+              "title": "Implement User SQLAlchemy model",
+              "description": "Create a User model inheriting from Base with IDMixin and TimestampMixin. Columns: email (String, unique, indexed, not null), hashed_password (String, not null), full_name (String, nullable), is_active (Boolean, default True), is_superuser (Boolean, default False), last_login_at (DateTime, nullable). Add a unique constraint on email. Generate an Alembic migration for this model.",
+              "acceptance_criteria": [
+                "User model is defined in models/user.py and inherits Base, IDMixin, TimestampMixin",
+                "email column has a unique index and is non-nullable",
+                "hashed_password column is a non-nullable String of sufficient length (at least 255)",
+                "An Alembic migration file is generated that creates the users table with all columns and constraints",
+                "Running `alembic upgrade head` creates the users table in the database"
+              ],
+              "depends_on": ["task-0.2.2", "task-0.2.4"],
+              "priority": "critical",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-0.3.2",
+              "title": "Implement password hashing service",
+              "description": "Create a PasswordService class in services/password_service.py that wraps passlib's CryptContext with bcrypt as the primary scheme and auto-deprecated support for argon2. Methods: hash_password(plain: str) -> str and verify_password(plain: str, hashed: str) -> bool. The service must be stateless and instantiated once at app startup. CryptContext must use bcrypt with a configurable rounds parameter (default 12).",
+              "acceptance_criteria": [
+                "PasswordService.hash_password returns a bcrypt hash string starting with $2b$",
+                "PasswordService.verify_password returns True for a correct plain/hash pair and False otherwise",
+                "Hashing the same plaintext twice produces different hashes (salt verification)",
+                "The bcrypt rounds parameter is configurable via the Settings class",
+                "The service is instantiated as a singleton and injectable via FastAPI dependency injection"
+              ],
+              "depends_on": ["task-0.1.1", "task-0.1.2"],
+              "priority": "critical",
+              "estimated_hours": 1
+            },
+            {
+              "id": "task-0.3.3",
+              "title": "Implement JWT token service",
+              "description": "Create a TokenService class in services/token_service.py. Methods: create_access_token(subject: str, extra_claims: dict | None) -> str, create_refresh_token(subject: str) -> str, decode_token(token: str) -> TokenPayload. Access tokens expire after a configurable ACCESS_TOKEN_EXPIRE_MINUTES (default 30). Refresh tokens expire after REFRESH_TOKEN_EXPIRE_DAYS (default 7). Tokens are signed with HS256 using JWT_SECRET_KEY from config. TokenPayload is a Pydantic model with sub, exp, iat, jti (UUID), and type (access|refresh) fields.",
+              "acceptance_criteria": [
+                "create_access_token produces a JWT with sub, exp, iat, jti, and type=access claims",
+                "create_refresh_token produces a JWT with type=refresh and a longer expiration",
+                "decode_token validates the signature, checks expiration, and returns a TokenPayload Pydantic model",
+                "Expired tokens raise UnauthorizedException with error_code=TOKEN_EXPIRED",
+                "Tokens with invalid signatures raise UnauthorizedException with error_code=TOKEN_INVALID"
+              ],
+              "depends_on": ["task-0.1.2", "task-0.1.4", "task-0.4.1"],
+              "priority": "critical",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-0.3.4",
+              "title": "Create auth repository (CRUD for users)",
+              "description": "Create AuthRepository extending AbstractRepository[User, UUID]. Implement all abstract CRUD methods plus: get_by_email(email: str) -> User | None, exists_by_email(email: str) -> bool, update_last_login(user_id: UUID) -> None. All queries must use async SQLAlchemy select() statements. The repository must not contain any business logic — only data access.",
+              "acceptance_criteria": [
+                "AuthRepository extends AbstractRepository[User, UUID] and implements all five abstract methods",
+                "get_by_email executes a SELECT query filtered by email and returns User or None",
+                "exists_by_email returns a boolean without fetching the full model (uses exists() subquery)",
+                "update_last_login sets last_login_at to utcnow and commits within the session",
+                "All methods use async/await and operate on the injected AsyncSession"
+              ],
+              "depends_on": ["task-0.1.3", "task-0.3.1"],
+              "priority": "critical",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-0.3.5",
+              "title": "Create auth service (register, login, refresh, get_current_user)",
+              "description": "Create AuthService extending AbstractService. Constructor receives AuthRepository, PasswordService, and TokenService. Methods: register(schema: RegisterRequest) -> AuthResponse, login(schema: LoginRequest) -> AuthResponse, refresh(refresh_token: str) -> AuthResponse, get_current_user(token: str) -> User. register must check for existing email (raise ConflictException), hash password, create user, and return tokens. login must verify credentials (raise UnauthorizedException on failure), update last_login, and return tokens. AuthResponse is a Pydantic schema with access_token, refresh_token, token_type, and user fields.",
+              "acceptance_criteria": [
+                "register raises ConflictException if the email already exists",
+                "register hashes the password, creates the user, and returns AuthResponse with both tokens",
+                "login raises UnauthorizedException if the email is not found or password is incorrect",
+                "login updates last_login_at on successful authentication",
+                "refresh decodes the refresh token, validates type=refresh, and returns new access + refresh token pair"
+              ],
+              "depends_on": ["task-0.3.2", "task-0.3.3", "task-0.3.4"],
+              "priority": "critical",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-0.3.6",
+              "title": "Create auth API router",
+              "description": "Create an APIRouter in api/routers/auth.py with prefix /auth and tag 'Authentication'. Endpoints: POST /auth/register (accepts RegisterRequest, returns AuthResponse, 201), POST /auth/login (accepts LoginRequest, returns AuthResponse, 200), POST /auth/refresh (accepts RefreshRequest with refresh_token field, returns AuthResponse, 200), GET /auth/me (requires authentication, returns UserResponse, 200). All endpoints must have proper response_model declarations and OpenAPI summary/description. Wire the router into the main app.",
+              "acceptance_criteria": [
+                "POST /auth/register creates a user and returns 201 with AuthResponse body",
+                "POST /auth/login with valid credentials returns 200 with AuthResponse body",
+                "POST /auth/refresh with a valid refresh token returns 200 with new token pair",
+                "GET /auth/me with a valid Bearer token returns 200 with UserResponse body",
+                "All endpoints appear in the OpenAPI docs at /docs with correct schemas"
+              ],
+              "depends_on": ["task-0.3.5"],
+              "priority": "critical",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-0.3.7",
+              "title": "Implement FastAPI dependency for current user extraction",
+              "description": "Create a get_current_user dependency in api/dependencies/auth.py that extracts the Bearer token from the Authorization header using FastAPI's OAuth2PasswordBearer, decodes it via TokenService, fetches the User from AuthRepository, and returns the User object. Create a get_current_active_user dependency that wraps get_current_user and raises ForbiddenException if is_active is False. Both dependencies must be reusable via Depends().",
+              "acceptance_criteria": [
+                "get_current_user extracts the token from the Authorization: Bearer <token> header",
+                "Missing or malformed Authorization header raises UnauthorizedException (401)",
+                "Expired or invalid token raises UnauthorizedException with appropriate error_code",
+                "get_current_active_user raises ForbiddenException (403) if user.is_active is False",
+                "Injecting Depends(get_current_active_user) into a route correctly provides the User object"
+              ],
+              "depends_on": ["task-0.3.5"],
+              "priority": "critical",
+              "estimated_hours": 2
+            }
+          ]
+        },
+        {
+          "id": "mod-0.4",
+          "name": "Configuration & Environment",
+          "description": "Centralized configuration via Pydantic Settings, environment-specific loading, rate limiting middleware, and CORS configuration.",
+          "tasks": [
+            {
+              "id": "task-0.4.1",
+              "title": "Create Pydantic Settings class for all configuration",
+              "description": "Create a Settings class in core/config.py extending pydantic_settings.BaseSettings. Fields grouped by concern: Database (DATABASE_URL, DB_POOL_SIZE, DB_MAX_OVERFLOW, DB_POOL_TIMEOUT, DB_POOL_RECYCLE), Vertex AI (VERTEX_AI_PROJECT, VERTEX_AI_LOCATION, VERTEX_AI_MODEL), JWT (JWT_SECRET_KEY, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS), Rate Limiting (RATE_LIMIT_REQUESTS, RATE_LIMIT_WINDOW_SECONDS), App (APP_ENV, APP_DEBUG, APP_NAME, APP_VERSION, CORS_ORIGINS). Use model_config with env_file='.env' and case_sensitive=True. Implement a get_settings() function with @lru_cache for singleton behavior.",
+              "acceptance_criteria": [
+                "Settings class has all specified fields with appropriate types and default values",
+                "Settings loads values from a .env file when present via model_config",
+                "Environment variables override .env file values",
+                "get_settings() returns the same Settings instance on repeated calls (cached)",
+                "Missing required fields (DATABASE_URL, JWT_SECRET_KEY, VERTEX_AI_PROJECT) raise a ValidationError at startup"
+              ],
+              "depends_on": ["task-0.1.1", "task-0.1.2"],
+              "priority": "critical",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-0.4.2",
+              "title": "Implement environment-specific config loading",
+              "description": "Extend Settings to support environment-specific .env files. When APP_ENV=development, load .env and .env.development; when APP_ENV=production, load .env and .env.production; when APP_ENV=test, load .env and .env.test. Create a .env.example template file documenting all required and optional variables with placeholder values. Add the actual .env files to .gitignore.",
+              "acceptance_criteria": [
+                "Setting APP_ENV=production causes .env.production to be loaded as an overlay on .env",
+                "Setting APP_ENV=test causes .env.test to be loaded, enabling test-specific database URLs",
+                ".env.example exists with placeholder values for every configuration variable",
+                ".env, .env.development, .env.production, and .env.test are listed in .gitignore",
+                "If the environment-specific file does not exist, the app starts normally with just .env values"
+              ],
+              "depends_on": ["task-0.4.1"],
+              "priority": "high",
+              "estimated_hours": 1
+            },
+            {
+              "id": "task-0.4.3",
+              "title": "Create rate limiting middleware",
+              "description": "Implement a RateLimitMiddleware as a Starlette BaseHTTPMiddleware. Use an in-memory sliding window strategy keyed by client IP (with X-Forwarded-For support for proxied requests). Configurable via RATE_LIMIT_REQUESTS (default 100) and RATE_LIMIT_WINDOW_SECONDS (default 60). When the limit is exceeded, raise RateLimitException (429) with a Retry-After header. Exempt /health and /docs endpoints from rate limiting. Log rate limit violations at WARNING level.",
+              "acceptance_criteria": [
+                "Requests exceeding the configured limit within the window receive HTTP 429 with a Retry-After header",
+                "Rate limiting is keyed by client IP, correctly reading X-Forwarded-For when behind a reverse proxy",
+                "GET /health and GET /docs are exempt from rate limiting",
+                "Rate limit parameters are sourced from the Settings class",
+                "Each rate limit violation is logged at WARNING level with the client IP and current count"
+              ],
+              "depends_on": ["task-0.4.1", "task-0.1.4", "task-0.1.5"],
+              "priority": "medium",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-0.4.4",
+              "title": "Create CORS middleware configuration",
+              "description": "Configure FastAPI's CORSMiddleware using the CORS_ORIGINS list from Settings. In development, allow all origins (\"*\"); in production, restrict to the configured list. Allow methods: GET, POST, PUT, DELETE, PATCH, OPTIONS. Allow headers: Authorization, Content-Type, X-Request-ID. Expose headers: X-Request-ID, X-Rate-Limit-Remaining. Allow credentials in production mode when origins are explicitly listed.",
+              "acceptance_criteria": [
+                "In development (APP_ENV=development), Access-Control-Allow-Origin is set to *",
+                "In production, Access-Control-Allow-Origin matches only the configured CORS_ORIGINS list",
+                "Preflight OPTIONS requests return correct CORS headers for allowed methods and headers",
+                "X-Request-ID is included in Access-Control-Expose-Headers",
+                "allow_credentials is True only when origins are explicitly configured (not wildcard)"
+              ],
+              "depends_on": ["task-0.4.1"],
+              "priority": "high",
+              "estimated_hours": 1
+            }
+          ]
+        },
+        {
+          "id": "mod-0.5",
+          "name": "Vertex AI Integration Foundation",
+          "description": "Abstract AI provider interface, concrete Vertex AI implementation using the google-genai SDK, AI service factory, prompt management, and GCP media services (TTS, STT, Cloud Storage).",
+          "tasks": [
+            {
+              "id": "task-0.5.1",
+              "title": "Create abstract AIProvider base class",
+              "description": "Define an AbstractAIProvider ABC in services/ai/base.py with abstract methods: generate_content(prompt: str, system_instruction: str | None, config: GenerationConfig | None) -> str, generate_content_stream(prompt: str, system_instruction: str | None, config: GenerationConfig | None) -> AsyncIterator[str], generate_structured(prompt: str, response_schema: type[BaseModel], system_instruction: str | None, config: GenerationConfig | None) -> BaseModel. Define GenerationConfig as a Pydantic model with temperature, top_p, top_k, max_output_tokens, and response_mime_type fields.",
+              "acceptance_criteria": [
+                "AbstractAIProvider is an ABC with three abstract async methods matching the specified signatures",
+                "GenerationConfig is a Pydantic model with temperature (float), top_p (float), top_k (int), max_output_tokens (int), response_mime_type (str) fields with sensible defaults",
+                "generate_structured return type is generic over the provided Pydantic response_schema class",
+                "Direct instantiation of AbstractAIProvider raises TypeError",
+                "All methods accept an optional system_instruction parameter for system-level prompting"
+              ],
+              "depends_on": ["task-0.1.3"],
+              "priority": "critical",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-0.5.2",
+              "title": "Implement VertexAIProvider using google-genai SDK",
+              "description": "Create VertexAIProvider extending AbstractAIProvider in services/ai/vertex_provider.py. Initialize the google.genai.Client with vertexai=True, project=settings.VERTEX_AI_PROJECT, location=settings.VERTEX_AI_LOCATION. Implement generate_content using client.models.generate_content() with the configured model name. Implement generate_content_stream using client.models.generate_content_stream() yielding text chunks. Implement generate_structured by passing response_schema to generate_content with response_mime_type='application/json' and parsing the result. Wrap all API calls in try/except to catch google.api_core.exceptions and re-raise as ExternalServiceException.",
+              "acceptance_criteria": [
+                "Client is initialized with vertexai=True, project, and location from Settings",
+                "generate_content calls client.models.generate_content with model name, contents, and config",
+                "generate_content_stream yields string chunks from the streaming response asynchronously",
+                "generate_structured passes the Pydantic model as response_schema and returns a validated instance",
+                "Google API errors are caught and re-raised as ExternalServiceException with the original error detail"
+              ],
+              "depends_on": ["task-0.5.1", "task-0.4.1"],
+              "priority": "critical",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-0.5.3",
+              "title": "Create AI service factory",
+              "description": "Implement an AIProviderFactory class in services/ai/factory.py that creates and returns the appropriate AIProvider based on configuration. The factory must support a provider registry (dict mapping provider names to classes) and a create(provider_name: str) -> AbstractAIProvider method. Default provider is 'vertex'. The factory should be a singleton and cache created provider instances. Register the factory as a FastAPI dependency so services can inject AbstractAIProvider.",
+              "acceptance_criteria": [
+                "AIProviderFactory.create('vertex') returns a VertexAIProvider instance",
+                "Calling create() twice with the same provider name returns the same cached instance",
+                "Requesting an unknown provider name raises ValidationException with available options listed",
+                "A FastAPI dependency get_ai_provider() returns the default provider via the factory",
+                "The factory is extensible — adding a new provider requires only registering a class, no factory code changes"
+              ],
+              "depends_on": ["task-0.5.2"],
+              "priority": "high",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-0.5.4",
+              "title": "Implement prompt template management system",
+              "description": "Create a PromptManager class in services/ai/prompts.py that loads, stores, and renders prompt templates. Templates are stored as .txt or .md files in a prompts/ directory, organized by feature (prompts/onboarding/, prompts/lessons/, etc.). Each template uses Python's string.Template or Jinja2-style placeholders for variable substitution. PromptManager.render(template_name: str, **variables) -> str loads the template file, substitutes variables, and returns the final prompt. Templates are cached in memory after first load.",
+              "acceptance_criteria": [
+                "PromptManager.render('onboarding/placement_question', level='A2', language='English') returns a filled prompt string",
+                "Templates are loaded from the filesystem prompts/ directory relative to the project root",
+                "Templates are cached in memory after first load — subsequent renders of the same template skip file I/O",
+                "Requesting a non-existent template name raises NotFoundException with the template path in the message",
+                "Variable substitution handles missing variables gracefully by raising ValidationException listing the missing keys"
+              ],
+              "depends_on": ["task-0.1.1"],
+              "priority": "high",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-0.5.5",
+              "title": "Create TTS service class",
+              "description": "Create a TextToSpeechService class in services/media/tts_service.py wrapping google-cloud-texttospeech. Methods: synthesize(text: str, language_code: str, voice_name: str | None, speaking_rate: float) -> bytes (returns MP3 audio bytes), synthesize_and_store(text: str, language_code: str, storage_path: str) -> str (synthesizes, uploads to Cloud Storage, returns public URL). Support SSML input for advanced prosody control. Default voice selection strategy: pick a WaveNet voice for the given language code. Handle API errors with ExternalServiceException.",
+              "acceptance_criteria": [
+                "synthesize returns MP3 audio bytes for a given text and language code",
+                "synthesize_and_store uploads the audio to Cloud Storage and returns a signed URL or public URL",
+                "Voice selection defaults to a WaveNet voice for the specified language_code",
+                "SSML input is detected (starts with <speak>) and processed using the SSML input type",
+                "Google Cloud API errors are caught and wrapped in ExternalServiceException"
+              ],
+              "depends_on": ["task-0.1.2", "task-0.1.4", "task-0.5.7"],
+              "priority": "high",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-0.5.6",
+              "title": "Create STT service class",
+              "description": "Create a SpeechToTextService class in services/media/stt_service.py wrapping google-cloud-speech. Methods: transcribe(audio_bytes: bytes, language_code: str, sample_rate: int) -> TranscriptionResult, transcribe_from_uri(gcs_uri: str, language_code: str) -> TranscriptionResult. TranscriptionResult is a Pydantic model with transcript (str), confidence (float), word_timestamps (list of WordInfo). Support both synchronous recognition (short audio <1 min) and async recognition (long audio). Handle API errors with ExternalServiceException.",
+              "acceptance_criteria": [
+                "transcribe accepts raw audio bytes and returns a TranscriptionResult with transcript and confidence",
+                "transcribe_from_uri accepts a GCS URI and returns a TranscriptionResult",
+                "Audio shorter than 60 seconds uses synchronous recognition; longer audio uses async recognition",
+                "TranscriptionResult includes word-level timestamps when available",
+                "Google Cloud API errors are caught and wrapped in ExternalServiceException"
+              ],
+              "depends_on": ["task-0.1.2", "task-0.1.4", "task-0.5.7"],
+              "priority": "high",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-0.5.7",
+              "title": "Create Cloud Storage service for audio caching",
+              "description": "Create a StorageService class in services/media/storage_service.py wrapping google-cloud-storage. Methods: upload(data: bytes, destination_path: str, content_type: str) -> str (returns GCS URI), download(source_path: str) -> bytes, get_signed_url(path: str, expiration_minutes: int) -> str, exists(path: str) -> bool, delete(path: str) -> None. The bucket name is sourced from Settings (GCS_BUCKET_NAME). Implement a content-hash-based naming strategy for deduplication: hash the audio content to generate the storage key so identical content is stored only once.",
+              "acceptance_criteria": [
+                "upload stores bytes in the configured GCS bucket and returns the gs:// URI",
+                "download retrieves bytes from GCS by path",
+                "get_signed_url generates a time-limited signed URL for the specified object",
+                "exists returns True if the object exists in the bucket, False otherwise",
+                "Content-hash naming generates a deterministic key from the file content, preventing duplicate storage"
+              ],
+              "depends_on": ["task-0.1.2", "task-0.4.1"],
+              "priority": "high",
+              "estimated_hours": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-1",
+      "name": "Onboarding & Content Engine",
+      "description": "Build the multi-language architecture, user profile and onboarding flow with AI-powered placement testing, and the core AI lesson generation pipeline with personalization, caching, TTS integration, and progress tracking.",
+      "modules": [
+        {
+          "id": "mod-1.1",
+          "name": "Multi-Language Architecture",
+          "description": "Data model and service layer for supporting multiple target languages, starting with English, and the CEFR proficiency level framework.",
+          "tasks": [
+            {
+              "id": "task-1.1.1",
+              "title": "Create Language SQLAlchemy model",
+              "description": "Define a Language model inheriting from Base with IDMixin and TimestampMixin. Columns: code (String(10), unique, indexed, not null — e.g., 'en', 'es', 'fr'), name (String(100), not null — e.g., 'English'), native_name (String(100), nullable — e.g., 'English'), is_active (Boolean, default True), icon_url (String, nullable). Add a unique constraint on code. Generate an Alembic migration.",
+              "acceptance_criteria": [
+                "Language model is defined in models/language.py with all specified columns",
+                "code column has a unique index and is limited to 10 characters",
+                "An Alembic migration creates the languages table with all columns and constraints",
+                "The model inherits IDMixin (UUID pk) and TimestampMixin (created_at, updated_at)",
+                "The model is importable from models/__init__.py"
+              ],
+              "depends_on": ["task-0.2.2", "task-0.2.4"],
+              "priority": "critical",
+              "estimated_hours": 1
+            },
+            {
+              "id": "task-1.1.2",
+              "title": "Create languages repository",
+              "description": "Create LanguageRepository extending AbstractRepository[Language, UUID]. Implement all abstract CRUD methods plus: get_by_code(code: str) -> Language | None, get_active_languages() -> list[Language], exists_by_code(code: str) -> bool. All queries must be async.",
+              "acceptance_criteria": [
+                "LanguageRepository extends AbstractRepository[Language, UUID] and implements all abstract methods",
+                "get_by_code returns a Language or None filtered by the code column",
+                "get_active_languages returns only languages where is_active is True, ordered by name",
+                "exists_by_code returns a boolean without loading the full model",
+                "All methods operate on the injected AsyncSession with async/await"
+              ],
+              "depends_on": ["task-0.1.3", "task-1.1.1"],
+              "priority": "critical",
+              "estimated_hours": 1
+            },
+            {
+              "id": "task-1.1.3",
+              "title": "Create seed migration for English language entry",
+              "description": "Create a data migration (not schema migration) using Alembic's op.bulk_insert or op.execute to seed the languages table with the English language entry: code='en', name='English', native_name='English', is_active=True. The migration must be idempotent — running it twice must not create duplicate entries. Add additional seed entries for Spanish (es), French (fr), German (de), and Japanese (ja) with is_active=False as placeholders for future expansion.",
+              "acceptance_criteria": [
+                "Running `alembic upgrade head` inserts the English language entry with is_active=True",
+                "Spanish, French, German, and Japanese entries are inserted with is_active=False",
+                "Running the migration twice does not create duplicate entries (idempotent via INSERT ON CONFLICT DO NOTHING or equivalent)",
+                "The migration is a separate revision file from the schema migration",
+                "Downgrade removes all five seed entries"
+              ],
+              "depends_on": ["task-1.1.1"],
+              "priority": "high",
+              "estimated_hours": 1
+            },
+            {
+              "id": "task-1.1.4",
+              "title": "Create CEFR level enum",
+              "description": "Define a CEFRLevel Python enum in models/enums.py with values: A1, A2, B1, B2, C1, C2. Each value must map to a PostgreSQL enum type. Add a description property that returns human-readable labels (e.g., A1='Beginner', B1='Intermediate', C1='Advanced'). Add a class method from_score(score: float) -> CEFRLevel that maps a 0.0–1.0 placement test score to the appropriate level. Create a reusable SQLAlchemy column type for this enum.",
+              "acceptance_criteria": [
+                "CEFRLevel enum has six values: A1, A2, B1, B2, C1, C2",
+                "Each value has a description property returning a human-readable label",
+                "from_score(0.0) returns A1, from_score(1.0) returns C2, with proportional intermediate mappings",
+                "The enum is usable as a SQLAlchemy column type that maps to a PostgreSQL ENUM",
+                "An Alembic migration creates the cefr_level PostgreSQL enum type"
+              ],
+              "depends_on": ["task-0.2.2"],
+              "priority": "high",
+              "estimated_hours": 1
+            },
+            {
+              "id": "task-1.1.5",
+              "title": "Implement language service",
+              "description": "Create LanguageService extending AbstractService with LanguageRepository. Methods: get_all_active() -> list[LanguageResponse], get_by_code(code: str) -> LanguageResponse (raises NotFoundException if not found or inactive), validate_language_code(code: str) -> Language (raises ValidationException if code is invalid or language is inactive). LanguageResponse is a Pydantic schema with id, code, name, native_name, and icon_url fields.",
+              "acceptance_criteria": [
+                "get_all_active returns a list of LanguageResponse for all active languages",
+                "get_by_code returns a LanguageResponse or raises NotFoundException with the invalid code in the message",
+                "validate_language_code returns the Language ORM instance or raises ValidationException",
+                "LanguageResponse schema correctly serializes UUID id and all string fields",
+                "The service is injectable via FastAPI dependency injection"
+              ],
+              "depends_on": ["task-1.1.2", "task-1.1.4"],
+              "priority": "high",
+              "estimated_hours": 2
+            }
+          ]
+        },
+        {
+          "id": "mod-1.2",
+          "name": "User Profile & Onboarding",
+          "description": "User profile and goals models, the onboarding API flow, and the AI-driven adaptive placement test that determines the user's initial CEFR level.",
+          "tasks": [
+            {
+              "id": "task-1.2.1",
+              "title": "Create UserProfile SQLAlchemy model",
+              "description": "Define a UserProfile model inheriting from Base with IDMixin and TimestampMixin. Columns: user_id (ForeignKey to users.id, unique, indexed, not null), target_language_id (ForeignKey to languages.id, not null), native_language_code (String(10), not null), current_level (Enum CEFRLevel, nullable — set after placement test), placement_score (Float, nullable), daily_goal_minutes (Integer, default 15), streak_count (Integer, default 0), total_xp (Integer, default 0), onboarding_completed (Boolean, default False). Add relationships to User and Language. Generate an Alembic migration.",
+              "acceptance_criteria": [
+                "UserProfile has a one-to-one relationship with User via user_id foreign key with unique constraint",
+                "target_language_id is a foreign key to languages.id with a many-to-one relationship",
+                "current_level uses the CEFRLevel PostgreSQL enum type",
+                "An Alembic migration creates the user_profiles table with all columns, constraints, and foreign keys",
+                "Deleting a User cascades to delete the associated UserProfile"
+              ],
+              "depends_on": ["task-0.3.1", "task-1.1.1", "task-1.1.4"],
+              "priority": "critical",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-1.2.2",
+              "title": "Create UserGoals model",
+              "description": "Define a UserGoals model inheriting from Base with IDMixin and TimestampMixin. Columns: user_id (ForeignKey to users.id, indexed, not null), goal_type (String(50), not null — e.g., 'travel', 'business', 'academic', 'casual'), description (Text, nullable), is_primary (Boolean, default False), priority_order (Integer, default 0). A user can have multiple goals. Add a relationship to User. Generate an Alembic migration. Add a unique constraint on (user_id, goal_type) to prevent duplicate goal types per user.",
+              "acceptance_criteria": [
+                "UserGoals has a many-to-one relationship with User via user_id",
+                "A unique constraint on (user_id, goal_type) prevents duplicate goal types",
+                "goal_type is a non-nullable String(50)",
+                "An Alembic migration creates the user_goals table with all columns and constraints",
+                "The User model has a one-to-many relationship back to UserGoals"
+              ],
+              "depends_on": ["task-0.3.1"],
+              "priority": "high",
+              "estimated_hours": 1
+            },
+            {
+              "id": "task-1.2.3",
+              "title": "Implement profile repository",
+              "description": "Create ProfileRepository extending AbstractRepository[UserProfile, UUID]. Implement all abstract CRUD methods plus: get_by_user_id(user_id: UUID) -> UserProfile | None, exists_for_user(user_id: UUID) -> bool, update_level(user_id: UUID, level: CEFRLevel, score: float) -> None, update_streak(user_id: UUID, increment: int) -> None, add_xp(user_id: UUID, xp: int) -> None. Include eager loading of the Language relationship.",
+              "acceptance_criteria": [
+                "get_by_user_id returns UserProfile with the Language relationship eagerly loaded",
+                "exists_for_user returns a boolean using an exists() subquery",
+                "update_level sets current_level, placement_score, and onboarding_completed=True atomically",
+                "update_streak increments streak_count by the given value",
+                "add_xp increments total_xp by the given value using an atomic UPDATE"
+              ],
+              "depends_on": ["task-0.1.3", "task-1.2.1"],
+              "priority": "critical",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-1.2.4",
+              "title": "Implement goals repository",
+              "description": "Create GoalsRepository extending AbstractRepository[UserGoals, UUID]. Implement all abstract CRUD methods plus: get_by_user_id(user_id: UUID) -> list[UserGoals], get_primary_goal(user_id: UUID) -> UserGoals | None, set_primary_goal(user_id: UUID, goal_id: UUID) -> None (unsets previous primary), delete_all_for_user(user_id: UUID) -> int (returns count deleted).",
+              "acceptance_criteria": [
+                "get_by_user_id returns all goals for the user ordered by priority_order",
+                "get_primary_goal returns the goal with is_primary=True or None if no primary is set",
+                "set_primary_goal sets is_primary=False on all user goals, then True on the specified goal_id",
+                "delete_all_for_user removes all goals for the user and returns the count",
+                "All methods use async/await and operate on the injected AsyncSession"
+              ],
+              "depends_on": ["task-0.1.3", "task-1.2.2"],
+              "priority": "high",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-1.2.5",
+              "title": "Create profile service with placement method logic",
+              "description": "Create ProfileService extending AbstractService. Constructor receives ProfileRepository, GoalsRepository, and LanguageService. Methods: setup_profile(user_id: UUID, schema: ProfileSetupRequest) -> ProfileResponse (creates profile, validates language code, sets goals), get_profile(user_id: UUID) -> ProfileResponse (raises NotFoundException), update_goals(user_id: UUID, schema: GoalsUpdateRequest) -> list[GoalResponse], complete_placement(user_id: UUID, level: CEFRLevel, score: float) -> ProfileResponse. ProfileSetupRequest includes target_language_code, native_language_code, daily_goal_minutes, and goals list. Raise ConflictException if profile already exists.",
+              "acceptance_criteria": [
+                "setup_profile validates the target_language_code via LanguageService before creating the profile",
+                "setup_profile raises ConflictException if a profile already exists for the user",
+                "setup_profile creates both the UserProfile and associated UserGoals in a single transaction",
+                "get_profile raises NotFoundException if no profile exists for the user_id",
+                "complete_placement updates current_level, placement_score, and sets onboarding_completed=True"
+              ],
+              "depends_on": ["task-1.2.3", "task-1.2.4", "task-1.1.5"],
+              "priority": "critical",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-1.2.6",
+              "title": "Create onboarding API router",
+              "description": "Create an APIRouter in api/routers/onboarding.py with prefix /profile and tag 'Onboarding'. Endpoints: POST /profile/setup (accepts ProfileSetupRequest, returns ProfileResponse, 201, requires auth), PUT /profile/goals (accepts GoalsUpdateRequest, returns list[GoalResponse], 200, requires auth), GET /profile (returns ProfileResponse, 200, requires auth), POST /profile/placement/start (starts placement test, returns first question), POST /profile/placement/answer (submits answer, returns next question or final result), GET /profile/placement/result (returns placement result if completed).",
+              "acceptance_criteria": [
+                "POST /profile/setup creates a profile and returns 201 with ProfileResponse",
+                "PUT /profile/goals updates goals and returns 200 with updated goal list",
+                "GET /profile returns 200 with the current user profile or 404 if not set up",
+                "POST /profile/placement/start returns the first placement test question",
+                "All endpoints require Bearer token authentication via get_current_active_user dependency"
+              ],
+              "depends_on": ["task-1.2.5", "task-0.3.7"],
+              "priority": "critical",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-1.2.7",
+              "title": "Implement placement test question generation via Vertex AI",
+              "description": "Create a PlacementTestService class that uses VertexAIProvider to generate adaptive placement test questions. The service maintains a placement session (stored in-memory or in the database) tracking: current question index, questions asked, answers given, running difficulty estimate. generate_question(session: PlacementSession) -> PlacementQuestion: generates a contextual question at the current estimated difficulty using a prompt template. PlacementQuestion is a Pydantic schema with: question_text, options (list of 4 choices), correct_answer_index, difficulty_level (A1-C2), explanation. The prompt instructs Vertex AI to generate the question in the target language with options and explanation, using generate_structured with PlacementQuestion as the response_schema.",
+              "acceptance_criteria": [
+                "generate_question calls VertexAIProvider.generate_structured with PlacementQuestion as the response schema",
+                "The prompt includes the current difficulty estimate and target language",
+                "PlacementQuestion contains exactly 4 options, a correct_answer_index, and an explanation",
+                "Questions are generated at the appropriate CEFR level matching the current difficulty estimate",
+                "ExternalServiceException is raised if Vertex AI fails, with a user-friendly fallback message"
+              ],
+              "depends_on": ["task-0.5.2", "task-0.5.4"],
+              "priority": "high",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-1.2.8",
+              "title": "Implement adaptive test scoring",
+              "description": "Implement adaptive difficulty adjustment within PlacementTestService. Method: process_answer(session: PlacementSession, answer_index: int) -> PlacementStepResult. Logic: if the answer is correct, increase the difficulty estimate (move toward the next CEFR level); if incorrect, decrease it. Use a binary-search-inspired algorithm: start at B1 (midpoint), correct answers push toward B2/C1/C2, incorrect answers push toward A2/A1. After a configurable number of questions (default 10), or when the difficulty estimate stabilizes (two consecutive levels unchanged), end the test. PlacementStepResult includes: is_correct, explanation, next_question (or null if test complete), current_estimate.",
+              "acceptance_criteria": [
+                "Correct answers increase the difficulty estimate by a diminishing step toward the next CEFR level",
+                "Incorrect answers decrease the difficulty estimate by a diminishing step toward the previous CEFR level",
+                "The test terminates after the configured maximum number of questions (default 10)",
+                "The test terminates early if the difficulty estimate stabilizes for 2 consecutive questions",
+                "PlacementStepResult includes is_correct, explanation text, the next question (or null), and current_estimate"
+              ],
+              "depends_on": ["task-1.2.7"],
+              "priority": "high",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-1.2.9",
+              "title": "Implement CEFR level mapping from test score",
+              "description": "Implement a finalize_placement(session: PlacementSession) -> PlacementResult method in PlacementTestService. This method calculates the final CEFR level from the test session's difficulty history using a weighted average (later questions weighted more heavily). PlacementResult is a Pydantic schema with: final_level (CEFRLevel), score (float 0.0-1.0), questions_answered (int), correct_count (int), accuracy (float), level_description (str), recommended_starting_topics (list[str]). The method calls ProfileService.complete_placement to persist the result.",
+              "acceptance_criteria": [
+                "Final CEFR level is calculated using a weighted average of the difficulty history (later questions weighted 2x)",
+                "PlacementResult includes final_level, numeric score, accuracy percentage, and question statistics",
+                "recommended_starting_topics returns 3-5 topic suggestions appropriate for the determined level",
+                "The result is persisted via ProfileService.complete_placement (current_level and placement_score updated)",
+                "A user scoring 0% accuracy is placed at A1; a user scoring 100% is placed at C2"
+              ],
+              "depends_on": ["task-1.2.8", "task-1.2.5", "task-1.1.4"],
+              "priority": "high",
+              "estimated_hours": 2
+            }
+          ]
+        },
+        {
+          "id": "mod-1.3",
+          "name": "AI Lesson Generator",
+          "description": "Core lesson generation pipeline: data models, AI-powered content generation with structured output, caching, personalization, API endpoints, scoring, TTS integration, and fault tolerance.",
+          "tasks": [
+            {
+              "id": "task-1.3.1",
+              "title": "Create Lesson SQLAlchemy model",
+              "description": "Define a Lesson model inheriting from Base with IDMixin and TimestampMixin. Columns: language_id (ForeignKey to languages.id, not null), cefr_level (Enum CEFRLevel, not null), topic (String(200), not null), title (String(300), not null), content (JSON, not null — stores the full LessonContent as a JSONB blob), audio_urls (JSON, nullable — stores dict of audio file URLs), generation_model (String(100), nullable — tracks which AI model generated it), generation_duration_ms (Integer, nullable). Add a composite index on (language_id, cefr_level, topic) for cache lookups. Generate an Alembic migration.",
+              "acceptance_criteria": [
+                "Lesson model has all specified columns with correct types and constraints",
+                "content column uses JSONB (PostgreSQL) for efficient querying of lesson content",
+                "A composite index exists on (language_id, cefr_level, topic) for fast cache lookups",
+                "An Alembic migration creates the lessons table with all columns, indexes, and foreign keys",
+                "The model tracks generation metadata (model name and generation duration) for analytics"
+              ],
+              "depends_on": ["task-1.1.1", "task-1.1.4", "task-0.2.4"],
+              "priority": "critical",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-1.3.2",
+              "title": "Create UserLesson model",
+              "description": "Define a UserLesson model (join table) inheriting from Base with IDMixin and TimestampMixin. Columns: user_id (ForeignKey to users.id, not null), lesson_id (ForeignKey to lessons.id, not null), status (String(20), default 'not_started' — values: not_started, in_progress, completed), score (Float, nullable — 0.0 to 1.0), started_at (DateTime, nullable), completed_at (DateTime, nullable), time_spent_seconds (Integer, default 0), exercises_correct (Integer, default 0), exercises_total (Integer, default 0), xp_earned (Integer, default 0). Add a unique constraint on (user_id, lesson_id). Generate an Alembic migration.",
+              "acceptance_criteria": [
+                "UserLesson links users and lessons with a unique constraint on (user_id, lesson_id)",
+                "status defaults to 'not_started' and accepts only defined status values",
+                "score is a nullable Float between 0.0 and 1.0",
+                "An Alembic migration creates the user_lessons table with all columns and the unique constraint",
+                "Deleting a User cascades to delete associated UserLesson records"
+              ],
+              "depends_on": ["task-0.3.1", "task-1.3.1"],
+              "priority": "critical",
+              "estimated_hours": 1
+            },
+            {
+              "id": "task-1.3.3",
+              "title": "Implement lesson repository",
+              "description": "Create LessonRepository extending AbstractRepository[Lesson, UUID]. Implement all abstract CRUD methods plus: find_cached(language_id: UUID, cefr_level: CEFRLevel, topic: str) -> Lesson | None (cache lookup by the composite index), get_by_level(language_id: UUID, cefr_level: CEFRLevel, limit: int, offset: int) -> list[Lesson], count_by_level(language_id: UUID, cefr_level: CEFRLevel) -> int. Create UserLessonRepository extending AbstractRepository[UserLesson, UUID] with: get_user_lesson(user_id: UUID, lesson_id: UUID) -> UserLesson | None, get_user_history(user_id: UUID, status: str | None, limit: int, offset: int) -> list[UserLesson], get_next_incomplete(user_id: UUID) -> UserLesson | None, update_progress(user_lesson_id: UUID, updates: dict) -> UserLesson.",
+              "acceptance_criteria": [
+                "find_cached queries the composite index on (language_id, cefr_level, topic) and returns Lesson or None",
+                "get_by_level returns paginated lessons filtered by language and CEFR level",
+                "get_user_history supports optional filtering by status and returns paginated results ordered by started_at desc",
+                "get_next_incomplete returns the first UserLesson with status != 'completed' or None",
+                "update_progress applies partial updates to a UserLesson record and returns the updated instance"
+              ],
+              "depends_on": ["task-0.1.3", "task-1.3.1", "task-1.3.2"],
+              "priority": "critical",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-1.3.4",
+              "title": "Create lesson generation Pydantic schemas",
+              "description": "Define the LessonContent Pydantic model in schemas/lesson.py that represents the full structured output from Vertex AI. Fields: theory (TheoryBlock with title, explanation, key_points list, grammar_notes str), examples (list of ExampleBlock with source_text, translation, context, difficulty), vocabulary (list of VocabItem with word, translation, pronunciation, part_of_speech, example_sentence, audio_url nullable), exercises (list of ExerciseBlock with type enum [multiple_choice, fill_blank, translation, reorder], question, options list nullable, correct_answer, explanation, hints list), test (list of TestQuestion with question, options, correct_index, points int), speaking_task (SpeakingTask with prompt, expected_response_keywords list, difficulty, duration_seconds), reading_text (ReadingBlock with title, content, comprehension_questions list), listening_script (ListeningBlock with script_text, questions list, audio_url nullable). Also define LessonRequest, LessonResponse, and LessonProgressUpdate schemas.",
+              "acceptance_criteria": [
+                "LessonContent contains all eight nested blocks: theory, examples, vocabulary, exercises, test, speaking_task, reading_text, listening_script",
+                "Each nested block is a separate Pydantic model with typed fields and validation",
+                "ExerciseBlock.type is an enum with values: multiple_choice, fill_blank, translation, reorder",
+                "All models have proper field descriptions for OpenAPI documentation generation",
+                "LessonContent is usable as a response_schema parameter for VertexAIProvider.generate_structured"
+              ],
+              "depends_on": ["task-0.1.1"],
+              "priority": "critical",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-1.3.5",
+              "title": "Implement LessonGeneratorService with structured output",
+              "description": "Create LessonGeneratorService that uses VertexAIProvider.generate_structured to generate complete lesson content. Constructor receives VertexAIProvider, PromptManager, LessonRepository, and ProfileService. Method: generate_lesson(language: Language, level: CEFRLevel, topic: str, user_goals: list[str] | None) -> Lesson. The method: 1) checks the cache via LessonRepository.find_cached, 2) if miss, renders the lesson generation prompt via PromptManager with language, level, topic, and goals, 3) calls generate_structured with response_schema=LessonContent, 4) saves the generated Lesson to the database with content as JSONB, 5) returns the Lesson. Track generation time in generation_duration_ms.",
+              "acceptance_criteria": [
+                "Cache hit: if find_cached returns a Lesson, return it immediately without calling Vertex AI",
+                "Cache miss: render prompt, call generate_structured(response_schema=LessonContent), and persist the result",
+                "The generated Lesson stores the full LessonContent dict in the content JSONB column",
+                "generation_duration_ms records the wall-clock time of the Vertex AI call",
+                "generation_model records the model name used (e.g., 'gemini-1.5-pro')"
+              ],
+              "depends_on": ["task-0.5.2", "task-0.5.4", "task-1.3.3", "task-1.3.4"],
+              "priority": "critical",
+              "estimated_hours": 5
+            },
+            {
+              "id": "task-1.3.6",
+              "title": "Implement lesson caching strategy",
+              "description": "Enhance LessonGeneratorService with a multi-tier caching strategy. Tier 1: database cache via the composite index lookup (already in task-1.3.5). Tier 2: implement a topic normalization layer that canonicalizes topic strings before lookup (lowercase, strip whitespace, collapse synonyms via a configurable mapping). Tier 3: implement a cache invalidation mechanism — lessons older than a configurable LESSON_CACHE_TTL_DAYS (default 30) are considered stale and regenerated. Add a method invalidate_cache(language_id: UUID, level: CEFRLevel, topic: str) -> bool for manual invalidation.",
+              "acceptance_criteria": [
+                "Topic normalization converts 'Past Tense', 'past tense', and '  Past  Tense  ' to the same canonical key",
+                "A synonym mapping collapses 'Simple Past' and 'Past Simple' to the same canonical topic",
+                "Lessons older than LESSON_CACHE_TTL_DAYS are treated as cache misses and regenerated",
+                "invalidate_cache soft-deletes or marks the cached lesson as stale, returning True if found",
+                "Cache hit rate is logged at INFO level for monitoring"
+              ],
+              "depends_on": ["task-1.3.5"],
+              "priority": "high",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-1.3.7",
+              "title": "Implement lesson personalization layer",
+              "description": "Add a personalization step to LessonGeneratorService that adapts lesson content to the user's goals and learning context. Before calling Vertex AI, enrich the prompt with: user's primary goal (travel, business, etc.), native language (for translation examples), previous lesson topics (to avoid repetition and build on prior knowledge), weak areas from exercise history (topics where accuracy < 60%). Create a PersonalizationContext Pydantic model that aggregates this data and is passed to the prompt template.",
+              "acceptance_criteria": [
+                "PersonalizationContext includes user_goal, native_language, previous_topics (last 10), and weak_areas",
+                "The lesson generation prompt includes personalization context when available",
+                "A user with goal='business' receives business-themed examples (prompt includes 'business context' instruction)",
+                "Previous topics are excluded from the generated lesson's vocabulary section to avoid redundancy",
+                "If personalization data is unavailable (new user), the service generates a generic lesson without error"
+              ],
+              "depends_on": ["task-1.3.5", "task-1.2.5"],
+              "priority": "medium",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-1.3.8",
+              "title": "Create lesson API router",
+              "description": "Create an APIRouter in api/routers/lessons.py with prefix /lessons and tag 'Lessons'. Endpoints: GET /lessons/next (generates or retrieves the next lesson for the authenticated user based on their level and a topic selection algorithm, returns LessonResponse, 200), GET /lessons/{lesson_id} (returns a specific lesson by ID, returns LessonResponse, 200), POST /lessons/{lesson_id}/complete (accepts LessonCompletionRequest with exercise results, calculates score, updates UserLesson, returns LessonCompletionResponse, 200), GET /lessons/history (returns paginated list of the user's completed lessons, returns list[LessonSummaryResponse], 200). All endpoints require authentication.",
+              "acceptance_criteria": [
+                "GET /lessons/next returns 200 with a full LessonResponse including all content blocks",
+                "GET /lessons/{lesson_id} returns 200 with the lesson or 404 if not found",
+                "POST /lessons/{lesson_id}/complete accepts exercise results and returns the calculated score and XP earned",
+                "GET /lessons/history returns a paginated list with limit/offset query parameters",
+                "All endpoints require Bearer token authentication and return 401 for unauthenticated requests"
+              ],
+              "depends_on": ["task-1.3.5", "task-0.3.7", "task-1.3.3"],
+              "priority": "critical",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-1.3.9",
+              "title": "Implement lesson score calculation and progress tracking",
+              "description": "Create a LessonScoringService that calculates the lesson score and awards XP. Method: calculate_score(lesson: Lesson, answers: LessonCompletionRequest) -> ScoringResult. Logic: each exercise and test question has a point value; the score is correct_points / total_points. XP formula: base_xp (50) + score_bonus (score * 100) + streak_bonus (streak_count * 5, capped at 50). The service updates UserLesson (score, completed_at, exercises_correct, exercises_total, xp_earned), ProfileService.add_xp, and ProfileService.update_streak. ScoringResult Pydantic model: score (float), xp_earned (int), exercises_correct (int), exercises_total (int), accuracy (float), level_up (bool — True if enough XP to progress to next CEFR level).",
+              "acceptance_criteria": [
+                "Score is calculated as correct_points / total_points across all exercises and test questions",
+                "XP formula includes base_xp (50), score_bonus (score * 100), and streak_bonus (capped at 50)",
+                "UserLesson is updated with score, completed_at, exercises_correct, exercises_total, xp_earned, and status='completed'",
+                "User's total_xp and streak_count are updated via ProfileService",
+                "level_up flag is True when cumulative XP crosses a configurable threshold for the next CEFR level"
+              ],
+              "depends_on": ["task-1.3.3", "task-1.2.3", "task-1.3.4"],
+              "priority": "high",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-1.3.10",
+              "title": "Implement TTS generation for listening material with Cloud Storage caching",
+              "description": "Extend LessonGeneratorService with a post-generation step that converts listening_script.script_text to audio via TextToSpeechService, uploads to Cloud Storage via StorageService, and stores the signed URL in the Lesson's audio_urls JSONB field. Use content-hash-based storage keys (from StorageService) to avoid regenerating audio for identical scripts. Generate audio for vocabulary pronunciations as well — batch TTS requests for all VocabItem entries. Update the Lesson record with populated audio_url fields.",
+              "acceptance_criteria": [
+                "Listening script text is converted to MP3 audio via TextToSpeechService.synthesize_and_store",
+                "The audio URL is stored in the Lesson's audio_urls JSONB under key 'listening_audio'",
+                "Content-hash storage keys prevent duplicate audio files for identical script text",
+                "Vocabulary items receive individual pronunciation audio URLs stored in their audio_url field",
+                "If TTS fails for a specific item, the lesson is still returned with audio_url set to null (graceful degradation)"
+              ],
+              "depends_on": ["task-0.5.5", "task-0.5.7", "task-1.3.5"],
+              "priority": "high",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-1.3.11",
+              "title": "Implement retry logic for partial block failures",
+              "description": "Add fault tolerance to LessonGeneratorService for cases where Vertex AI generates incomplete or malformed content. Strategy: 1) Validate the generated LessonContent — if any required block is missing or fails Pydantic validation, retry generation up to MAX_GENERATION_RETRIES (default 3) with an adjusted prompt that explicitly requests the missing blocks. 2) If a block still fails after retries, fill it with a minimal placeholder (e.g., empty exercises list) and log a WARNING. 3) Implement exponential backoff between retries (1s, 2s, 4s). 4) Track failure rates per block type for observability. Create a GenerationReport Pydantic model that accompanies each lesson with: blocks_generated, blocks_failed, retry_count, total_duration_ms.",
+              "acceptance_criteria": [
+                "Incomplete LessonContent triggers up to MAX_GENERATION_RETRIES retry attempts",
+                "Retry prompts explicitly request only the missing or invalid blocks",
+                "Exponential backoff is applied between retries (configurable base delay)",
+                "After max retries, missing blocks are filled with minimal valid placeholders and a WARNING is logged",
+                "GenerationReport tracks blocks_generated, blocks_failed, retry_count, and total_duration_ms for each lesson"
+              ],
+              "depends_on": ["task-1.3.5", "task-1.3.4"],
+              "priority": "medium",
+              "estimated_hours": 4
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

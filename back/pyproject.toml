@@ -1,0 +1,33 @@
+[project]
+name = "linguist-ai-back"
+version = "1.0.0"
+description = "LinguistAI Backend"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "sqlalchemy[asyncio]",
+    "asyncpg",
+    "alembic",
+    "pydantic>=2.0",
+    "pydantic-settings",
+    "google-genai",
+    "google-cloud-texttospeech",
+    "google-cloud-speech",
+    "google-cloud-storage",
+    "python-jose[cryptography]",
+    "passlib[bcrypt]",
+    "httpx"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "ruff",
+    "mypy"
+]
+
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"

@@ -1,0 +1,679 @@
+{
+  "project": "LinguistAI Backend",
+  "file": "tasks_phase_3.json",
+  "description": "Backend development tasks for Phase 4 (Knowledge Assessment) and Phase 5 (Engagement & Retention). Phase 4 introduces AI-powered writing and listening examinations with structured evaluation and audio generation. Phase 5 covers gamification, achievements, AI-generated weekly coaching reports, and a usage quota system to govern AI resource consumption.",
+  "phases": [
+    {
+      "id": "phase-4",
+      "name": "Knowledge Assessment",
+      "description": "AI-driven examination modules that evaluate user proficiency in writing and listening through generated prompts, structured scoring, and audio-based comprehension tests.",
+      "modules": [
+        {
+          "id": "mod-4.1",
+          "name": "AI Writing Exam",
+          "description": "End-to-end writing examination pipeline: AI-generated prompts adapted to the user's learning goal, essay submission, multi-criteria evaluation via Gemini 2.5 Pro, and attempt history with daily rate limiting.",
+          "tasks": [
+            {
+              "id": "task-4.1.1",
+              "title": "Create WritingExam SQLAlchemy Model",
+              "description": "Define the WritingExam ORM model representing a single writing examination attempt. The model stores the AI-generated prompt, the user's submitted text, a JSONB scores column containing per-criterion breakdowns (grammar, vocabulary, cohesion, naturalness, style), an overall numeric score, detailed feedback text with actionable recommendations, and timestamp metadata. The model references the users table via a foreign key on user_id and includes appropriate indexes on user_id and created_at for efficient history queries.",
+              "acceptance_criteria": [
+                "WritingExam model is defined with columns: id (UUID primary key), user_id (UUID foreign key to users), prompt (Text, non-nullable), submitted_text (Text, nullable until submission), scores (JSONB, nullable), overall_score (Float, nullable), feedback_text (Text, nullable), created_at (DateTime with timezone, server default now)",
+                "JSONB scores column enforces a schema containing keys: grammar, vocabulary, cohesion, naturalness, style, each mapping to a numeric score between 0 and 100",
+                "Composite index exists on (user_id, created_at DESC) for efficient paginated history retrieval",
+                "Alembic migration is generated and applies cleanly against the current database schema without conflicts"
+              ],
+              "depends_on": ["task-0.2.1"],
+              "priority": "critical",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-4.1.2",
+              "title": "Implement Writing Exam Repository",
+              "description": "Create the WritingExamRepository class following the repository pattern established in the project. The repository provides CRUD operations for WritingExam records including creation of a new exam entry (initially with prompt only), updating an entry with submission data and scores, fetching a single exam by ID with ownership validation, listing exams by user with pagination and optional date-range filtering, and counting daily attempts for a given user to support rate limiting logic.",
+              "acceptance_criteria": [
+                "WritingExamRepository inherits from the base repository abstraction and is registered in the dependency injection container",
+                "A create method persists a new WritingExam with the generated prompt and returns the created entity",
+                "An update_submission method atomically sets submitted_text, scores, overall_score, and feedback_text on an existing exam record",
+                "A get_user_history method returns paginated results ordered by created_at descending, accepting limit, offset, and optional date_from/date_to parameters",
+                "A count_daily_attempts method returns the number of exams created by a user on a given calendar date (in the user's timezone)"
+              ],
+              "depends_on": ["task-4.1.1"],
+              "priority": "critical",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-4.1.3",
+              "title": "Implement Writing Prompt Generation Service",
+              "description": "Build the WritingPromptGenerationService that leverages Vertex AI to generate writing prompts tailored to the user's active learning goal. The service inspects the user's profile (target language, current CEFR level, learning goal such as IELTS, TOEFL, business, travel, or general fluency) and constructs a system prompt instructing Gemini to produce an appropriate writing task. For IELTS-goal users, prompts follow the IELTS Task 2 essay format; for TOEFL-goal users, an integrated writing task format; for business-goal users, a professional email or report scenario; for general users, a free-form opinion or narrative prompt. The service returns structured prompt data including the prompt text, recommended word count, and time suggestion.",
+              "acceptance_criteria": [
+                "Service accepts user profile data (language, CEFR level, learning goal) and returns a structured prompt object containing prompt_text, recommended_word_count, and suggested_time_minutes",
+                "IELTS-goal users receive prompts formatted as IELTS Academic Writing Task 2 questions with agree/disagree or discuss-both-views structures",
+                "TOEFL-goal users receive prompts formatted as integrated writing tasks with a reading passage and response requirement",
+                "Business-goal users receive prompts framed as professional writing scenarios (emails, proposals, reports) appropriate to their CEFR level",
+                "Prompt difficulty scales with the user's CEFR level: A1-A2 prompts use simple vocabulary and shorter expected responses, B1-B2 use intermediate complexity, C1-C2 require nuanced argumentation"
+              ],
+              "depends_on": ["task-0.5.2", "task-0.3.5"],
+              "priority": "critical",
+              "estimated_hours": 6
+            },
+            {
+              "id": "task-4.1.4",
+              "title": "Implement Writing Evaluation Service",
+              "description": "Build the WritingEvaluationService that sends the user's submitted essay along with the original prompt to Gemini 2.5 Pro for structured multi-criteria evaluation. The service constructs a detailed evaluation prompt specifying five scoring criteria (grammar, vocabulary, cohesion, naturalness, style) each scored 0-100, an overall weighted score, and actionable feedback. The Gemini response is parsed using structured output (JSON mode) to extract individual criterion scores, an overall score, and a feedback section containing specific recommendations with example corrections drawn from the user's actual text. The service validates the parsed response against the expected schema before persisting results.",
+              "acceptance_criteria": [
+                "Service sends the prompt and submitted_text to Gemini 2.5 Pro with a system prompt specifying structured JSON output containing scores and feedback",
+                "Response is parsed into a validated Pydantic model with fields: grammar_score, vocabulary_score, cohesion_score, naturalness_score, style_score (each 0-100), overall_score (weighted average), and feedback_items (list of objects with criterion, issue, recommendation, corrected_example)",
+                "Each feedback item references a specific excerpt from the user's text and provides a corrected version with explanation",
+                "Overall score is computed as a weighted average (grammar 25%, vocabulary 20%, cohesion 20%, naturalness 20%, style 15%) and validated against individual scores",
+                "Service raises a domain-specific exception with retry guidance if the Gemini response fails schema validation after two parsing attempts"
+              ],
+              "depends_on": ["task-0.5.2", "task-4.1.2"],
+              "priority": "critical",
+              "estimated_hours": 8
+            },
+            {
+              "id": "task-4.1.5",
+              "title": "Create Writing Exam API Router",
+              "description": "Implement the FastAPI router for writing examinations with three endpoints. GET /exams/writing/prompt generates a new writing prompt via the prompt generation service, creates a WritingExam record, and returns the prompt details. POST /exams/writing/submit accepts the exam ID and submitted essay text, triggers evaluation, persists scores and feedback, and returns the full evaluation result. GET /exams/writing/history returns paginated past attempts for the authenticated user with scores and metadata. All endpoints require authentication and validate ownership of exam records.",
+              "acceptance_criteria": [
+                "GET /exams/writing/prompt returns 201 with a JSON body containing exam_id, prompt_text, recommended_word_count, and suggested_time_minutes after creating a new WritingExam record",
+                "POST /exams/writing/submit accepts {exam_id, submitted_text}, validates the exam belongs to the authenticated user and has not already been submitted, triggers evaluation, and returns the full scores and feedback object with 200 status",
+                "GET /exams/writing/history returns paginated results (default page_size=10) with each entry containing exam_id, prompt snippet (first 100 chars), overall_score, and created_at, sorted by newest first",
+                "All endpoints return 401 for unauthenticated requests and 403 when attempting to access another user's exam",
+                "POST /exams/writing/submit returns 409 Conflict if the exam has already been submitted and evaluated"
+              ],
+              "depends_on": ["task-4.1.3", "task-4.1.4", "task-0.3.5"],
+              "priority": "high",
+              "estimated_hours": 5
+            },
+            {
+              "id": "task-4.1.6",
+              "title": "Implement Daily Writing Exam Attempt Rate Limiting",
+              "description": "Add rate limiting to the writing exam prompt generation endpoint to restrict the number of daily attempts per user. The daily limit is configurable via an environment variable (WRITING_EXAM_DAILY_LIMIT, default 3). Before generating a new prompt, the service queries the repository for the user's attempt count on the current calendar date (in the user's configured timezone). If the limit is reached, a 429 Too Many Requests response is returned with a Retry-After header indicating seconds until midnight in the user's timezone. The response body includes the current count, the limit, and the reset time.",
+              "acceptance_criteria": [
+                "Prompt generation endpoint returns 429 when the user has reached the configured daily limit, with a JSON body containing daily_limit, attempts_used, and reset_at (ISO 8601 timestamp of next midnight in user's timezone)",
+                "Daily limit defaults to 3 and is overridable via WRITING_EXAM_DAILY_LIMIT environment variable without code changes",
+                "Attempt count is calculated based on the user's configured timezone so that midnight reset aligns with the user's local day boundary",
+                "Rate limit check and exam creation occur within the same database transaction to prevent race conditions from concurrent requests"
+              ],
+              "depends_on": ["task-4.1.5", "task-4.1.2"],
+              "priority": "high",
+              "estimated_hours": 3
+            }
+          ]
+        },
+        {
+          "id": "mod-4.2",
+          "name": "AI Listening Exam",
+          "description": "Listening comprehension examination system with AI-generated scenario scripts, TTS audio generation with Cloud Storage caching, multi-question comprehension tests, transcript access control, and daily attempt rate limiting.",
+          "tasks": [
+            {
+              "id": "task-4.2.1",
+              "title": "Create ListeningExam SQLAlchemy Model",
+              "description": "Define the ListeningExam ORM model representing a reusable listening examination. The model stores the target language, CEFR difficulty level, the full scenario script text used for TTS generation, the Cloud Storage URL of the generated audio file, and a JSONB column containing an array of comprehension questions. Each question object in the JSONB includes question_text, options (array of 4 strings), correct_answer_index, and explanation. The model is designed to be generated once and attempted by multiple users.",
+              "acceptance_criteria": [
+                "ListeningExam model is defined with columns: id (UUID primary key), language_id (UUID foreign key to languages), level (String, CEFR enum A1-C2), script_text (Text, non-nullable), audio_url (String, nullable until TTS generation completes), questions (JSONB, non-nullable, array of question objects)",
+                "JSONB questions column stores an array where each element contains: question_text (string), options (array of exactly 4 strings), correct_answer_index (integer 0-3), explanation (string)",
+                "Index exists on (language_id, level) for efficient filtering of available exams by language and difficulty",
+                "Alembic migration is generated and applies cleanly, and the model integrates with existing schema without foreign key conflicts"
+              ],
+              "depends_on": ["task-0.2.1"],
+              "priority": "critical",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-4.2.2",
+              "title": "Create UserListeningAttempt SQLAlchemy Model",
+              "description": "Define the UserListeningAttempt ORM model representing a single user's attempt at a listening exam. The model links a user to a specific ListeningExam, stores their submitted answers as JSONB (mapping question index to selected option index), the calculated score as a percentage, and the completion timestamp. A unique constraint on (user_id, exam_id) prevents duplicate attempts on the same exam. The model supports querying whether a user has completed a specific exam, which gates transcript access.",
+              "acceptance_criteria": [
+                "UserListeningAttempt model is defined with columns: id (UUID primary key), user_id (UUID foreign key to users), exam_id (UUID foreign key to listening_exams), answers (JSONB, non-nullable), score (Float, non-nullable), completed_at (DateTime with timezone, server default now)",
+                "Unique constraint exists on (user_id, exam_id) preventing duplicate submissions for the same exam",
+                "answers JSONB stores a mapping of question_index (integer) to selected_option_index (integer) for each answered question",
+                "Alembic migration is generated and applies cleanly with proper foreign key relationships to both users and listening_exams tables"
+              ],
+              "depends_on": ["task-4.2.1"],
+              "priority": "critical",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-4.2.3",
+              "title": "Implement Listening Exam Repository",
+              "description": "Create the ListeningExamRepository handling persistence for both ListeningExam and UserListeningAttempt entities. The repository provides methods to create and retrieve exams, filter available exams by language and level, create user attempts, check if a user has completed a specific exam, retrieve a user's attempt history with pagination, and count daily attempts for rate limiting. The repository also supports fetching exams that a user has not yet attempted for the available exams listing.",
+              "acceptance_criteria": [
+                "Repository provides a get_available_exams method that returns exams for a given language and level that the specified user has not yet attempted, with pagination support",
+                "Repository provides a create_attempt method that persists a UserListeningAttempt and raises a conflict error if a unique constraint violation occurs (duplicate attempt)",
+                "Repository provides a has_user_completed method that returns a boolean indicating whether a user has a completed attempt for a specific exam ID",
+                "Repository provides a count_daily_attempts method that returns the number of attempts a user has submitted on a given calendar date in their timezone",
+                "All query methods use eager loading where appropriate to minimize N+1 queries when fetching exam data with related entities"
+              ],
+              "depends_on": ["task-4.2.2"],
+              "priority": "critical",
+              "estimated_hours": 5
+            },
+            {
+              "id": "task-4.2.4",
+              "title": "Implement Listening Exam Script Generation Service",
+              "description": "Build the ListeningExamScriptGenerationService that uses Vertex AI to generate realistic listening scenario scripts at the appropriate CEFR level. The service constructs a prompt instructing Gemini to produce a scenario (dialogue, monologue, announcement, or interview) in the target language with natural speech patterns, along with 5-8 multiple-choice comprehension questions. The generated content is parsed via structured output into the ListeningExam schema. Scenario types rotate to provide variety, and vocabulary and sentence complexity are calibrated to the specified CEFR level.",
+              "acceptance_criteria": [
+                "Service accepts language, CEFR level, and optional scenario_type parameters and returns a structured object containing script_text and an array of question objects",
+                "Generated scripts are 150-300 words for A1-A2, 300-500 words for B1-B2, and 500-800 words for C1-C2 levels",
+                "Each exam includes 5-8 comprehension questions with 4 options each, one correct answer, and an explanation of why the correct answer is right",
+                "Scenario types include dialogue, monologue, news_report, announcement, and interview, with automatic rotation when no type is specified",
+                "Generated content is validated against the JSONB schema before persistence, and the service retries generation once if schema validation fails"
+              ],
+              "depends_on": ["task-0.5.2"],
+              "priority": "critical",
+              "estimated_hours": 7
+            },
+            {
+              "id": "task-4.2.5",
+              "title": "Implement TTS Audio Generation with Cloud Storage Caching",
+              "description": "Build the ListeningAudioService that converts exam script text to speech audio using Google Cloud Text-to-Speech API, uploads the resulting audio file to Google Cloud Storage, and stores the public URL on the ListeningExam record. The service implements a generate-once-reuse pattern: before generating audio, it checks if the exam already has an audio_url set and returns it immediately if so. Audio files are stored in a dedicated GCS bucket with a deterministic path based on the exam ID. The service supports configurable voice selection per language and speaking rate adjustment based on CEFR level (slower for lower levels).",
+              "acceptance_criteria": [
+                "Service generates MP3 audio from script_text using Google Cloud TTS API with language-appropriate voice selection and uploads to a configured GCS bucket",
+                "Audio is generated only once per exam: subsequent calls for the same exam_id return the existing audio_url without re-generating",
+                "GCS object path follows the pattern listening-exams/{exam_id}/audio.mp3 for deterministic access",
+                "Speaking rate is adjusted by CEFR level: 0.8x for A1-A2, 1.0x for B1-B2, 1.1x for C1-C2 to match comprehension difficulty expectations",
+                "Service gracefully handles TTS API failures by raising a domain exception with retry guidance and does not persist a partial or corrupt audio_url"
+              ],
+              "depends_on": ["task-4.2.4"],
+              "priority": "critical",
+              "estimated_hours": 6
+            },
+            {
+              "id": "task-4.2.6",
+              "title": "Implement Listening Exam Service with Transcript Hiding Logic",
+              "description": "Build the ListeningExamService orchestrating the exam lifecycle. The service provides methods to list available exams, retrieve exam audio, submit answers with automatic scoring, and access transcripts. The critical business rule is transcript access control: the full script_text of an exam is only returned to a user after they have submitted their attempt. Before submission, the exam endpoint returns questions and audio URL but explicitly excludes the script. Scoring compares submitted answers against correct_answer_index values and calculates a percentage score.",
+              "acceptance_criteria": [
+                "get_exam_for_user method returns exam metadata, questions (without correct answers), and audio_url but explicitly excludes script_text if the user has not completed the exam",
+                "submit_answers method validates all question indices are answered, calculates score as (correct_count / total_questions * 100), persists the attempt, and returns score along with per-question correctness and explanations",
+                "get_transcript method returns the full script_text only if the user has a completed attempt for the exam, otherwise returns 403 Forbidden with message indicating completion is required",
+                "Score calculation handles partial submissions by treating unanswered questions as incorrect rather than rejecting the submission"
+              ],
+              "depends_on": ["task-4.2.3", "task-4.2.5"],
+              "priority": "high",
+              "estimated_hours": 5
+            },
+            {
+              "id": "task-4.2.7",
+              "title": "Create Listening Exam API Router",
+              "description": "Implement the FastAPI router for listening examinations with four endpoints. GET /exams/listening/available returns paginated available exams filtered by language and level that the user has not yet attempted. GET /exams/listening/{id}/audio returns the exam metadata with audio URL and questions (without transcript or correct answers). POST /exams/listening/{id}/submit accepts the user's answers and returns the evaluation with score and per-question feedback. GET /exams/listening/{id}/transcript returns the full script text only after the user has submitted their attempt. All endpoints require authentication.",
+              "acceptance_criteria": [
+                "GET /exams/listening/available returns paginated results (default page_size=10) with each entry containing exam_id, level, scenario_type, and question_count, filtered by query params language_id and level",
+                "GET /exams/listening/{id}/audio returns exam metadata including audio_url and questions array (with options but without correct_answer_index or explanation), and returns 404 if exam does not exist",
+                "POST /exams/listening/{id}/submit accepts {answers: {question_index: selected_option_index}} body, returns score percentage and per-question results (correct/incorrect, correct answer, explanation), and returns 409 if already attempted",
+                "GET /exams/listening/{id}/transcript returns {script_text} with 200 if user has completed the exam, or 403 with descriptive error message if not yet completed",
+                "All endpoints return 401 for unauthenticated requests and include appropriate OpenAPI documentation with response schemas"
+              ],
+              "depends_on": ["task-4.2.6", "task-0.3.5"],
+              "priority": "high",
+              "estimated_hours": 5
+            },
+            {
+              "id": "task-4.2.8",
+              "title": "Implement Daily Listening Exam Attempt Rate Limiting",
+              "description": "Add rate limiting to the listening exam submission endpoint to restrict the number of daily attempts per user. The daily limit is configurable via an environment variable (LISTENING_EXAM_DAILY_LIMIT, default 5). Before accepting a submission, the service checks the user's attempt count for the current calendar date in their configured timezone. If the limit is reached, a 429 response is returned with quota information. The rate limit applies to submissions (not to viewing available exams or audio), ensuring users can browse but not over-consume evaluation resources.",
+              "acceptance_criteria": [
+                "Submission endpoint returns 429 when the user has reached the configured daily limit, with JSON body containing daily_limit, attempts_used, and reset_at (ISO 8601 timestamp)",
+                "Daily limit defaults to 5 and is overridable via LISTENING_EXAM_DAILY_LIMIT environment variable",
+                "Rate limiting applies only to POST /exams/listening/{id}/submit, not to GET endpoints for browsing or audio retrieval",
+                "Attempt count uses the user's configured timezone for day boundary calculation, consistent with the writing exam rate limiter"
+              ],
+              "depends_on": ["task-4.2.7", "task-4.2.3"],
+              "priority": "high",
+              "estimated_hours": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "name": "Engagement & Retention",
+      "description": "Systems designed to increase user engagement and long-term retention through gamification mechanics, achievement unlocks, AI-generated personalized coaching reports, and usage quota management to balance resource consumption.",
+      "modules": [
+        {
+          "id": "mod-5.1",
+          "name": "Gamification System",
+          "description": "XP-based progression system with streaks, game levels, and activity tracking. XP is awarded atomically alongside triggering actions to prevent desync between activity completion and point accrual.",
+          "tasks": [
+            {
+              "id": "task-5.1.1",
+              "title": "Create UserGamification SQLAlchemy Model",
+              "description": "Define the UserGamification ORM model representing a user's gamification state. The model stores accumulated XP, current game level, current and longest streaks, and the date of last activity. The model has a one-to-one relationship with the users table via user_id as both the primary key and foreign key. Default values initialize a new user at 0 XP, level 1, 0 streak, with no last_activity_date. The model supports atomic updates via SQLAlchemy's update construct for concurrent-safe XP and streak modifications.",
+              "acceptance_criteria": [
+                "UserGamification model is defined with columns: user_id (UUID, primary key, foreign key to users), total_xp (Integer, default 0, non-nullable), current_game_level (Integer, default 1, non-nullable), current_streak (Integer, default 0, non-nullable), longest_streak (Integer, default 0, non-nullable), last_activity_date (Date, nullable)",
+                "One-to-one relationship is established with the User model via user_id serving as both primary key and foreign key",
+                "A UserGamification record is automatically created when a new user registers, initialized with default values",
+                "Alembic migration is generated and applies cleanly, with a data migration step that creates gamification records for any existing users"
+              ],
+              "depends_on": ["task-0.2.1"],
+              "priority": "critical",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-5.1.2",
+              "title": "Implement Gamification Repository",
+              "description": "Create the GamificationRepository providing persistence operations for the UserGamification model. The repository supports retrieving a user's gamification state, atomically incrementing XP, updating streak values, updating the game level, and setting the last_activity_date. All mutation methods use SQL-level atomic operations (e.g., SET total_xp = total_xp + :delta) rather than read-modify-write patterns to ensure correctness under concurrent access.",
+              "acceptance_criteria": [
+                "Repository provides a get_by_user_id method that returns the UserGamification record or raises a not-found exception",
+                "Repository provides an add_xp method that atomically increments total_xp using a SQL UPDATE with total_xp = total_xp + delta rather than a Python-level read-modify-write",
+                "Repository provides an update_streak method that atomically sets current_streak, conditionally updates longest_streak (only if new value exceeds current longest), and sets last_activity_date",
+                "Repository provides an update_level method that sets current_game_level and is called only by the level progression service",
+                "All mutation methods flush within the current transaction without committing, allowing the caller to include them in a broader transactional scope"
+              ],
+              "depends_on": ["task-5.1.1"],
+              "priority": "critical",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-5.1.3",
+              "title": "Implement XP Calculation Service",
+              "description": "Build the XPCalculationService that defines and applies XP reward values for all trackable user actions. The service maintains a configurable mapping of action types to XP values: lesson_completion (50 XP), exercise_pass (20 XP), writing_exam_pass (100 XP), listening_exam_pass (80 XP), daily_login (10 XP), speaking_session (30 XP per session), and vocabulary_review (15 XP per batch). The service provides a calculate_xp method that accepts an action type and optional context (e.g., exam score for bonus XP on high scores) and returns the XP amount to award. XP values are loaded from a configuration source (environment variables or database config) to allow tuning without code deployment.",
+              "acceptance_criteria": [
+                "Service defines an ActionType enum with values: LESSON_COMPLETION, EXERCISE_PASS, WRITING_EXAM_PASS, LISTENING_EXAM_PASS, DAILY_LOGIN, SPEAKING_SESSION, VOCABULARY_REVIEW",
+                "Default XP values are: lesson_completion=50, exercise_pass=20, writing_exam_pass=100, listening_exam_pass=80, daily_login=10, speaking_session=30, vocabulary_review=15",
+                "calculate_xp method accepts action_type and optional score parameter, awarding 1.5x bonus XP when exam score exceeds 90%",
+                "XP values are loaded from a configurable source (environment variables with XP_ prefix or database config table) and cached in memory with a TTL of 5 minutes",
+                "Service is stateless and thread-safe, suitable for use in concurrent request handlers"
+              ],
+              "depends_on": ["task-5.1.2"],
+              "priority": "high",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-5.1.4",
+              "title": "Implement Streak Tracking Service",
+              "description": "Build the StreakTrackingService that manages daily activity streaks with timezone-aware day boundary detection. When a user performs any qualifying activity, the service determines if this is the user's first activity of the current calendar day (in their configured timezone). If the user was active yesterday, the streak increments; if they missed one or more days, the streak resets to 1; if they already had activity today, the streak remains unchanged. The longest_streak field is updated whenever current_streak exceeds it. The service exposes methods to record an activity and query current streak status.",
+              "acceptance_criteria": [
+                "Service determines the user's current calendar date using their configured timezone (from user profile) and compares it to last_activity_date",
+                "If last_activity_date equals yesterday (user's timezone), current_streak is incremented by 1 and last_activity_date is updated to today",
+                "If last_activity_date is more than one day ago, current_streak is reset to 1 and last_activity_date is updated to today",
+                "If last_activity_date equals today, no streak change occurs (idempotent for multiple daily activities)",
+                "longest_streak is atomically updated to max(longest_streak, current_streak) within the same database operation as the streak update"
+              ],
+              "depends_on": ["task-5.1.2"],
+              "priority": "high",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-5.1.5",
+              "title": "Implement Game Level Progression Service",
+              "description": "Build the GameLevelProgressionService that determines and applies level-ups based on accumulated XP. The service maintains an XP threshold table defining the total XP required for each level (e.g., Level 1: 0 XP, Level 2: 100 XP, Level 3: 300 XP, Level 4: 600 XP, ... with increasing increments). After XP is awarded, the service checks if the user's new total XP qualifies them for a higher level and updates accordingly. The service supports querying the current level, XP progress toward the next level, and the XP threshold for the next level. The threshold table is configurable and loaded from a configuration source.",
+              "acceptance_criteria": [
+                "Service defines a level threshold table with at least 50 levels, where each subsequent level requires progressively more XP (e.g., Level N requires roughly N * 50 * 1.2^(N/10) XP, capped at a reasonable maximum)",
+                "After XP is awarded, check_and_apply_level_up method compares total_xp against the threshold table and updates current_game_level if a new level is reached",
+                "Service handles multi-level jumps: if a large XP award pushes a user past multiple thresholds, the level is set to the highest qualifying level in a single update",
+                "get_progress method returns current_level, current_xp, xp_for_next_level, and xp_remaining as a structured response",
+                "Level threshold table is loaded from a JSON configuration file or database table, not hardcoded in the service class"
+              ],
+              "depends_on": ["task-5.1.2", "task-5.1.3"],
+              "priority": "high",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-5.1.6",
+              "title": "Create Gamification API Router",
+              "description": "Implement the FastAPI router for gamification with two endpoints. GET /gamification/stats returns the authenticated user's complete gamification state including XP, level, streak, progress toward next level, and level threshold information. POST /gamification/record-activity is an internal/admin endpoint that manually records an activity for a user (used primarily for testing and admin corrections). In production, XP is awarded atomically by the services that handle the triggering actions (lesson service, exam service, etc.), not through this endpoint directly.",
+              "acceptance_criteria": [
+                "GET /gamification/stats returns a JSON response containing total_xp, current_game_level, current_streak, longest_streak, last_activity_date, xp_for_next_level, xp_remaining_for_next_level, and level_progress_percentage",
+                "POST /gamification/record-activity accepts {action_type, metadata} body, awards XP, updates streak, checks for level-up, and returns the updated gamification state",
+                "POST /gamification/record-activity is restricted to admin users or internal service calls via an authorization check",
+                "GET /gamification/stats returns 404 with a descriptive message if the user's gamification record does not exist (edge case for legacy users before migration)"
+              ],
+              "depends_on": ["task-5.1.3", "task-5.1.4", "task-5.1.5", "task-0.3.5"],
+              "priority": "high",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-5.1.7",
+              "title": "Implement Atomic XP Awarding in Triggering Services",
+              "description": "Integrate XP awarding directly into the services that trigger qualifying actions (lesson completion service, exam submission services, vocabulary review service, speaking session service). Each triggering service calls the XP calculation service and gamification repository within the same database transaction as the primary action. This ensures that if the primary action commits, XP is awarded; if it rolls back, XP is not awarded. This eliminates desync scenarios where a user completes an action but XP is lost due to a subsequent failure.",
+              "acceptance_criteria": [
+                "Lesson completion service awards XP for LESSON_COMPLETION action within the same transaction that marks the lesson as completed",
+                "Writing exam submission service awards XP for WRITING_EXAM_PASS within the same transaction that persists the evaluation results, only when overall_score >= 50",
+                "Listening exam submission service awards XP for LISTENING_EXAM_PASS within the same transaction that persists the attempt, only when score >= 60",
+                "Streak tracking is invoked within the same transactional scope as XP awarding, ensuring streak and XP updates are atomic with the triggering action",
+                "If the primary action transaction rolls back for any reason, neither XP nor streak changes are persisted"
+              ],
+              "depends_on": ["task-5.1.3", "task-5.1.4", "task-5.1.5"],
+              "priority": "critical",
+              "estimated_hours": 6
+            }
+          ]
+        },
+        {
+          "id": "mod-5.2",
+          "name": "Achievement System",
+          "description": "Predefined achievements that users unlock based on learning milestones, streaks, and activity thresholds. The evaluation engine checks triggers after key events, and idempotent awarding guarantees each achievement is granted at most once.",
+          "tasks": [
+            {
+              "id": "task-5.2.1",
+              "title": "Create Achievement SQLAlchemy Model",
+              "description": "Define the Achievement ORM model representing a predefined achievement template. Each achievement has a unique code (used for programmatic lookup), a display title and description, a condition_type enum (lessons_completed, streak_days, words_learned, exams_passed, speaking_minutes, specific_action), and a condition_value (the numeric threshold that triggers the unlock). The model is a reference table populated by seed migrations and not modified at runtime by users.",
+              "acceptance_criteria": [
+                "Achievement model is defined with columns: id (UUID primary key), code (String, unique, non-nullable, indexed), title (String, non-nullable), description (Text, non-nullable), condition_type (Enum: LESSONS_COMPLETED, STREAK_DAYS, WORDS_LEARNED, EXAMS_PASSED, SPEAKING_MINUTES, SPECIFIC_ACTION), condition_value (Integer, non-nullable)",
+                "Unique constraint on code column ensures no duplicate achievement definitions exist",
+                "condition_type uses a PostgreSQL enum type with values matching the defined ConditionType Python enum",
+                "Alembic migration creates the table and the PostgreSQL enum type cleanly"
+              ],
+              "depends_on": ["task-0.2.1"],
+              "priority": "critical",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-5.2.2",
+              "title": "Create UserAchievement SQLAlchemy Model",
+              "description": "Define the UserAchievement ORM model representing the link between a user and an unlocked achievement. The model stores user_id, achievement_id, and unlocked_at timestamp. A unique constraint on (user_id, achievement_id) enforces that each achievement can only be awarded once per user at the database level, serving as a safety net for the application-level idempotency check.",
+              "acceptance_criteria": [
+                "UserAchievement model is defined with columns: id (UUID primary key), user_id (UUID foreign key to users, non-nullable), achievement_id (UUID foreign key to achievements, non-nullable), unlocked_at (DateTime with timezone, server default now, non-nullable)",
+                "Unique constraint exists on (user_id, achievement_id) preventing duplicate awards at the database level",
+                "Foreign key relationships are defined with appropriate cascade behavior (user deletion cascades to user_achievements, achievement deletion is restricted)",
+                "Alembic migration applies cleanly and the model integrates with existing user and achievement tables"
+              ],
+              "depends_on": ["task-5.2.1"],
+              "priority": "critical",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-5.2.3",
+              "title": "Implement Achievement Repository",
+              "description": "Create the AchievementRepository providing persistence operations for both Achievement and UserAchievement models. The repository supports listing all achievements, listing achievements unlocked by a specific user (with join to Achievement for display data), checking if a user has a specific achievement, awarding an achievement to a user (with conflict handling for the unique constraint), and querying recently unlocked achievements for a user with a configurable lookback window.",
+              "acceptance_criteria": [
+                "Repository provides a get_all method returning all defined achievements ordered by condition_type and condition_value",
+                "Repository provides a get_user_achievements method returning all achievements unlocked by a user, joined with Achievement for title/description, ordered by unlocked_at descending",
+                "Repository provides a has_achievement method accepting user_id and achievement_code, returning a boolean",
+                "Repository provides an award method that inserts a UserAchievement record and handles unique constraint violations gracefully by returning the existing record instead of raising an error",
+                "Repository provides a get_recent method returning achievements unlocked by a user within the last N days (default 7), ordered by unlocked_at descending"
+              ],
+              "depends_on": ["task-5.2.2"],
+              "priority": "critical",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-5.2.4",
+              "title": "Implement Achievement Evaluation Engine",
+              "description": "Build the AchievementEvaluationEngine that checks whether a user qualifies for any new achievements after a triggering event. The engine accepts an event type and user context, loads all achievements matching the event's condition_type, filters to those not yet unlocked by the user, evaluates each against the user's current stats (total lessons completed, current streak, vocabulary count, exams passed, speaking minutes accumulated), and returns a list of newly qualifying achievements. The engine is designed to be called after key events: lesson completion, streak update, vocabulary milestone, exam completion, and speaking session.",
+              "acceptance_criteria": [
+                "Engine accepts an event_type parameter and maps it to one or more condition_types to evaluate (e.g., lesson_completion maps to LESSONS_COMPLETED and SPECIFIC_ACTION)",
+                "Engine queries the user's current aggregated stats from relevant repositories (lesson count, streak, vocabulary count, exam pass count, speaking minutes) based on the condition_types being evaluated",
+                "Engine filters out achievements already held by the user before performing threshold comparisons, minimizing unnecessary computation",
+                "Engine returns a list of Achievement objects representing newly qualified achievements (those where user's stat meets or exceeds condition_value and user does not already hold the achievement)",
+                "Engine handles the SPECIFIC_ACTION condition_type by matching the specific action code (e.g., first_lesson, first_writing_exam) against the event context"
+              ],
+              "depends_on": ["task-5.2.3", "task-5.1.2"],
+              "priority": "high",
+              "estimated_hours": 6
+            },
+            {
+              "id": "task-5.2.5",
+              "title": "Implement Achievement Service with Idempotency",
+              "description": "Build the AchievementService that orchestrates achievement evaluation and awarding. After a triggering event, the service calls the evaluation engine to determine qualifying achievements, then awards each one via the repository. The service guarantees idempotency: even if called multiple times for the same event (e.g., due to retries or concurrent requests), each achievement is awarded at most once. Idempotency is enforced at two levels: the application-level has_achievement check before awarding, and the database-level unique constraint as a fallback. The service returns newly awarded achievements to enable immediate user notification.",
+              "acceptance_criteria": [
+                "Service provides an evaluate_and_award method that accepts user_id and event context, evaluates achievements, awards qualifying ones, and returns a list of newly awarded achievements",
+                "Application-level check via has_achievement prevents unnecessary write attempts for already-held achievements",
+                "Database-level unique constraint violations are caught and treated as no-ops rather than errors, providing a secondary idempotency guarantee",
+                "Method returns only achievements that were actually awarded in this invocation (not previously held ones), enabling callers to trigger notifications for new unlocks only",
+                "Service operates within the caller's transaction scope to ensure achievement awards are atomic with the triggering action"
+              ],
+              "depends_on": ["task-5.2.4"],
+              "priority": "high",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-5.2.6",
+              "title": "Create Achievement API Router",
+              "description": "Implement the FastAPI router for achievements with three endpoints. GET /achievements/all returns the complete list of defined achievements with their unlock conditions, indicating which ones the authenticated user has already earned. GET /achievements/user returns only the achievements the authenticated user has unlocked, with unlock timestamps. GET /achievements/recent returns achievements unlocked in the past 7 days, useful for notification displays and dashboard widgets.",
+              "acceptance_criteria": [
+                "GET /achievements/all returns all achievements with fields: id, code, title, description, condition_type, condition_value, and a boolean is_unlocked indicating the authenticated user's status for each",
+                "GET /achievements/user returns only unlocked achievements with fields: achievement_id, code, title, description, unlocked_at, ordered by unlocked_at descending",
+                "GET /achievements/recent returns achievements unlocked within the last 7 days (configurable via query param days, default 7) with the same fields as /achievements/user",
+                "All endpoints require authentication and return 401 for unauthenticated requests",
+                "Response schemas are documented in OpenAPI with examples for each endpoint"
+              ],
+              "depends_on": ["task-5.2.5", "task-0.3.5"],
+              "priority": "high",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-5.2.7",
+              "title": "Create Seed Migration with Initial Achievements",
+              "description": "Create an Alembic data migration that seeds the Achievement table with 15 initial achievements covering key learning milestones across all engagement dimensions. The achievements span lesson completion counts, streak durations, vocabulary milestones, exam milestones, speaking practice milestones, and special first-time actions. The migration is idempotent, using INSERT ON CONFLICT DO NOTHING on the code column to safely re-run without duplicates.",
+              "acceptance_criteria": [
+                "Migration seeds exactly 15 achievements: first_lesson (SPECIFIC_ACTION, 1), ten_lessons (LESSONS_COMPLETED, 10), fifty_lessons (LESSONS_COMPLETED, 50), hundred_lessons (LESSONS_COMPLETED, 100), first_writing_exam (SPECIFIC_ACTION, 1), first_listening_exam (SPECIFIC_ACTION, 1), hundred_words_learned (WORDS_LEARNED, 100), five_hundred_words_learned (WORDS_LEARNED, 500), three_day_streak (STREAK_DAYS, 3), week_streak (STREAK_DAYS, 7), month_streak (STREAK_DAYS, 30), ten_exams_passed (EXAMS_PASSED, 10), fifty_min_speaking (SPEAKING_MINUTES, 50), two_hundred_min_speaking (SPEAKING_MINUTES, 200), perfect_exam_score (SPECIFIC_ACTION, 1)",
+                "Each achievement has a descriptive title and motivational description text appropriate for user-facing display",
+                "Migration uses INSERT ... ON CONFLICT (code) DO NOTHING for idempotent execution",
+                "Migration applies cleanly in both upgrade and downgrade directions (downgrade deletes seeded rows by code)",
+                "Achievement codes follow snake_case naming convention and are unique across the seed set"
+              ],
+              "depends_on": ["task-5.2.1"],
+              "priority": "medium",
+              "estimated_hours": 3
+            }
+          ]
+        },
+        {
+          "id": "mod-5.3",
+          "name": "AI Coach (Weekly Report)",
+          "description": "AI-generated weekly coaching reports that synthesize a user's learning activity into personalized strengths, weaknesses, and recommendations. A background job generates reports weekly for all active users, with special handling for low-activity periods.",
+          "tasks": [
+            {
+              "id": "task-5.3.1",
+              "title": "Create WeeklyReport SQLAlchemy Model",
+              "description": "Define the WeeklyReport ORM model representing an AI-generated weekly coaching report. The model stores the reporting period (start and end dates), structured analysis of user strengths and weaknesses, actionable recommendations, and generation timestamp. Each report is tied to a specific user and time period. A unique constraint on (user_id, period_start) prevents duplicate reports for the same week.",
+              "acceptance_criteria": [
+                "WeeklyReport model is defined with columns: id (UUID primary key), user_id (UUID foreign key to users, non-nullable), period_start (Date, non-nullable), period_end (Date, non-nullable), strengths (Text, non-nullable), weaknesses (Text, non-nullable), recommendations (Text, non-nullable), generated_at (DateTime with timezone, server default now, non-nullable)",
+                "Unique constraint exists on (user_id, period_start) preventing duplicate reports for the same weekly period",
+                "Index exists on (user_id, generated_at DESC) for efficient retrieval of a user's most recent reports",
+                "Alembic migration is generated and applies cleanly without conflicts with existing schema"
+              ],
+              "depends_on": ["task-0.2.1"],
+              "priority": "critical",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-5.3.2",
+              "title": "Implement Weekly Report Repository",
+              "description": "Create the WeeklyReportRepository providing persistence operations for WeeklyReport records. The repository supports creating a new report, fetching the latest report for a user, listing reports with pagination, checking if a report exists for a given user and period (for idempotent generation), and querying for reports that have not yet been marked as notified.",
+              "acceptance_criteria": [
+                "Repository provides a create method that persists a new WeeklyReport and handles unique constraint violations by returning the existing report for that period",
+                "Repository provides a get_latest method that returns the most recent report for a user based on generated_at, or None if no reports exist",
+                "Repository provides a list_by_user method with pagination (limit, offset) returning reports ordered by period_start descending",
+                "Repository provides an exists_for_period method accepting user_id and period_start, returning a boolean for idempotent generation checks",
+                "All query methods use appropriate indexing and avoid full table scans"
+              ],
+              "depends_on": ["task-5.3.1"],
+              "priority": "critical",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-5.3.3",
+              "title": "Implement User Activity Aggregation Service",
+              "description": "Build the UserActivityAggregationService that collects and structures a user's learning activity data for a given date range (typically the past 7 days). The service queries across multiple repositories to gather: total lessons completed and their topics, exercises attempted with pass/fail ratios, writing exam scores and trends, listening exam scores and trends, vocabulary review completion rates, speaking session count and total minutes, current streak and changes during the period, and overall XP earned. The aggregated data is returned as a structured Pydantic model suitable for passing as context to the AI coach.",
+              "acceptance_criteria": [
+                "Service accepts user_id, period_start, and period_end parameters and returns a structured ActivitySummary Pydantic model",
+                "ActivitySummary includes: lessons_completed (count and topics list), exercises (attempted, passed, failed, pass_rate), writing_exams (count, average_score, score_trend), listening_exams (count, average_score, score_trend), vocabulary (words_reviewed, retention_rate), speaking (sessions, total_minutes), streak (current, change_during_period), xp_earned",
+                "Score trends are calculated as the difference between the average score in the current period and the previous equivalent period (e.g., this week vs last week)",
+                "Service handles users with no activity in a period by returning zero-valued fields rather than raising errors",
+                "All repository queries are executed efficiently with appropriate filters to avoid loading unnecessary data"
+              ],
+              "depends_on": ["task-5.3.2", "task-5.1.2"],
+              "priority": "high",
+              "estimated_hours": 6
+            },
+            {
+              "id": "task-5.3.4",
+              "title": "Implement AI Coach Report Generation Service",
+              "description": "Build the AICoachReportGenerationService that uses Gemini 2.5 Pro to generate personalized weekly coaching reports. The service receives the aggregated activity data from the aggregation service, constructs a detailed system prompt instructing Gemini to act as a supportive language learning coach, and passes the structured activity data as context. The AI generates three sections: strengths (what the user did well, backed by specific data points), weaknesses (areas needing improvement with specific examples), and recommendations (3-5 actionable next steps for the coming week). The service validates the generated content for completeness and relevance before persistence.",
+              "acceptance_criteria": [
+                "Service passes structured ActivitySummary data to Gemini 2.5 Pro with a system prompt defining the coach persona, tone (encouraging yet honest), and required output sections",
+                "Generated report contains three non-empty sections: strengths (minimum 2 points referencing specific activity data), weaknesses (minimum 1 point with specific improvement suggestion), recommendations (3-5 actionable items for the next week)",
+                "Recommendations reference specific platform features (e.g., 'try a listening exam at B2 level' or 'practice writing essays on argumentative topics') rather than generic advice",
+                "Service validates that the generated content is in the user's native language (or English as fallback) and exceeds minimum length thresholds (strengths: 100 chars, weaknesses: 80 chars, recommendations: 150 chars)",
+                "Service retries generation once if the initial response fails validation, using a more explicit prompt on retry"
+              ],
+              "depends_on": ["task-5.3.3", "task-0.5.2"],
+              "priority": "high",
+              "estimated_hours": 7
+            },
+            {
+              "id": "task-5.3.5",
+              "title": "Implement Graceful Handling for Low-Activity Users",
+              "description": "Extend the AI Coach report generation to handle users with minimal or no activity during the reporting period. Instead of generating an empty or error report, the service detects low-activity scenarios (fewer than 2 total activities in the week) and generates an encouraging motivational report. The motivational report acknowledges the user's previous progress (referencing historical data like total XP and longest streak), provides gentle encouragement to resume learning, and suggests small achievable goals for the coming week. This prevents users from receiving discouraging empty reports during inactive periods.",
+              "acceptance_criteria": [
+                "Service detects low-activity periods defined as fewer than 2 total activities (lessons + exams + reviews + speaking sessions) in the reporting period",
+                "Low-activity reports reference the user's historical achievements (total_xp, current_game_level, longest_streak, total achievements unlocked) to reinforce past progress",
+                "Generated motivational report includes encouraging tone, acknowledgment of the break, and 2-3 small suggested goals (e.g., 'complete one short lesson' or 'review 10 vocabulary words')",
+                "Low-activity reports are stored with the same schema as regular reports, with the strengths field noting 'previous achievements' and recommendations focusing on re-engagement"
+              ],
+              "depends_on": ["task-5.3.4"],
+              "priority": "medium",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-5.3.6",
+              "title": "Implement Scheduled Job Infrastructure for Weekly Report Generation",
+              "description": "Build a background task infrastructure that runs weekly to generate coaching reports for all active users. The job identifies active users (those with at least one activity in the past 30 days), checks if a report already exists for the current period (idempotent), and generates reports sequentially with error isolation (one user's failure does not block others). The scheduler uses APScheduler or a similar library integrated with FastAPI's lifespan events. The job runs every Monday at 06:00 UTC by default, with the schedule configurable via environment variables. Execution logs record the number of reports generated, skipped, and failed.",
+              "acceptance_criteria": [
+                "Background job is registered with FastAPI's lifespan and runs on a configurable weekly schedule (default: Monday 06:00 UTC, configurable via WEEKLY_REPORT_SCHEDULE env var)",
+                "Job queries for active users (at least one activity in the past 30 days) and generates reports only for those who do not already have a report for the current period",
+                "Error isolation ensures that a failure generating one user's report is logged and does not prevent generation for subsequent users",
+                "Job execution produces a structured log summary containing: total_users_processed, reports_generated, reports_skipped (already existed), reports_failed (with error details)",
+                "Job can be triggered manually via an admin-only API endpoint POST /admin/coach/generate-reports for testing and catch-up scenarios"
+              ],
+              "depends_on": ["task-5.3.4", "task-5.3.5"],
+              "priority": "high",
+              "estimated_hours": 6
+            },
+            {
+              "id": "task-5.3.7",
+              "title": "Create Weekly Report API Router",
+              "description": "Implement the FastAPI router for weekly coaching reports with two endpoints. GET /coach/reports returns a paginated list of the authenticated user's weekly reports, ordered by most recent first, with summary metadata. GET /coach/reports/latest returns the single most recent report with full content. Both endpoints require authentication and return appropriate responses when no reports are available.",
+              "acceptance_criteria": [
+                "GET /coach/reports returns paginated results (default page_size=10) with each entry containing report_id, period_start, period_end, generated_at, and a preview snippet (first 150 chars of strengths)",
+                "GET /coach/reports/latest returns the full report including strengths, weaknesses, recommendations, period dates, and generated_at, or 404 with descriptive message if no reports exist",
+                "Both endpoints require authentication and return 401 for unauthenticated requests",
+                "Response schemas are documented in OpenAPI with example responses for both populated and empty states"
+              ],
+              "depends_on": ["task-5.3.2", "task-0.3.5"],
+              "priority": "high",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-5.3.8",
+              "title": "Implement Notification Flag for New Report Availability",
+              "description": "Add a mechanism to flag when a new weekly report is available for a user. Extend the UserGamification model (or create a lightweight UserNotification model) with a has_unread_report boolean field. When a new report is generated, this flag is set to true. When the user accesses GET /coach/reports/latest, the flag is reset to false. The gamification stats endpoint (GET /gamification/stats) includes this flag in its response so the frontend can display a notification badge without a separate API call.",
+              "acceptance_criteria": [
+                "A has_unread_report boolean field is added to the user's profile or gamification state, defaulting to false",
+                "Weekly report generation job sets has_unread_report to true for each user after successfully generating their report",
+                "GET /coach/reports/latest resets has_unread_report to false after returning the report",
+                "GET /gamification/stats response includes has_unread_report field for frontend notification badge rendering",
+                "Alembic migration adds the new field with a default value of false for existing records"
+              ],
+              "depends_on": ["task-5.3.6", "task-5.3.7", "task-5.1.1"],
+              "priority": "medium",
+              "estimated_hours": 3
+            }
+          ]
+        },
+        {
+          "id": "mod-5.4",
+          "name": "Usage Quota System",
+          "description": "Resource consumption governance system that tracks and enforces daily usage limits per user for AI-heavy operations. Configurable limits prevent abuse while providing transparent quota status to users.",
+          "tasks": [
+            {
+              "id": "task-5.4.1",
+              "title": "Create UserQuota SQLAlchemy Model",
+              "description": "Define the UserQuota ORM model (or config-driven table) for tracking daily usage per user per function. The model stores user_id, function_name (identifying the quota-tracked operation), daily_limit (the maximum allowed uses per day), current_usage (counter for the current day), and last_reset_date (the date when current_usage was last reset to zero). A unique constraint on (user_id, function_name) ensures one tracking row per user per function. The function_name values correspond to quota-tracked operations: speaking_minutes, tutor_messages, lesson_generations, writing_exam_attempts, listening_exam_attempts, mission_attempts.",
+              "acceptance_criteria": [
+                "UserQuota model is defined with columns: id (UUID primary key), user_id (UUID foreign key to users, non-nullable), function_name (String, non-nullable), daily_limit (Integer, non-nullable), current_usage (Integer, default 0, non-nullable), last_reset_date (Date, non-nullable, default today)",
+                "Unique constraint exists on (user_id, function_name) ensuring one tracking record per user per function",
+                "function_name values are constrained to a defined set: speaking_minutes, tutor_messages, lesson_generations, writing_exam_attempts, listening_exam_attempts, mission_attempts",
+                "Alembic migration creates the table with appropriate indexes on user_id and (user_id, function_name)"
+              ],
+              "depends_on": ["task-0.2.1"],
+              "priority": "critical",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-5.4.2",
+              "title": "Implement Quota Tracking Service",
+              "description": "Build the QuotaTrackingService that manages daily usage tracking per user per function. The service provides methods to check remaining quota, increment usage, and reset daily counters. Before each AI-heavy operation, the consuming service calls check_quota to verify availability. If the user's last_reset_date is before today, current_usage is atomically reset to 0 and last_reset_date is updated before the check. The increment_usage method atomically increases current_usage by a specified delta (default 1) and returns the updated count. The service initializes quota records on first access using default limits from configuration.",
+              "acceptance_criteria": [
+                "check_quota method accepts user_id and function_name, auto-resets current_usage to 0 if last_reset_date is before today (in user's timezone), and returns a QuotaStatus object containing daily_limit, current_usage, remaining, and reset_at",
+                "increment_usage method atomically increments current_usage using SQL-level update (current_usage = current_usage + delta) and raises QuotaExceededException if the increment would exceed daily_limit",
+                "Service auto-creates a UserQuota record with default limits on first access for a given user and function, using limits from configuration",
+                "Daily reset is performed atomically within the check operation: UPDATE SET current_usage = 0, last_reset_date = today WHERE last_reset_date < today",
+                "All operations are performed within the caller's transaction scope for atomicity with the consuming operation"
+              ],
+              "depends_on": ["task-5.4.1"],
+              "priority": "critical",
+              "estimated_hours": 5
+            },
+            {
+              "id": "task-5.4.3",
+              "title": "Implement Quota Check Before AI-Heavy Operations",
+              "description": "Integrate quota checks into all AI-heavy service methods across the application. Before executing an AI call (speaking session start, tutor message send, lesson generation, writing exam prompt generation, listening exam submission, mission attempt), the service calls QuotaTrackingService.check_quota. If quota is exceeded, a QuotaExceededException is raised which the exception handler translates to a 429 Too Many Requests HTTP response with detailed quota information in the body. After successful execution, the service calls increment_usage within the same transaction. This replaces the module-specific rate limiters in mod-4.1 and mod-4.2 with a unified quota system.",
+              "acceptance_criteria": [
+                "Speaking session service checks speaking_minutes quota before starting a session and increments by session duration (in minutes) after completion",
+                "Tutor message service checks tutor_messages quota before processing a message and increments by 1 after successful response",
+                "Lesson generation service checks lesson_generations quota before generating and increments by 1 after successful generation",
+                "Writing and listening exam services check their respective quotas (writing_exam_attempts, listening_exam_attempts) before prompt generation or submission",
+                "QuotaExceededException is caught by a global exception handler that returns 429 with JSON body containing function_name, daily_limit, current_usage, remaining (0), and reset_at (ISO 8601 timestamp of next midnight in user's timezone)"
+              ],
+              "depends_on": ["task-5.4.2", "task-4.1.6", "task-4.2.8"],
+              "priority": "critical",
+              "estimated_hours": 5
+            },
+            {
+              "id": "task-5.4.4",
+              "title": "Create Quota API Router",
+              "description": "Implement the FastAPI router for quota status with a single endpoint. GET /quota/status returns the authenticated user's current quota usage across all tracked functions. The response includes each function's daily_limit, current_usage, remaining uses, and the reset_at timestamp. This endpoint enables the frontend to display quota meters and warn users when approaching limits.",
+              "acceptance_criteria": [
+                "GET /quota/status returns a JSON object with a quotas array, each element containing function_name, daily_limit, current_usage, remaining, and reset_at (ISO 8601 timestamp)",
+                "Response includes entries for all tracked functions even if the user has not yet used them (current_usage = 0 for unused functions)",
+                "Endpoint requires authentication and returns 401 for unauthenticated requests",
+                "Response is ordered alphabetically by function_name for consistent frontend rendering",
+                "Endpoint response time is under 100ms as it queries a single table with indexed lookups"
+              ],
+              "depends_on": ["task-5.4.2", "task-0.3.5"],
+              "priority": "high",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-5.4.5",
+              "title": "Implement Configurable Quota Limits",
+              "description": "Build the quota configuration system that loads daily limits from environment variables or a database configuration table, avoiding hardcoded values. Environment variables follow the pattern QUOTA_{FUNCTION_NAME}_DAILY_LIMIT (e.g., QUOTA_SPEAKING_MINUTES_DAILY_LIMIT=30). If no environment variable is set, the service falls back to a database config table. If neither source provides a value, sensible defaults are used (speaking_minutes: 30, tutor_messages: 50, lesson_generations: 5, writing_exam_attempts: 3, listening_exam_attempts: 5, mission_attempts: 10). Configuration is cached in memory with a configurable TTL (default 5 minutes) to minimize database queries while allowing near-real-time limit adjustments.",
+              "acceptance_criteria": [
+                "Quota limits are resolved in priority order: environment variable > database config table > hardcoded defaults",
+                "Environment variables follow the naming pattern QUOTA_{FUNCTION_NAME}_DAILY_LIMIT with uppercase function names (e.g., QUOTA_SPEAKING_MINUTES_DAILY_LIMIT)",
+                "Default limits are: speaking_minutes=30, tutor_messages=50, lesson_generations=5, writing_exam_attempts=3, listening_exam_attempts=5, mission_attempts=10",
+                "Configuration values are cached in memory with a TTL of 5 minutes (configurable via QUOTA_CONFIG_CACHE_TTL_SECONDS env var), refreshed on next access after expiry",
+                "Changing an environment variable or database config value takes effect within the cache TTL without requiring application restart"
+              ],
+              "depends_on": ["task-5.4.1"],
+              "priority": "high",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-5.4.6",
+              "title": "Implement Daily Quota Reset Mechanism",
+              "description": "Implement the daily quota reset mechanism ensuring that user quotas reset at the start of each new calendar day in the user's configured timezone. The primary reset strategy is lazy: when a user's quota is checked and last_reset_date is before today (in their timezone), current_usage is atomically reset to 0 and last_reset_date is updated. As a secondary mechanism, implement a background cleanup job that runs daily to reset quotas for users who have not triggered a lazy reset (e.g., users who were active yesterday but not today, preventing stale data accumulation). The cleanup job runs at 00:05 UTC and processes resets in batches to avoid lock contention.",
+              "acceptance_criteria": [
+                "Primary lazy reset: check_quota method detects when last_reset_date < today (user's timezone) and atomically resets current_usage to 0 within the same query",
+                "Secondary background job runs daily at 00:05 UTC and resets current_usage to 0 for all UserQuota records where last_reset_date < today (UTC)",
+                "Background job processes resets in batches of 100 records to minimize database lock duration and contention",
+                "Background job logs the total number of records reset and any errors encountered during processing",
+                "Both reset mechanisms are idempotent: running them multiple times on the same day produces the same result without data corruption"
+              ],
+              "depends_on": ["task-5.4.2", "task-5.4.5"],
+              "priority": "high",
+              "estimated_hours": 4
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

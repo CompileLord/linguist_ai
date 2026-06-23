@@ -1,0 +1,20 @@
+Generate a complete language learning lesson.
+Studied Language: $language
+Difficulty Level: $level
+Topic: $topic
+
+Personalization Context:
+User Goal: $user_goal
+Explanation Language: $native_language
+Previously Learned Topics: $previous_topics
+Weak Areas to Address: $weak_areas
+
+Generate a JSON object conforming to the structured lesson schema:
+- theory: Clear, detailed explanation of the grammar topic in $native_language, including title, key_points, and grammar_notes.
+- examples: 5-8 examples showing the topic in use, with translation to $native_language, context, and difficulty. Align some examples with the User Goal if provided.
+- vocabulary: 10-15 new words related to the topic, with translation to $native_language, pronunciation, part of speech, and an example sentence.
+- exercises: 8-10 exercises testing the topic (multiple_choice, fill_blank, translation, reorder). Each must have a question, options (for multiple_choice), correct_answer, explanation, and hints.
+- test: A final quiz with 5 questions (question, options, correct_index (0-3), and points value).
+- speaking_task: A brief speaking prompt with expected keywords and difficulty.
+- reading_text: A short reading passage with 3-5 comprehension questions.
+- listening_script: A script text to be read later by TTS, and 3-5 multiple-choice questions to test listening comprehension.

@@ -1,367 +1,536 @@
 # PRD: AI Language Learning Platform (MVP)
 
-**Версия:** 1.0
-**Дата:** 23 июня 2026
-**Статус:** Draft для ревью
+**Version:** 1.0
+**Date:** June 23, 2026
+**Status:** Draft for Review
 
 ---
 
-## 1. Обзор продукта и цели
+## 1. Product Overview and Objectives
 
-### 1.1 Описание
-Веб-платформа для изучения английского языка с персонализацией обучения на базе AI. Система генерирует уроки, словарь, упражнения и оценивает прогресс пользователя с помощью LLM (Google Vertex AI), а не по фиксированному заранее созданному контенту.
+### 1.1 Description
+A web platform for learning English with AI-driven personalized instruction. The system generates lessons, vocabulary, exercises, and evaluates user progress using LLMs (Google Vertex AI via the `google-genai` SDK) rather than pre-created static content.
 
-Главный принцип: **контент, повторения, ошибки и рекомендации формируются индивидуально под каждого пользователя** на основе его реального уровня знаний, целей и истории ошибок — а не по единому сценарию для всех.
+Core principle: **content, repetitions, errors, and recommendations are generated individually for each user** based on their actual proficiency level, goals, and error history — not following a one-size-fits-all script.
 
-### 1.2 Целевая аудитория
-- География: Таджикистан, Россия, Узбекистан (с возможностью расширения)
-- Интерфейс приложения доступен на трёх языках: Tajik, Russian, English — пользователь выбирает язык объяснений при регистрации
-- В MVP изучаемый (target) язык — только **English**
-- Самостоятельные пользователи (B2C), без привязки к школам/организациям на этом этапе
+### 1.2 Target Audience
+- Geography: Tajikistan, Russia, Uzbekistan (with potential for expansion)
+- Application interface is available in three languages: Tajik, Russian, English — the user selects their explanation language during registration
+- In the MVP, the target (studied) language is **English** only
+- Individual users (B2C), with no school/organization integration at this stage
 
-### 1.3 Бизнес-модель
-**Free forever** на старте:
-- Весь базовый функционал бесплатен без ограничения по времени
-- AI Speaking (голосовые сессии с ИИ) ограничен **5 минутами в день** на пользователя — это самая дорогая функция (STT + LLM + TTS в real-time)
-- Прочие AI-функции (chat с тьютором, генерация уроков, exams) — без жёсткого лимита на старте, но с разумными защитными квотами по умолчанию (см. раздел 10.4), чтобы избежать злоупотреблений и неконтролируемых расходов на API
-- Монетизация (платные планы) — вне скоупа MVP, заложить в архитектуру модели данных поле `subscription_tier`, но логику оплаты не реализовывать
+### 1.3 Business Model
+**Free forever** at launch:
+- All core functionality is free with no time restrictions
+- AI Speaking (voice sessions with AI) is limited to **5 minutes per day** per user — this is the most expensive feature (STT + LLM + TTS in real-time)
+- Other AI features (tutor chat, lesson generation, exams) — no hard limits at launch, but with reasonable default protective quotas (see section 10.4) to prevent abuse and uncontrolled API costs
+- Monetization (paid plans) — out of scope for the MVP; include a `subscription_tier` field in the data model architecture, but do not implement payment logic
 
 ---
 
-## 2. Целевая аудитория и Use Cases
+## 2. Target Audience and Use Cases
 
-| Сценарий | Описание |
+| Scenario | Description |
 |---|---|
-| Новый пользователь | Регистрируется, выбирает язык интерфейса, проходит placement test, выбирает цель обучения, получает первый персональный урок |
-| Постоянный пользователь | Заходит ежедневно, проходит сгенерированные уроки, тренирует словарь через spaced repetition, общается с AI Tutor по непонятным темам |
-| Активный практикующий | Использует Real World Missions (ролевые диалоги) и Speaking-сессии (в рамках дневного лимита) |
-| Пользователь готовится к экзамену | Выбрал цель IELTS/TOEFL, проходит Writing и Listening Exams, получает детальный отчёт по ошибкам |
-| Возвращающийся пользователь | Получает еженедельный отчёт AI Coach с рекомендациями, видит streak и достижения |
+| New user | Registers, selects interface language, takes placement test, chooses learning goal, receives first personalized lesson |
+| Regular user | Logs in daily, completes generated lessons, practices vocabulary through spaced repetition, chats with AI Tutor about unclear topics |
+| Active practitioner | Uses Real World Missions (role-play dialogues) and Speaking sessions (within the daily limit) |
+| Exam-preparing user | Selected IELTS/TOEFL as a goal, takes Writing and Listening Exams, receives detailed error reports |
+| Returning user | Receives a weekly AI Coach report with recommendations, views streak and achievements |
 
 ---
 
-## 3. Основные функции (MVP — 14 модулей)
+## 3. Core Features (MVP — 14 Modules)
 
-### 3.1 Multi-Language Architecture (инфраструктурная база)
-**Описание:** Система данных не хардкодит английский — структура должна с самого начала поддерживать множественные target-языки, даже если в MVP активен только English.
+### 3.1 Multi-Language Architecture (Infrastructure Foundation)
+**Description:** The data system does not hardcode English — the structure must support multiple target languages from the start, even though only English is active in the MVP.
 
-**Логика:**
-- Иерархия: `Language → Level (A1, A2, B1, B2, C1) → Module → Lesson`
-- `Level` использует общеевропейскую шкалу (CEFR) как базовую систему сложности
-- В рамках MVP в БД создаётся одна запись `Language = English`, но модель данных не должна иметь жёстких ограничений (enum) на язык — только справочная таблица `languages`, расширяемая без миграций схемы
+**Logic:**
+- Hierarchy: `Language → Level (A1, A2, B1, B2, C1) → Module → Lesson`
+- `Level` uses the Common European Framework of Reference (CEFR) as the base difficulty system
+- In the MVP, a single `Language = English` record is created in the database, but the data model must not have hard constraints (enum) on language — only a reference table `languages`, extensible without schema migrations
 
 **Acceptance Criteria:**
-- Добавление нового языка в систему не требует изменения кода — только новая запись в таблице `languages` + генерация контента через AI Lesson Generator
-- UI язык (interface language) и target-язык (изучаемый) — независимые сущности в модели данных
+- Adding a new language to the system requires no code changes — only a new record in the `languages` table + content generation via AI Lesson Generator
+- UI language (interface language) and target language (studied language) are independent entities in the data model
 
 ---
 
-### 3.2 Регистрация и определение уровня (Placement Test)
-**Описание:** При регистрации пользователь выбирает язык интерфейса (Tajik/Russian/English) и проходит тест для определения текущего уровня английского.
+### 3.2 Registration and Level Assessment (Placement Test)
+**Description:** During registration, the user selects an interface language (Tajik/Russian/English) and takes a test to determine their current English level.
 
-**Логика работы:**
-1. Регистрация: username + password (без email/OAuth в MVP)
-2. Выбор языка интерфейса (сохраняется как `ui_language` в профиле)
-3. Выбор способа определения уровня:
-   - Самостоятельный выбор уровня (Beginner / Elementary / Intermediate / Advanced)
-   - ИЛИ короткий диагностический тест (10–15 вопросов на грамматику/словарь, адаптивная сложность — следующий вопрос подбирается по правильности предыдущего)
-4. Результат маппится в CEFR-уровень (A1–C1) и сохраняется в профиле пользователя
-5. Голосовое интервью с AI (упомянутое в исходном ТЗ) — переносится в Фазу 2 как улучшение точности; в MVP — только текстовый тест
+**Workflow:**
+1. Registration: username + password (no email/OAuth in MVP)
+2. Selection of interface language (stored as `ui_language` in the profile)
+3. Level assessment method selection:
+   - Self-selection of level (Beginner / Elementary / Intermediate / Advanced)
+   - OR a short diagnostic test (10–15 grammar/vocabulary questions, adaptive difficulty — the next question is selected based on the correctness of the previous answer)
+4. The result maps to a CEFR level (A1–C1) and is saved in the user profile
+5. Voice interview with AI (mentioned in the original spec) — moved to Phase 2 as an accuracy improvement; in the MVP — text-based test only
 
-**Модель данных:**
+**Data Model:**
 - `users`: id, username (unique), password_hash, ui_language, created_at
 - `user_profile`: user_id, current_level (enum: A1–C1), placement_method (enum: self_selected/test), target_language_id
 
 **Acceptance Criteria:**
-- Пользователь не может перейти к урокам без завершённого выбора уровня
-- Тест занимает не более 5 минут, результат показывается сразу с объяснением уровня
+- A user cannot proceed to lessons without completing level selection
+- The test takes no more than 5 minutes, and the result is displayed immediately with an explanation of the level
 
 ---
 
-### 3.3 Цели обучения (Learning Goals)
-**Описание:** При регистрации (после теста) пользователь выбирает одну или несколько целей, которые влияют на тематику генерируемого контента и словаря.
+### 3.3 Learning Goals
+**Description:** During registration (after the test), the user selects one or more goals that influence the theme of generated content and vocabulary.
 
-**Варианты целей:** Travel, Work, Programming, Business, IELTS, TOEFL, School, University, Daily Communication
+**Goal Options:** Travel, Work, Programming, Business, IELTS, TOEFL, School, University, Daily Communication
 
-**Логика:**
-- Цель(и) сохраняются в профиле и передаются как контекст в промпты AI Lesson Generator и AI Tutor — например, при цели "IELTS" система приоритизирует академический словарь и формат заданий, при "Travel" — бытовые ситуации
-- Пользователь может изменить цели в настройках в любой момент — это пересчитывает рекомендации для будущих уроков (не переписывает уже пройденные)
+**Logic:**
+- Goals are saved in the profile and passed as context in AI Lesson Generator and AI Tutor prompts — for example, with the "IELTS" goal, the system prioritizes academic vocabulary and question formats; with "Travel" — everyday situations
+- The user can change goals in settings at any time — this recalculates recommendations for future lessons (does not rewrite already completed ones)
 
-**Модель данных:**
-- `user_goals`: user_id, goal (enum), priority (int, для случая нескольких целей)
+**Data Model:**
+- `user_goals`: user_id, goal (enum), priority (int, for cases with multiple goals)
 
 **Acceptance Criteria:**
-- Минимум 1 цель обязательна при регистрации, максимум 3
-- Смена целей отражается в содержимом следующего сгенерированного урока
+- A minimum of 1 goal is required during registration, maximum 3
+- Changing goals is reflected in the content of the next generated lesson
 
 ---
 
 ### 3.4 AI Lesson Generator
-**Описание:** Центральный генерирующий движок системы. По заданным параметрам (тема, уровень, язык, цель пользователя) автоматически создаёт полный урок.
+**Description:** The central generative engine of the system. Given a set of parameters (topic, level, language, user goal), it automatically creates a complete lesson.
 
-**Входные параметры:**
-- Topic (например, "Present Perfect")
+**Input Parameters:**
+- Topic (e.g., "Present Perfect")
 - Level (CEFR)
 - Target language
-- (опционально) Learning goal пользователя — для адаптации примеров/словаря
+- (optional) User learning goal — for adapting examples/vocabulary
 
-**Что генерируется за один вызов (структурированный JSON-ответ от LLM):**
-- Теория (объяснение грамматики/темы на языке интерфейса пользователя)
-- 5–8 примеров использования
-- Список новых слов (10–15) с переводом, транскрипцией
-- Упражнения (multiple choice / fill-the-gap) — 8–10 штук
-- Финальный тест по теме урока (5 вопросов)
-- Краткое speaking-задание (для использования в Real World Missions/AI Tutor)
-- Короткий reading-текст по теме
-- Listening-материал (текст-сценарий, который затем озвучивается через Google TTS отдельным вызовом)
+**What is generated per call (structured JSON response from LLM):**
+- Theory (grammar/topic explanation in the user's interface language)
+- 5–8 usage examples
+- List of new words (10–15) with translation, transcription
+- Exercises (multiple choice / fill-the-gap) — 8–10 items
+- Final quiz on the lesson topic (5 questions)
+- A brief speaking task (for use in Real World Missions/AI Tutor)
+- A short reading text on the topic
+- Listening material (text script, subsequently voiced via Google TTS in a separate call)
 
-**Логика выбора следующей темы (упрощённая для MVP):**
-- Темы идут по предзаданной программе для каждого уровня (admin-curated topic list per CEFR level), но порядок и темп адаптируются: если у пользователя много ошибок в текущей теме — система вставляет дополнительный урок повторения перед переходом дальше
-- Полноценный ML-движок персонализации пути (анализ скорости обучения, сложные паттерны ошибок) — выносится в Фазу 2; в MVP это упрощённое правило: "% правильных ответов < 70% → повторение, иначе → следующая тема по программе"
+**Logic for Selecting the Next Topic (simplified for MVP):**
+- Topics follow a predefined curriculum for each level (admin-curated topic list per CEFR level), but the order and pace adapt: if the user makes many mistakes on the current topic — the system inserts an additional review lesson before moving on
+- A full ML-driven learning path personalization engine (learning speed analysis, complex error patterns) — deferred to Phase 2; in the MVP, a simplified rule: "% correct answers < 70% → review, otherwise → next topic in the curriculum"
 
-**Технические соображения:**
-- Используется недорогая модель Vertex AI (например, Gemini Flash-уровня) для большинства генераций — высокая нагрузка, низкая критичность ошибки
-- Результат кэшируется: один и тот же Topic+Level можно переиспользовать между пользователями с похожим профилем (экономия на API-вызовах), с точечной персонализацией только словаря/примеров под цель пользователя
+**Technical Considerations:**
+- Uses an affordable Vertex AI model (`gemini-2.5-flash`) for most generation tasks — high load, low error criticality
+- Results are cached: the same Topic+Level can be reused across users with similar profiles (saving on API calls), with selective personalization of vocabulary/examples based on the user's goal
 
-**Модель данных:**
-- `lessons`: id, language_id, level, topic, content (JSONB — хранит все сгенерированные блоки), created_at, is_cached (bool)
+**Data Model:**
+- `lessons`: id, language_id, level, topic, content (JSONB — stores all generated blocks), created_at, is_cached (bool)
 - `user_lessons`: user_id, lesson_id, status (not_started/in_progress/completed), score, completed_at
 
 **Acceptance Criteria:**
-- Генерация одного полного урока укладывается в разумное время отклика (целевое SLA — фиксируется на этапе технической оценки, ориентировочно до 15–20 секунд за счёт параллельных вызовов блоков)
-- При сбое генерации одного блока (например, listening) — остальные блоки урока остаются доступны, блок помечается как "retry available"
+- Generation of one complete lesson fits within a reasonable response time (target SLA — to be finalized during technical evaluation, approximately 15–20 seconds with parallel block generation)
+- If generation of one block fails (e.g., listening) — the remaining lesson blocks stay available, the failed block is marked as "retry available"
 
 ---
 
 ### 3.5 Smart Vocabulary System
-**Описание:** Централизованное хранилище словарных единиц с привязкой к прогрессу конкретного пользователя.
+**Description:** A centralized vocabulary store linked to each user's individual progress.
 
-**Что хранится для каждого слова (глобально, не per-user):**
-- Слово, перевод (на ui_language пользователя), транскрипция, аудио (TTS-генерация, кэшируется), примеры использования, уровень сложности (CEFR), частотность использования в языке
+**What is stored per word (globally, not per-user):**
+- Word, translation (in the user's ui_language), transcription, audio (TTS-generated, cached), usage examples, difficulty level (CEFR), language frequency rank
 
-**Что хранится per-user:**
-- Знает/не знает слово (bool, обновляется по результатам упражнений)
-- Количество повторений
-- Количество ошибок
+**What is stored per-user:**
+- Knows/doesn't know the word (bool, updated based on exercise results)
+- Repetition count
+- Error count
 
-**Логика:**
-- Новые слова добираются в словарь пользователя автоматически из каждого пройденного урока
-- Аудио для слова генерируется один раз через Google TTS и кэшируется (Cloud Storage) — повторно не генерируется для других пользователей
+**Logic:**
+- New words are automatically added to the user's vocabulary from each completed lesson
+- Audio for a word is generated once via Google Cloud TTS and cached (Cloud Storage) — not regenerated for other users
 
-**Модель данных:**
-- `vocabulary`: id, language_id, word, translation_context (JSONB по ui_language), transcription, audio_url, cefr_level, frequency_rank
+**Data Model:**
+- `vocabulary`: id, language_id, word, translation_context (JSONB by ui_language), transcription, audio_url, cefr_level, frequency_rank
 - `user_vocabulary`: user_id, vocabulary_id, is_known (bool), repetitions_count, errors_count, last_reviewed_at
 
 **Acceptance Criteria:**
-- Слово не дублируется в общей таблице `vocabulary` при повторном появлении в разных уроках — используется поиск по (language_id, word) перед вставкой
-- Аудио для слова генерируется не более одного раза
+- A word is not duplicated in the global `vocabulary` table when it reappears in different lessons — lookup by (language_id, word) is performed before insertion
+- Audio for a word is generated no more than once
 
 ---
 
-### 3.6 Spaced Repetition System (Интервальное повторение)
-**Описание:** Автоматическое планирование повторения слов и грамматических правил на основе алгоритма интервального повторения (рекомендация: SM-2 или его упрощённая модификация — не требует AI, чисто алгоритмическая логика, что снижает расходы).
+### 3.6 Spaced Repetition System
+**Description:** Automated scheduling of word and grammar rule reviews based on a spaced repetition algorithm (recommendation: SM-2 or a simplified modification — does not require AI, purely algorithmic logic, which reduces costs).
 
-**Логика:**
-- Для каждой пары (user, vocabulary_item) хранится: дата изучения, дата последнего повторения, текущий интервал, "процент усвоения" (производная величина от истории правильных/неправильных ответов)
-- При правильном ответе — интервал до следующего повторения увеличивается (по формуле SM-2); при ошибке — интервал сбрасывается к минимальному
-- Ежедневно (или при заходе пользователя) система формирует "очередь повторения" — список слов/правил, готовых к повторению сегодня
-- Очередь повторения отображается пользователю как отдельный модуль "Review" на главном экране
+**Logic:**
+- For each (user, vocabulary_item) pair, the following is stored: date learned, date of last review, current interval, "mastery percentage" (derived from the history of correct/incorrect answers)
+- On a correct answer — the interval until the next review increases (per the SM-2 formula); on an error — the interval resets to minimum
+- Daily (or on user login) the system generates a "review queue" — a list of words/rules due for review today
+- The review queue is displayed to the user as a separate "Review" module on the main screen
 
-**Модель данных:**
+**Data Model:**
 - `spaced_repetition_items`: user_id, item_type (enum: vocabulary/grammar_rule), item_id, learned_at, last_reviewed_at, next_review_at, interval_days, ease_factor, mastery_percent
 
 **Acceptance Criteria:**
-- Алгоритм работает полностью на backend без вызова LLM (чистая математика — нет AI-затрат на эту функцию)
-- Пользователь видит количество элементов "к повторению сегодня" на главном экране
+- The algorithm runs entirely on the backend without LLM calls (pure math — no AI costs for this feature)
+- The user sees the count of items "due for review today" on the main screen
 
 ---
 
-### 3.7 AI Live Tutor (чат с ИИ-репетитором)
-**Описание:** Чат-интерфейс, доступный пользователю в любой момент, где можно задать вопрос ИИ-преподавателю.
+### 3.7 AI Live Tutor (AI Chat Tutor)
+**Description:** A chat interface available to the user at any time, where they can ask questions to an AI tutor.
 
-**Функции:**
-- Объяснение грамматического правила
-- Запрос дополнительных примеров
-- Запрос дополнительных упражнений по теме
-- Свободные вопросы по языку
+**Features:**
+- Explanation of grammar rules
+- Requesting additional examples
+- Requesting additional exercises on a topic
+- Free-form questions about the language
 
-**Логика:**
-- Реализуется через WebSocket-соединение между Next.js фронтендом и FastAPI backend для потоковой передачи ответа (streaming response от LLM) — обеспечивает ощущение "живого" диалога
-- Контекст разговора хранится в рамках сессии (история последних N сообщений передаётся в промпт); долгосрочная память между сессиями (AI Conversation Memory из исходного ТЗ) — Фаза 2
-- В промпт системы передаётся контекст пользователя: текущий уровень, активная тема урока, цель обучения, ui_language — чтобы ответы были на понятном пользователю языке и подходящей сложности
+**Logic:**
+- Implemented via a WebSocket connection between the Next.js frontend and FastAPI backend for streaming LLM responses — provides the feel of a "live" conversation
+- Conversation context is maintained within a session (history of the last N messages is passed in the prompt); long-term memory between sessions (AI Conversation Memory from the original spec) — Phase 2
+- User context is passed in the system prompt: current level, active lesson topic, learning goal, ui_language — so that answers are in a language and complexity appropriate for the user
 
-**Технические соображения:**
-- Используется недорогая модель для большинства диалогов; возможен fallback на более качественную модель при сложных запросах (определяется эвристикой: длина истории, наличие специфических ключевых слов "explain in detail", "why")
+**Technical Considerations:**
+- Uses an affordable model (`gemini-2.5-flash`) for most dialogues; possible fallback to a higher-quality model for complex requests (determined by heuristics: history length, presence of specific keywords like "explain in detail", "why")
 
-**Модель данных:**
+**Data Model:**
 - `tutor_sessions`: id, user_id, started_at, context_lesson_id (nullable)
 - `tutor_messages`: session_id, role (user/assistant), content, created_at
 
 **Acceptance Criteria:**
-- Ответ начинает стримиться пользователю не позднее 2-3 секунд после отправки сообщения (ощущение быстрого отклика важнее полной генерации)
-- История чата сохраняется и доступна для просмотра в рамках текущей сессии обучения
+- Response starts streaming to the user within 2–3 seconds of message submission (the perception of fast response is more important than full generation completion)
+- Chat history is saved and accessible for review within the current study session
 
 ---
 
 ### 3.8 Real World Missions
-**Описание:** Практические ролевые задания, где AI выступает собеседником в симулированной жизненной ситуации.
+**Description:** Practical role-play assignments where AI acts as a conversation partner in a simulated real-life situation.
 
-**Примеры миссий:** заказать еду в ресторане, пройти собеседование на работу, купить билет, забронировать отель, провести презентацию, познакомиться с человеком
+**Example Missions:** ordering food at a restaurant, going through a job interview, buying a ticket, booking a hotel, giving a presentation, meeting a new person
 
-**Логика:**
-- Технически переиспользует движок AI Live Tutor (тот же чат-механизм), но с заданным системным промптом-ролью и сценарием для каждой миссии
-- В конце миссии AI формирует короткую оценку: насколько пользователь справился с коммуникативной задачей, какие фразы стоило использовать иначе
-- Миссии привязываются к целям обучения пользователя (например, цель "Travel" → разблокирует миссии про путешествия)
+**Logic:**
+- Technically reuses the AI Live Tutor engine (same chat mechanism), but with a predefined system prompt role and scenario for each mission
+- At the end of a mission, AI generates a brief assessment: how well the user accomplished the communicative task, which phrases could have been used differently
+- Missions are linked to the user's learning goals (e.g., goal "Travel" → unlocks travel-related missions)
 
-**Модель данных:**
+**Data Model:**
 - `missions`: id, title, scenario_prompt, related_goal (enum), cefr_level_min
 - `user_mission_attempts`: user_id, mission_id, transcript (JSONB), feedback, completed_at
 
 **Acceptance Criteria:**
-- Миссия завершается формированием текстового фидбека пользователю (не просто "конец диалога")
-- Доступные пользователю миссии фильтруются по его текущему уровню и целям
+- A mission concludes with textual feedback to the user (not just "end of dialogue")
+- Available missions are filtered by the user's current level and goals
 
 ---
 
 ### 3.9 AI Writing Exam
-**Описание:** Пользователь пишет эссе на заданную тему, AI оценивает текст по нескольким критериям.
+**Description:** The user writes an essay on a given topic, and AI evaluates the text against multiple criteria.
 
-**Логика:**
-- Система предлагает тему (с учётом цели пользователя — например, IELTS-style prompt для тех, кто готовится к IELTS)
-- Пользователь вводит текст (textarea, без ограничения по времени в MVP)
-- LLM анализирует и возвращает структурированную оценку по критериям: грамматика, словарный запас, связность текста (cohesion), естественность речи, общий стиль
-- Результат — оценка по каждому критерию + общий балл + конкретные рекомендации с примерами исправлений
+**Logic:**
+- The system suggests a topic (considering the user's goal — e.g., IELTS-style prompt for those preparing for IELTS)
+- The user enters text (textarea, no time limit in the MVP)
+- The LLM analyzes and returns a structured assessment by criteria: grammar, vocabulary, text cohesion, naturalness of speech, overall style
+- The result includes a score per criterion + an overall score + specific recommendations with correction examples
 
-**Модель данных:**
+**Data Model:**
 - `writing_exams`: id, user_id, prompt, submitted_text, scores (JSONB: grammar, vocabulary, cohesion, naturalness, style), overall_score, feedback_text, created_at
 
 **Acceptance Criteria:**
-- Оценка возвращается в структурированном виде, пригодном для отображения в виде разбивки по критериям (не просто абзац текста)
-- Текст и оценка сохраняются в истории пользователя для отслеживания прогресса со временем
+- The assessment is returned in a structured format suitable for displaying a criteria-by-criteria breakdown (not just a paragraph of text)
+- The text and assessment are saved in the user's history for tracking progress over time
 
 ---
 
 ### 3.10 AI Listening Exam
-**Описание:** Генерация аудио-материала с последующими вопросами на понимание.
+**Description:** Generation of audio material followed by comprehension questions.
 
-**Логика:**
-1. AI Lesson Generator (или отдельный вызов) создаёт текстовый сценарий подходящей сложности (CEFR-уровень)
-2. Текст озвучивается через Google Cloud TTS
-3. Пользователь прослушивает аудио (без возможности читать транскрипт во время прослушивания — критично для честности теста)
-4. После — отвечает на вопросы на понимание (multiple choice)
-5. Система показывает результат + транскрипт для самопроверки
+**Logic:**
+1. AI Lesson Generator (or a separate call) creates a text script of appropriate difficulty (CEFR level)
+2. The text is voiced via Google Cloud TTS
+3. The user listens to the audio (without the ability to read the transcript during playback — critical for test integrity)
+4. Afterwards — answers comprehension questions (multiple choice)
+5. The system displays the result + transcript for self-review
 
-**Технические соображения:**
-- TTS-аудио кэшируется (один и тот же сгенерированный сценарий можно использовать для нескольких пользователей одного уровня — экономия на TTS-вызовах)
+**Technical Considerations:**
+- TTS audio is cached (the same generated script can be reused for multiple users of the same level — saving on TTS calls)
 
-**Модель данных:**
+**Data Model:**
 - `listening_exams`: id, language_id, level, script_text, audio_url, questions (JSONB)
 - `user_listening_attempts`: user_id, exam_id, answers (JSONB), score, completed_at
 
 **Acceptance Criteria:**
-- Аудио генерируется один раз и переиспользуется, а не генерируется заново при каждом прохождении
-- Транскрипт скрыт от пользователя до завершения теста
+- Audio is generated once and reused, not regenerated on each attempt
+- The transcript is hidden from the user until the test is completed
 
 ---
 
 ### 3.11 AI Error Correction Engine (Grammar + Vocabulary)
-**Описание:** После каждого ответа/действия пользователя (упражнение, writing, чат) система анализирует и фиксирует ошибки в структурированном виде — это основа для персонализации (spaced repetition повторений, AI Coach отчётов).
+**Description:** After each user response/action (exercise, writing, chat), the system analyzes and records errors in a structured format — this is the foundation for personalization (spaced repetition reviews, AI Coach reports).
 
-**Категории в MVP:** Grammar, Vocabulary (Pronunciation/Writing/Listening как отдельные категории ошибок — Фаза 2, частично покрываются через writing/listening exams выше)
+**Categories in the MVP:** Grammar, Vocabulary (Pronunciation/Writing/Listening as separate error categories — Phase 2, partially covered through writing/listening exams above)
 
-**Логика:**
-- При каждом неправильном ответе в упражнении или обнаруженной ошибке в свободном тексте (writing, чат) — создаётся запись об ошибке
-- Хранится: сама ошибка (что написал пользователь), правильный вариант, объяснение (генерируется LLM кратко), счётчик повторений этой же ошибки
-- Если одна и та же категория ошибки повторяется (например, путает Present Perfect / Past Simple) — это передаётся как сигнал в AI Lesson Generator для приоритизации темы повторения
+**Logic:**
+- On each incorrect answer in an exercise or detected error in free text (writing, chat) — an error record is created
+- Stored: the error itself (what the user wrote), the correct variant, an explanation (generated briefly by LLM), a repetition counter for the same error
+- If the same error category recurs (e.g., confusing Present Perfect / Past Simple) — this is forwarded as a signal to AI Lesson Generator to prioritize the review topic
 
-**Модель данных:**
+**Data Model:**
 - `user_errors`: id, user_id, category (enum: grammar/vocabulary), error_text, correct_text, explanation, related_lesson_id (nullable), occurrence_count, last_occurred_at
 
 **Acceptance Criteria:**
-- Каждая фиксируемая ошибка содержит понятное объяснение на ui_language пользователя
-- Повторяющиеся ошибки одного типа агрегируются (occurrence_count++), а не создают дублирующиеся записи
+- Each recorded error contains a clear explanation in the user's ui_language
+- Recurring errors of the same type are aggregated (occurrence_count++), not creating duplicate records
 
 ---
 
-### 3.12 Gamification (XP, уровни, streak)
-**Описание:** Игровые механики для повышения вовлечённости.
+### 3.12 Gamification (XP, Levels, Streak)
+**Description:** Game mechanics to increase engagement.
 
-**Логика:**
-- XP начисляется за: завершение урока, прохождение упражнения, прохождение exam, ежедневный заход в приложение
-- User Level (геймификационный, отдельно от CEFR-уровня) растёт по накоплению XP по простой пороговой таблице
-- Streak — счётчик дней подряд с активностью; сбрасывается, если пользователь пропускает день (с возможным "заморозить streak" как фича для Фазы 2)
+**Logic:**
+- XP is awarded for: completing a lesson, passing an exercise, passing an exam, daily login
+- User Level (gamification level, separate from the CEFR level) grows by accumulating XP according to a simple threshold table
+- Streak — a counter of consecutive days with activity; resets if the user misses a day (with a possible "freeze streak" feature for Phase 2)
 
-**Модель данных:**
+**Data Model:**
 - `user_gamification`: user_id, total_xp, current_game_level, current_streak, longest_streak, last_activity_date
 
 **Acceptance Criteria:**
-- XP начисляется атомарно вместе с действием (нет рассинхронизации между завершением урока и начислением XP)
-- Streak корректно учитывает часовой пояс пользователя при определении "нового дня"
+- XP is awarded atomically together with the action (no desynchronization between lesson completion and XP award)
+- Streak correctly accounts for the user's timezone when determining a "new day"
 
 ---
 
 ### 3.13 Achievement System
-**Описание:** Бейджи/достижения за конкретные вехи, расширяет геймификацию почти без дополнительной разработки.
+**Description:** Badges/achievements for specific milestones, extending gamification with minimal additional development.
 
-**Примеры:** 10 уроков подряд, 100 изученных слов, 50 минут разговорной практики, первая неделя без пропусков
+**Examples:** 10 lessons in a row, 100 learned words, 50 minutes of speaking practice, first week without missing a day
 
-**Логика:**
-- Реализуется через набор правил (triggers), проверяемых после ключевых событий (завершение урока, обновление streak, накопление часов speaking)
-- Список достижений — статическая конфигурация (admin-defined), не требует AI
+**Logic:**
+- Implemented via a set of rules (triggers) checked after key events (lesson completion, streak update, speaking hours accumulation)
+- The list of achievements is a static configuration (admin-defined), does not require AI
 
-**Модель данных:**
+**Data Model:**
 - `achievements`: id, code, title, description, condition_type (enum), condition_value
 - `user_achievements`: user_id, achievement_id, unlocked_at
 
 **Acceptance Criteria:**
-- Достижение начисляется не более одного раза на пользователя
-- Пользователь получает уведомление в интерфейсе сразу при разблокировке (момент события, не при следующем заходе)
+- An achievement is awarded no more than once per user
+- The user receives an in-app notification immediately upon unlock (at the moment of the event, not on the next login)
 
 ---
 
-### 3.14 AI Coach (еженедельный отчёт)
-**Описание:** Раз в неделю AI формирует персональный отчёт по прогрессу пользователя.
+### 3.14 AI Coach (Weekly Report)
+**Description:** Once a week, AI generates a personalized progress report for the user.
 
-**Логика:**
-- Backend-задача (scheduled job) раз в неделю агрегирует данные пользователя: пройденные уроки, накопленные ошибки (из Error Correction Engine), результаты exams, активность по spaced repetition
-- Агрегированные данные передаются в LLM как структурированный контекст, на основе которого генерируется отчёт: сильные стороны, слабые стороны, рекомендации, предлагаемый план на следующую неделю
-- Отчёт отображается в приложении (раздел "Progress" / уведомление)
+**Logic:**
+- A backend task (scheduled job) aggregates user data weekly: completed lessons, accumulated errors (from Error Correction Engine), exam results, spaced repetition activity
+- The aggregated data is passed to the LLM as structured context, based on which a report is generated: strengths, weaknesses, recommendations, suggested plan for the next week
+- The report is displayed in the app (under "Progress" section / notification)
 
-**Технические соображения:**
-- Это AI-вызов с низкой частотой (раз в неделю на пользователя) — можно позволить более качественную модель, расход предсказуем и невысок даже при росте базы пользователей
+**Technical Considerations:**
+- This is a low-frequency AI call (once a week per user) — a higher-quality model (`gemini-2.5-pro`) can be used; costs are predictable and low even as the user base grows
 
-**Модель данных:**
+**Data Model:**
 - `weekly_reports`: id, user_id, period_start, period_end, strengths (text), weaknesses (text), recommendations (text), generated_at
 
 **Acceptance Criteria:**
-- Отчёт генерируется автоматически по расписанию, без необходимости запроса пользователем
-- Если у пользователя недостаточно активности за неделю — отчёт формируется с соответствующей мягкой формулировкой (не пустой/ошибочный отчёт)
+- The report is generated automatically on schedule, without requiring a user request
+- If the user has insufficient activity for the week — the report is generated with appropriately soft wording (not an empty/error report)
 
 ---
 
-## 4. Технический стек (рекомендации)
+## 4. Technology Stack (Recommendations)
 
-| Слой | Технология | Обоснование |
+| Layer | Technology | Rationale |
 |---|---|---|
-| Backend | FastAPI (Python) | Async-нативный, хорошо подходит для I/O-heavy нагрузки (множество вызовов к внешним AI API), встроенная валидация через Pydantic |
-| Frontend | Next.js | SSR/SSG для производительности, развитая экосистема, удобен для WebSocket-интеграций |
-| Real-time слой | WebSocket (через FastAPI + Next.js клиент) | Нужен для AI Live Tutor, Real World Missions и потенциально Speaking-режима — обеспечивает streaming-ощущение диалога |
-| База данных | PostgreSQL | Реляционная модель хорошо описывает структуру (users, lessons, vocabulary, errors), JSONB-поля закрывают потребность в гибких AI-сгенерированных структурах без отдельной NoSQL БД |
-| AI / LLM | Google Cloud Vertex AI | Уже выбран; рекомендация — использовать модели "Flash"-уровня (дешёвые, быстрые) для большинства генераций (уроки, упражнения, чат), более качественные модели — только для AI Coach отчётов и финальной оценки exams, где важна точность |
-| Speech-to-Text | Google Cloud STT | Для голосового ввода (Speaking-режим) |
-| Text-to-Speech | Google Cloud TTS | Для аудио слов, listening exams, озвучки диалогов |
-| Хостинг backend | VPS (бюджетный провайдер) | Снижает базовую стоимость инфраструктуры по сравнению с полностью managed GCloud |
-| Хостинг AI-вызовов | Google Cloud (Vertex AI, STT, TTS) | Используется только то, что обязательно нужно из экосистемы Google — остальное на VPS для экономии |
-| Файловое хранилище (аудио) | Google Cloud Storage | Кэширование сгенерированных TTS-аудио, чтобы не пересчитывать повторно |
-| Аутентификация | Username/password + хеширование (bcrypt/argon2) + JWT для сессий | Простая модель по требованию; OAuth/email-провайдеры — Фаза 2 |
+| Backend | FastAPI (Python) with full OOP architecture | Async-native, well-suited for I/O-heavy workloads (numerous external AI API calls), built-in validation via Pydantic, class-based services/repositories/controllers following SOLID principles |
+| Frontend | Next.js | SSR/SSG for performance, mature ecosystem, convenient for WebSocket integrations |
+| Real-time Layer | WebSocket (via FastAPI + Next.js client) | Required for AI Live Tutor, Real World Missions, and potentially the Speaking mode — provides a streaming conversation experience |
+| Database | PostgreSQL (async via asyncpg + SQLAlchemy async) | Relational model well describes the structure (users, lessons, vocabulary, errors), JSONB fields cover the need for flexible AI-generated structures without a separate NoSQL DB |
+| Migrations | Alembic | Schema versioning and migration management for PostgreSQL |
+| AI / LLM SDK | `google-genai` (`pip install google-genai`) | Unified Google Gen AI SDK; client initialized via `from google import genai; client = genai.Client(vertexai=True, project=PROJECT_ID, location='us-central1')` |
+| AI Models | `gemini-2.5-flash` (default), `gemini-2.5-pro` (high-accuracy) | Flash for most generation tasks (lessons, exercises, chat, error correction); Pro only for AI Coach weekly reports and Writing Exam final grading where accuracy is critical |
+| AI Content Generation | `client.models.generate_content()` with structured output | `response_mime_type='application/json'` + `response_schema=PydanticModel` for type-safe structured responses; `client.models.generate_content_stream()` for streaming (AI Tutor, Missions) |
+| Speech-to-Text | Google Cloud STT (`google-cloud-speech`) | For voice input (Speaking mode) |
+| Text-to-Speech | Google Cloud TTS (`google-cloud-texttospeech`) | For word audio, listening exams, dialogue voicing |
+| Backend Hosting | VPS (budget provider) | Reduces base infrastructure cost compared to fully managed GCloud |
+| AI Call Hosting | Google Cloud (Vertex AI via google-genai, STT, TTS) | Only services requiring the Google ecosystem are used on GCloud — everything else runs on VPS for cost savings |
+| File Storage (audio) | Google Cloud Storage | Caching generated TTS audio to avoid regeneration |
+| Authentication | Username/password + hashing (bcrypt/argon2) + JWT sessions | Simple model per requirements; OAuth/email providers — Phase 2 |
 
-**Альтернатива, которую стоит держать в уме:** если нагрузка на WebSocket-чаты вырастет, можно рассмотреть managed message broker (Redis Pub/Sub) для горизонтального масштабирования WebSocket-соединений между несколькими backend-инстансами — закладывается как архитектурное решение на будущее, не обязательно для MVP с одним сервером.
+**Alternative to keep in mind:** if WebSocket chat load grows, consider a managed message broker (Redis Pub/Sub) for horizontal scaling of WebSocket connections across multiple backend instances — architected as a future option, not required for a single-server MVP.
 
 ---
 
-## 5. Концептуальная модель данных (сводно)
+### 4.1 Backend Architecture Principles
 
-Основные сущности и связи (детали полей — в разделах 3.1–3.14 выше):
+#### 4.1.1 Project Structure (Layered Architecture)
+
+The backend follows a strict layered architecture with clear separation of concerns:
+
+```
+app/
+├── api/                    # API layer — route handlers (controllers)
+│   ├── v1/
+│   │   ├── auth.py
+│   │   ├── lessons.py
+│   │   ├── vocabulary.py
+│   │   ├── tutor.py
+│   │   ├── missions.py
+│   │   ├── exams.py
+│   │   ├── gamification.py
+│   │   └── coach.py
+│   └── dependencies.py     # Shared FastAPI Depends() providers
+├── services/               # Business logic layer — service classes
+│   ├── interfaces/          # Abstract base classes (ABCs) for all services
+│   │   ├── ai_service.py
+│   │   ├── lesson_service.py
+│   │   ├── vocabulary_service.py
+│   │   ├── tutor_service.py
+│   │   ├── exam_service.py
+│   │   └── ...
+│   ├── ai_vertex_service.py # Concrete Vertex AI implementation
+│   ├── lesson_service.py
+│   ├── vocabulary_service.py
+│   ├── spaced_repetition_service.py
+│   ├── tutor_service.py
+│   ├── mission_service.py
+│   ├── exam_service.py
+│   ├── gamification_service.py
+│   ├── coach_service.py
+│   └── error_correction_service.py
+├── repositories/           # Data access layer — repository classes
+│   ├── interfaces/          # Abstract base classes for repositories
+│   │   └── ...
+│   ├── user_repository.py
+│   ├── lesson_repository.py
+│   ├── vocabulary_repository.py
+│   └── ...
+├── models/                 # SQLAlchemy ORM models (database tables)
+│   ├── user.py
+│   ├── lesson.py
+│   ├── vocabulary.py
+│   └── ...
+├── schemas/                # Pydantic models (request/response DTOs)
+│   ├── user.py
+│   ├── lesson.py
+│   ├── vocabulary.py
+│   └── ...
+├── core/                   # Cross-cutting concerns
+│   ├── config.py            # Application settings (Pydantic BaseSettings)
+│   ├── database.py          # Async SQLAlchemy engine/session setup
+│   ├── security.py          # JWT, password hashing utilities
+│   └── exceptions.py        # Custom exception hierarchy
+└── main.py                 # FastAPI application entry point
+```
+
+Each layer depends only on the layer directly below it. The API layer depends on services; services depend on repositories; repositories depend on models. No layer may bypass an intermediate layer.
+
+#### 4.1.2 SOLID Compliance Rules
+
+All backend code must adhere to SOLID principles:
+
+- **Single Responsibility Principle (SRP):** Each class has exactly one reason to change. A service class handles business logic only; a repository handles data access only; an API route handler orchestrates request/response only.
+- **Open/Closed Principle (OCP):** Classes are open for extension but closed for modification. New AI providers, exam types, or gamification rules are added by creating new classes implementing existing interfaces, not by modifying existing ones.
+- **Liskov Substitution Principle (LSP):** Any concrete implementation can replace its abstract base class without altering program correctness. For example, swapping `AIVertexService` for a hypothetical `AIOpenAIService` must not break any service consumer.
+- **Interface Segregation Principle (ISP):** Abstract base classes define narrow, focused interfaces. A single monolithic `AIService` ABC is split into `LessonGeneratorInterface`, `TutorInterface`, `ExamGraderInterface`, etc., so consumers depend only on the capabilities they use.
+- **Dependency Inversion Principle (DIP):** High-level modules (services) do not depend on low-level modules (concrete repositories). Both depend on abstractions (ABCs). All dependencies are injected via FastAPI's `Depends()` mechanism.
+
+#### 4.1.3 Coding Standards
+
+- **No comments in code.** Code must be self-documenting through descriptive naming of classes, methods, variables, and parameters. If a piece of code requires a comment to be understood, it must be refactored for clarity instead.
+- **Type hints everywhere.** All function signatures, return types, and variable declarations must include type annotations. No `Any` types unless absolutely unavoidable.
+- **Pydantic models for all request/response schemas.** No raw `dict` returns from API endpoints. Every request body and response body is defined as a Pydantic model in the `schemas/` directory.
+- **Async throughout.** All I/O-bound operations (database queries, AI API calls, file storage) use `async`/`await`. Synchronous blocking calls are prohibited in the request path.
+- **Dependency injection via `Depends()`.** All service and repository instances are injected through FastAPI's dependency injection system. No manual instantiation of services inside route handlers or other services.
+- **Abstract base classes for all service interfaces.** Every service has a corresponding ABC in `services/interfaces/` that defines its public contract. Concrete implementations inherit from these ABCs.
+- **Repository pattern for all data access.** Direct database queries in services are prohibited. All data operations go through repository classes that encapsulate query logic.
+
+#### 4.1.4 AI Service Abstraction
+
+The AI service layer is designed for provider independence through abstraction:
+
+**Abstract Base Class:**
+```python
+from abc import ABC, abstractmethod
+from schemas.lesson import GeneratedLessonContent
+from schemas.exam import WritingExamFeedback
+
+class AILessonGeneratorInterface(ABC):
+    @abstractmethod
+    async def generate_lesson(
+        self,
+        topic: str,
+        level: str,
+        target_language: str,
+        user_goal: str | None,
+        ui_language: str,
+    ) -> GeneratedLessonContent: ...
+
+class AIExamGraderInterface(ABC):
+    @abstractmethod
+    async def grade_writing_exam(
+        self,
+        prompt: str,
+        submitted_text: str,
+        user_level: str,
+    ) -> WritingExamFeedback: ...
+```
+
+**Concrete Vertex AI Implementation (using `google-genai` SDK):**
+```python
+from google import genai
+from core.config import settings
+from schemas.lesson import GeneratedLessonContent
+from services.interfaces.ai_service import AILessonGeneratorInterface
+
+class AIVertexLessonGenerator(AILessonGeneratorInterface):
+    def __init__(self) -> None:
+        self._client = genai.Client(
+            vertexai=True,
+            project=settings.gcp_project_id,
+            location=settings.gcp_location,
+        )
+        self._model = settings.ai_model_flash  # "gemini-2.5-flash"
+
+    async def generate_lesson(
+        self,
+        topic: str,
+        level: str,
+        target_language: str,
+        user_goal: str | None,
+        ui_language: str,
+    ) -> GeneratedLessonContent:
+        response = self._client.models.generate_content(
+            model=self._model,
+            contents=self._build_prompt(topic, level, target_language, user_goal, ui_language),
+            config={
+                "response_mime_type": "application/json",
+                "response_schema": GeneratedLessonContent,
+            },
+        )
+        return GeneratedLessonContent.model_validate_json(response.text)
+```
+
+**Streaming for AI Tutor / Real World Missions:**
+```python
+stream = client.models.generate_content_stream(
+    model="gemini-2.5-flash",
+    contents=conversation_history,
+)
+for chunk in stream:
+    await websocket.send_text(chunk.text)
+```
+
+**Model Selection Strategy:**
+- `gemini-2.5-flash` — default for all high-frequency generation: lessons, exercises, tutor chat, error correction explanations, mission dialogues
+- `gemini-2.5-pro` — reserved for low-frequency, high-accuracy tasks: AI Coach weekly reports, Writing Exam final grading (accuracy of assessment is critical for user trust)
+
+---
+
+## 5. Conceptual Data Model (Summary)
+
+Main entities and relationships (field details — in sections 3.1–3.14 above):
 
 ```
 users 1---1 user_profile
@@ -372,135 +541,135 @@ users 1---N spaced_repetition_items
 users 1---N tutor_sessions 1---N tutor_messages
 users 1---N user_mission_attempts N---1 missions
 users 1---N writing_exams
-users 1---N listening_exams (через user_listening_attempts)
+users 1---N listening_exams (via user_listening_attempts)
 users 1---N user_errors
 users 1---1 user_gamification
 users 1---N user_achievements N---1 achievements
 users 1---N weekly_reports
 ```
 
-Все таблицы, хранящие AI-сгенерированный контент переменной структуры (lessons.content, missions feedback, exam scores), используют **JSONB** в PostgreSQL — это даёт гибкость без необходимости менять схему БД при каждом изменении формата AI-ответа.
+All tables storing AI-generated content of variable structure (lessons.content, mission feedback, exam scores) use **JSONB** in PostgreSQL — this provides flexibility without needing to change the DB schema every time the AI response format changes.
 
 ---
 
-## 6. Принципы дизайна интерфейса (концептуально, без стилей)
+## 6. Interface Design Principles (Conceptual, Without Styles)
 
-> По запросу — этот PRD описывает только функциональную логику экранов. Визуальный дизайн (цвета, типографика, компоненты) будет проработан отдельно после согласования этого документа.
+> Per request — this PRD describes only the functional logic of screens. Visual design (colors, typography, components) will be developed separately after this document is approved.
 
-Функционально интерфейс должен включать следующие основные экраны/области:
-1. **Регистрация/выбор языка интерфейса/Placement test** — последовательный onboarding-flow
-2. **Главный экран (Dashboard)** — текущий урок, очередь повторения, streak/XP, быстрый доступ к AI Tutor
-3. **Экран урока** — последовательное прохождение блоков (теория → словарь → упражнения → тест)
-4. **AI Tutor Chat** — постоянно доступен (например, как floating-кнопка/отдельная вкладка)
-5. **Real World Missions** — список доступных миссий + экран диалога
-6. **Exams** (Writing/Listening) — отдельные разделы с историей попыток
-7. **Progress / Profile** — XP, achievements, weekly AI Coach отчёты, настройки целей
-
----
-
-## 7. Соображения по безопасности
-
-- Пароли хранятся только в виде хешей (bcrypt или argon2), никогда в открытом виде
-- Сессии — через JWT с ограниченным сроком жизни + refresh-токен механизм
-- Rate limiting на уровне API endpoint для AI-вызовов (особенно Speaking — для контроля дневного лимита 5 минут, и для защиты от abuse на остальных AI-функциях)
-- Валидация и санитизация пользовательского ввода перед передачей в LLM-промпты (защита от prompt injection в полях типа writing exam submissions, чат-сообщения)
-- HTTPS обязателен для всех соединений (включая WebSocket — WSS)
-- Поскольку аутентификация простая (username/password без email-восстановления в MVP) — необходим механизм восстановления доступа на крайний случай (например, через службу поддержки/админ-панель), это нужно явно решить до запуска, иначе пользователи, забывшие пароль, не смогут восстановить доступ
+Functionally, the interface must include the following main screens/areas:
+1. **Registration / Interface language selection / Placement test** — sequential onboarding flow
+2. **Main screen (Dashboard)** — current lesson, review queue, streak/XP, quick access to AI Tutor
+3. **Lesson screen** — sequential completion of blocks (theory → vocabulary → exercises → quiz)
+4. **AI Tutor Chat** — always accessible (e.g., as a floating button/separate tab)
+5. **Real World Missions** — list of available missions + dialogue screen
+6. **Exams** (Writing/Listening) — separate sections with attempt history
+7. **Progress / Profile** — XP, achievements, weekly AI Coach reports, goal settings
 
 ---
 
-## 8. Этапы разработки (Milestones)
+## 7. Security Considerations
 
-**Этап 0 — Инфраструктура и базовая архитектура**
-Настройка FastAPI + PostgreSQL + Next.js, deployment pipeline на VPS, интеграция Vertex AI/STT/TTS, базовая аутентификация
+- Passwords are stored only as hashes (bcrypt or argon2), never in plaintext
+- Sessions — via JWT with limited lifetime + refresh token mechanism
+- Rate limiting at the API endpoint level for AI calls (especially Speaking — to enforce the 5-minute daily limit, and to protect against abuse on other AI features)
+- Validation and sanitization of user input before passing it to LLM prompts (protection against prompt injection in fields like writing exam submissions, chat messages)
+- HTTPS is mandatory for all connections (including WebSocket — WSS)
+- Since authentication is simple (username/password without email recovery in MVP) — an access recovery mechanism is needed as a fallback (e.g., via support/admin panel); this must be explicitly resolved before launch, otherwise users who forget their password will be unable to recover access
 
-**Этап 1 — Onboarding и контентный движок**
-Регистрация → placement test → goals (3.2, 3.3) + AI Lesson Generator (3.4) + Multi-language архитектура (3.1)
+---
 
-**Этап 2 — Обучение и память**
+## 8. Development Milestones
+
+**Milestone 0 — Infrastructure and Core Architecture**
+FastAPI + PostgreSQL + Next.js setup, deployment pipeline on VPS, Vertex AI/STT/TTS integration via `google-genai` SDK, basic authentication
+
+**Milestone 1 — Onboarding and Content Engine**
+Registration → placement test → goals (3.2, 3.3) + AI Lesson Generator (3.4) + Multi-language architecture (3.1)
+
+**Milestone 2 — Learning and Memory**
 Smart Vocabulary (3.5) + Spaced Repetition (3.6) + Error Correction Engine (3.11)
 
-**Этап 3 — Интерактивность**
-AI Live Tutor (3.7, включая WebSocket-слой) + Real World Missions (3.8)
+**Milestone 3 — Interactivity**
+AI Live Tutor (3.7, including WebSocket layer) + Real World Missions (3.8)
 
-**Этап 4 — Оценка знаний**
+**Milestone 4 — Knowledge Assessment**
 AI Writing Exam (3.9) + AI Listening Exam (3.10)
 
-**Этап 5 — Вовлечённость и retention**
+**Milestone 5 — Engagement and Retention**
 Gamification (3.12) + Achievement System (3.13) + AI Coach (3.14)
 
-**Этап 6 — Стабилизация**
-Нагрузочное тестирование AI-затрат, тонкая настройка лимитов (раздел 10.4), приоритизация дешёвых/дорогих моделей по фактическому использованию, исправление багов перед запуском
+**Milestone 6 — Stabilization**
+Load testing of AI costs, fine-tuning of limits (section 10.4), prioritization of cheap/expensive models based on actual usage, bug fixes before launch
 
 ---
 
-## 9. Потенциальные проблемы и способы их решения
+## 9. Potential Risks and Mitigations
 
-| Проблема | Решение |
+| Risk | Mitigation |
 |---|---|
-| Неконтролируемый рост расходов на Vertex AI/STT/TTS при росте пользовательской базы | Жёсткие лимиты на Speaking (5 мин/день), кэширование TTS-аудио и часто запрашиваемого контента уроков, использование дешёвых моделей по умолчанию, мониторинг расходов с алертами на превышение бюджета |
-| Задержка ответа при генерации полного урока (несколько AI-вызовов подряд) | Параллелизация независимых блоков генерации (словарь, упражнения, reading можно генерировать одновременно, не последовательно), кэширование между пользователями одного уровня |
-| WebSocket-соединения не масштабируются при росте нагрузки на одном VPS-инстансе | Архитектурно заложить возможность подключения Redis Pub/Sub для горизонтального масштабирования в будущем (не реализовывать в MVP, но не блокировать такую возможность выбором технологий) |
-| Качество AI-сгенерированного контента (грамматические ошибки в самих уроках) | В MVP — выборочная ручная проверка администратором сгенерированного контента перед публикацией для широкой аудитории (AI Content Review из исходного ТЗ — частично, в облегчённой ручной форме); полноценная автоматическая AI-проверка — Фаза 2 |
-| Восстановление пароля при простой username/password аутентификации | Решить до запуска: либо security questions, либо обязательное резервное email на этапе регистрации (без OAuth), либо admin-assisted восстановление |
-| Злоупотребление AI Tutor чатом (флуд, нерелевантные запросы) | Лимиты на количество сообщений в день по умолчанию (см. 10.4), модерация на уровне промпта (системные инструкции ограничивают тематику ответов) |
+| Uncontrolled cost growth for Vertex AI/STT/TTS as the user base grows | Hard limits on Speaking (5 min/day), caching TTS audio and frequently requested lesson content, using affordable models by default, cost monitoring with budget overage alerts |
+| Response delay when generating a full lesson (multiple sequential AI calls) | Parallelization of independent generation blocks (vocabulary, exercises, reading can be generated simultaneously, not sequentially), caching across users of the same level |
+| WebSocket connections don't scale under load on a single VPS instance | Architecturally allow for adding Redis Pub/Sub for horizontal scaling in the future (do not implement in MVP, but do not block this possibility through technology choices) |
+| Quality of AI-generated content (grammatical errors in the lessons themselves) | In MVP — selective manual review by an administrator of generated content before publishing to a wide audience (AI Content Review from the original spec — partial, in a lightweight manual form); fully automated AI review — Phase 2 |
+| Password recovery with simple username/password authentication | Resolve before launch: either security questions, or a mandatory backup email during registration (without OAuth), or admin-assisted recovery |
+| AI Tutor chat abuse (flooding, irrelevant requests) | Default daily message limits (see 10.4), moderation at the prompt level (system instructions restrict response topics) |
 
 ---
 
-## 10. Дополнительные технические детали
+## 10. Additional Technical Details
 
-### 10.1 Подход к выбору AI-моделей
-- **Дешёвые/быстрые модели** (по умолчанию): генерация уроков, упражнений, обычный AI Tutor чат, error correction объяснения
-- **Более качественные модели** (выборочно): AI Coach еженедельный отчёт (низкая частота вызова — раз в неделю на пользователя), финальная оценка Writing Exam (точность оценки критична для пользовательского доверия)
+### 10.1 AI Model Selection Approach
+- **Affordable/fast models** (`gemini-2.5-flash`, default): lesson generation, exercises, regular AI Tutor chat, error correction explanations
+- **Higher-quality models** (`gemini-2.5-pro`, selective): AI Coach weekly report (low call frequency — once per week per user), Writing Exam final grading (assessment accuracy is critical for user trust)
 
-### 10.2 Кэширование как стратегия снижения затрат
-- TTS-аудио: кэшируется по тексту, не регенерируется
-- Сгенерированные уроки: кэшируются по (topic, level, language) с точечной персонализацией поверх кэша (например, замена нескольких примеров под цель пользователя, а не полная регенерация)
-- Listening exam сценарии: кэшируются и переиспользуются между пользователями одного уровня
+### 10.2 Caching as a Cost Reduction Strategy
+- TTS audio: cached by text, not regenerated
+- Generated lessons: cached by (topic, level, language) with selective personalization on top of the cache (e.g., replacing several examples to match the user's goal, rather than full regeneration)
+- Listening exam scripts: cached and reused across users of the same level
 
-### 10.3 WebSocket — где используется
-- AI Live Tutor (стриминг ответа)
-- Real World Missions (диалог в реальном времени)
-- AI Speaking-сессии (если голосовой режим реализуется как непрерывный поток, а не отдельные запрос-ответ)
+### 10.3 WebSocket — Where It Is Used
+- AI Live Tutor (response streaming via `generate_content_stream()`)
+- Real World Missions (real-time dialogue)
+- AI Speaking sessions (if voice mode is implemented as a continuous stream rather than individual request-response)
 
-### 10.4 Лимиты использования (default quotas — рекомендация для дальнейшей настройки)
-Поскольку явное решение по лимитам отложено, ниже приведены **стартовые разумные значения**, которые легко изменить через конфигурацию (не хардкодить в коде):
+### 10.4 Usage Limits (Default Quotas — Recommendations for Further Tuning)
+Since a definitive decision on limits is deferred, the following are **reasonable starting values** that can be easily changed via configuration (not hardcoded):
 
-| Функция | Предлагаемый дефолтный лимит |
+| Feature | Proposed Default Limit |
 |---|---|
-| AI Speaking | 5 минут/день (жёсткий лимит, согласован) |
-| AI Live Tutor (сообщений) | ~50 сообщений/день |
-| AI Lesson Generator (новых уроков) | ~10 новых уроков/день (повторное прохождение существующих — без лимита) |
-| Writing Exam (попыток) | ~3 попытки/день |
-| Listening Exam (попыток) | ~5 попыток/день |
-| Real World Missions | ~10 миссий/день |
+| AI Speaking | 5 minutes/day (hard limit, agreed upon) |
+| AI Live Tutor (messages) | ~50 messages/day |
+| AI Lesson Generator (new lessons) | ~10 new lessons/day (retaking existing ones — unlimited) |
+| Writing Exam (attempts) | ~3 attempts/day |
+| Listening Exam (attempts) | ~5 attempts/day |
+| Real World Missions | ~10 missions/day |
 
-Эти значения должны храниться в конфигурационной таблице/переменных окружения, а не в коде — чтобы их можно было оперативно менять по факту наблюдения за реальными расходами после запуска.
-
----
-
-## 11. Возможности будущего расширения (Фаза 2+)
-
-- Полноценный ML-движок персонализации учебного пути (вместо упрощённого правила "% ошибок → повторение")
-- Shadowing Mode (анализ произношения через сравнение с оригиналом)
-- AI Speaking Exam (полноценный экзамен с оценкой устной речи)
-- Голосовое интервью для определения уровня при регистрации
-- Community Mode (поиск партнёров для практики, разговорные клубы, рейтинги)
-- Teacher Dashboard (B2B-функционал для преподавателей/школ)
-- Полноценный AI Content Review (автоматическая проверка качества сгенерированных уроков)
-- AI Conversation Memory (долгосрочная память диалогов между сессиями, в т.ч. через дни/недели)
-- Personalized Review Lessons как отдельный модуль (сверх текущего покрытия через spaced repetition + error correction)
-- Learning Analytics dashboard (агрегированная аналитика по сложным темам/словам на уровне всей платформы)
-- Дополнительные target-языки сверх English
-- Нативные мобильные приложения (iOS/Android)
-- Платные подписочные планы (монетизация сверх free-уровня)
-- OAuth/email-аутентификация и восстановление пароля
+These values must be stored in a configuration table/environment variables, not in code — so they can be adjusted promptly based on actual observed costs after launch.
 
 ---
 
-## 12. Открытые вопросы для уточнения с командой разработки
+## 11. Future Expansion Possibilities (Phase 2+)
 
-1. Точные значения дефолтных лимитов (раздел 10.4) — финализировать после оценки реальной стоимости API-вызовов в тестовом режиме
-2. SLA на время генерации урока — нужна техническая оценка после прототипирования параллельных AI-вызовов
-3. Механизм восстановления пароля — требует решения до запуска (раздел 9)
-4. Конкретные топики/программа по CEFR-уровням для English — нужен начальный список тем (admin-curated), на основе которого работает AI Lesson Generator
+- Full ML-driven learning path personalization engine (replacing the simplified "% errors → review" rule)
+- Shadowing Mode (pronunciation analysis through comparison with the original)
+- AI Speaking Exam (full exam with oral speech assessment)
+- Voice interview for level determination during registration
+- Community Mode (partner matching for practice, conversation clubs, leaderboards)
+- Teacher Dashboard (B2B functionality for teachers/schools)
+- Full AI Content Review (automated quality checking of generated lessons)
+- AI Conversation Memory (long-term dialogue memory between sessions, including across days/weeks)
+- Personalized Review Lessons as a separate module (beyond current coverage through spaced repetition + error correction)
+- Learning Analytics dashboard (aggregated analytics on difficult topics/words across the entire platform)
+- Additional target languages beyond English
+- Native mobile applications (iOS/Android)
+- Paid subscription plans (monetization beyond the free tier)
+- OAuth/email authentication and password recovery
+
+---
+
+## 12. Open Questions for the Development Team
+
+1. Exact values for default limits (section 10.4) — finalize after evaluating actual API call costs in a testing environment
+2. SLA for lesson generation time — requires technical evaluation after prototyping parallel AI calls
+3. Password recovery mechanism — requires a decision before launch (section 9)
+4. Specific topics/curriculum per CEFR level for English — an initial topic list (admin-curated) is needed, which the AI Lesson Generator will use as its foundation

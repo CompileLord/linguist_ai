@@ -1,0 +1,5 @@
+Generate a multiple-choice question to assess language proficiency.
+Target Language: $target_language
+Difficulty Level: $difficulty_level
+The question should test grammar, vocabulary, or comprehension appropriate for the $difficulty_level level.
+Provide exactly 4 options, a correct_answer_index (0-3), and a brief explanation in $ui_language of why the answer is correct.

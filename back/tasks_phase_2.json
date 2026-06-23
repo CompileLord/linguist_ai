@@ -1,0 +1,611 @@
+{
+  "project": "LinguistAI Backend",
+  "file": "tasks_phase_2.json",
+  "description": "Backend development tasks for Phases 2 and 3 of the LinguistAI platform. Phase 2 covers learning and memory subsystems including smart vocabulary management, spaced repetition (SM-2), and AI-driven error correction. Phase 3 covers interactive features including WebSocket-based AI live tutoring and real-world communicative missions. All implementations follow full OOP with SOLID principles, use FastAPI, PostgreSQL via SQLAlchemy, and Google Vertex AI (google-genai SDK).",
+  "phases": [
+    {
+      "id": "phase-2",
+      "name": "Learning & Memory Systems",
+      "description": "Core learning engine subsystems that power vocabulary acquisition, long-term retention through spaced repetition, and intelligent error tracking with AI-generated corrections.",
+      "modules": [
+        {
+          "id": "mod-2.1",
+          "name": "Smart Vocabulary System",
+          "description": "End-to-end vocabulary management including word storage with rich metadata, per-user tracking, TTS audio generation, and automatic extraction of new vocabulary from completed lessons.",
+          "tasks": [
+            {
+              "id": "task-2.1.1",
+              "title": "Create Vocabulary SQLAlchemy Model",
+              "description": "Define the Vocabulary ORM model representing a single vocabulary entry in the system. The model stores the word itself, its language association, contextual translation data as JSONB, phonetic transcription, a URL to pre-generated TTS audio, CEFR proficiency level classification, and a corpus frequency rank for prioritizing high-utility words.",
+              "acceptance_criteria": [
+                "Vocabulary model defines columns: id (UUID, primary key), language_id (FK to languages table), word (String, indexed), translation_context (JSONB storing translations keyed by target language with example sentences), transcription (String, nullable), audio_url (String, nullable), cefr_level (String enum A1-C2), frequency_rank (Integer, nullable)",
+                "A composite unique constraint exists on (language_id, word) to prevent duplicate entries for the same word in the same language",
+                "The model includes created_at and updated_at timestamp columns with server-side defaults",
+                "Relationship to Language model is defined with lazy loading strategy",
+                "Alembic migration is generated and applies cleanly to the database with appropriate indexes on language_id, word, and cefr_level columns"
+              ],
+              "depends_on": ["task-0.2.1"],
+              "priority": "critical",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-2.1.2",
+              "title": "Create UserVocabulary SQLAlchemy Model",
+              "description": "Define the UserVocabulary ORM model that tracks a specific user's relationship with a vocabulary entry. This join model records whether the user has marked the word as known, how many times they have reviewed it, how many errors they have made, and when the last review occurred. This data feeds into the spaced repetition system and dashboard analytics.",
+              "acceptance_criteria": [
+                "UserVocabulary model defines columns: id (UUID, primary key), user_id (FK to users table, indexed), vocabulary_id (FK to vocabulary table, indexed), is_known (Boolean, default false), repetitions_count (Integer, default 0), errors_count (Integer, default 0), last_reviewed_at (DateTime, nullable)",
+                "A composite unique constraint exists on (user_id, vocabulary_id) to prevent duplicate user-word associations",
+                "The model includes created_at timestamp with server-side default",
+                "Relationships to User and Vocabulary models are defined with appropriate loading strategies",
+                "Cascade delete is configured so that deleting a User or Vocabulary entry removes associated UserVocabulary records"
+              ],
+              "depends_on": ["task-2.1.1", "task-0.3.1"],
+              "priority": "critical",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-2.1.3",
+              "title": "Implement Vocabulary Repository with Deduplication Logic",
+              "description": "Implement the vocabulary repository class that encapsulates all database operations for vocabulary entries. The repository must enforce deduplication by performing a lookup on (language_id, word) before any insert operation. If a matching record exists, the repository returns the existing entry instead of creating a duplicate. Bulk insert operations must also respect this constraint.",
+              "acceptance_criteria": [
+                "VocabularyRepository class inherits from BaseRepository and provides methods: get_by_id, get_by_language_and_word, create, bulk_create, list_by_language, list_by_cefr_level, search_by_prefix",
+                "The create method performs a SELECT query filtered by language_id and word before INSERT; if a match is found, it returns the existing record without modification",
+                "The bulk_create method accepts a list of vocabulary data dicts, deduplicates against existing records in a single query, and only inserts genuinely new entries, returning all records (existing + newly created)",
+                "The search_by_prefix method supports case-insensitive prefix matching on the word column using ILIKE for autocomplete functionality",
+                "All repository methods use async SQLAlchemy sessions and handle IntegrityError gracefully in case of race conditions on the unique constraint"
+              ],
+              "depends_on": ["task-2.1.1", "task-0.2.3"],
+              "priority": "critical",
+              "estimated_hours": 5
+            },
+            {
+              "id": "task-2.1.4",
+              "title": "Implement Vocabulary Service",
+              "description": "Implement the vocabulary service class that orchestrates business logic for vocabulary operations. The service coordinates between the vocabulary repository, user vocabulary repository, and external services (TTS, AI extraction). It exposes methods for adding words to a user's collection, recording review outcomes, and retrieving vocabulary filtered by various criteria.",
+              "acceptance_criteria": [
+                "VocabularyService class accepts VocabularyRepository, UserVocabularyRepository, and TTSService as constructor dependencies via dependency injection",
+                "The add_word_for_user method creates the vocabulary entry (with deduplication), creates the UserVocabulary association, and triggers async TTS generation if audio_url is not yet populated",
+                "The record_review method updates UserVocabulary fields (repetitions_count, errors_count, is_known, last_reviewed_at) based on a ReviewOutcome schema and returns the updated record",
+                "The get_user_vocabulary method supports pagination, filtering by is_known status, sorting by last_reviewed_at or errors_count, and returns Pydantic response schemas",
+                "All service methods validate input using Pydantic schemas and raise domain-specific exceptions (VocabularyNotFoundError, DuplicateVocabularyError) that map to appropriate HTTP status codes"
+              ],
+              "depends_on": ["task-2.1.3", "task-2.1.2"],
+              "priority": "critical",
+              "estimated_hours": 6
+            },
+            {
+              "id": "task-2.1.5",
+              "title": "Implement TTS Audio Generation for Vocabulary Words with Caching",
+              "description": "Implement a TTS (Text-to-Speech) service that generates pronunciation audio for vocabulary words. Audio is generated once per word using Google Cloud Text-to-Speech API, stored in Cloud Storage, and the resulting URL is persisted on the Vocabulary record. Subsequent requests for the same word return the cached URL without regenerating audio.",
+              "acceptance_criteria": [
+                "TTSService class provides a generate_audio method that accepts a word string and language code, returns the Cloud Storage URL of the generated audio file",
+                "Before calling the TTS API, the service checks if the Vocabulary record already has a non-null audio_url and returns it immediately if present (cache-hit path)",
+                "Generated audio files are stored in a configurable Cloud Storage bucket with a deterministic path pattern (e.g., tts/{language_code}/{word_hash}.mp3) to enable deduplication at the storage level",
+                "The service updates the Vocabulary record's audio_url field after successful upload and handles TTS API failures gracefully by logging the error and returning None without blocking the calling operation",
+                "Audio generation runs as a background task (using FastAPI BackgroundTasks or an async task queue) so that vocabulary creation responses are not delayed by TTS processing"
+              ],
+              "depends_on": ["task-2.1.1", "task-0.1.3"],
+              "priority": "high",
+              "estimated_hours": 6
+            },
+            {
+              "id": "task-2.1.6",
+              "title": "Create Vocabulary API Router",
+              "description": "Create the FastAPI router exposing vocabulary endpoints for listing vocabulary, retrieving a user's vocabulary collection, and recording review outcomes. All endpoints require authentication and return properly structured Pydantic response models.",
+              "acceptance_criteria": [
+                "GET /vocabulary endpoint accepts query parameters (language_id, cefr_level, search, page, per_page) and returns a paginated list of vocabulary entries with total count metadata",
+                "GET /vocabulary/user endpoint returns the authenticated user's vocabulary collection with UserVocabulary metadata (is_known, repetitions_count, errors_count, last_reviewed_at), supports filtering by is_known and sorting options",
+                "POST /vocabulary/{id}/review endpoint accepts a ReviewOutcome request body (quality rating 0-5, response_time_ms), updates the user's vocabulary record via the service, and returns the updated UserVocabulary state",
+                "All endpoints are protected by the JWT authentication dependency and extract user_id from the token claims",
+                "OpenAPI schema is generated with descriptive operation IDs, summary text, and response model definitions for each endpoint"
+              ],
+              "depends_on": ["task-2.1.4", "task-0.3.5"],
+              "priority": "high",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-2.1.7",
+              "title": "Implement Automatic Vocabulary Extraction from Completed Lessons",
+              "description": "Implement a service that analyzes the content of completed lessons and extracts new vocabulary words appropriate for the user's level. The extraction uses Vertex AI to identify key vocabulary from lesson text, filters out words the user already knows, and adds the remaining words to the user's vocabulary collection with contextual translation data.",
+              "acceptance_criteria": [
+                "VocabularyExtractionService accepts the lesson content and user's current vocabulary set, constructs a Vertex AI prompt that instructs the model to extract vocabulary words with translations and example sentences, and parses the structured JSON response",
+                "The extraction prompt specifies the user's CEFR level and ui_language so that translations and explanations are generated at the appropriate complexity and in the correct language",
+                "Extracted words are cross-referenced against the user's existing UserVocabulary records; only genuinely new words are added to their collection via VocabularyService.add_word_for_user",
+                "The extraction is triggered automatically when a lesson is marked as completed (via an event or direct service call from the lesson completion flow) and runs asynchronously without blocking the lesson completion response",
+                "The service handles Vertex AI response parsing errors gracefully, logging malformed responses and skipping unparseable entries without failing the entire extraction batch"
+              ],
+              "depends_on": ["task-2.1.4", "task-0.4.2"],
+              "priority": "medium",
+              "estimated_hours": 7
+            }
+          ]
+        },
+        {
+          "id": "mod-2.2",
+          "name": "Spaced Repetition System (SM-2)",
+          "description": "Implementation of the SuperMemo SM-2 spaced repetition algorithm for long-term retention of vocabulary and grammar items. Includes the mathematical algorithm service, review queue management, and daily aggregation for dashboard analytics.",
+          "tasks": [
+            {
+              "id": "task-2.2.1",
+              "title": "Create SpacedRepetitionItem SQLAlchemy Model",
+              "description": "Define the SpacedRepetitionItem ORM model that tracks the spaced repetition state for each learnable item (vocabulary word or grammar rule) per user. This model stores all SM-2 algorithm parameters including the current interval, ease factor, and next scheduled review date.",
+              "acceptance_criteria": [
+                "SpacedRepetitionItem model defines columns: id (UUID, primary key), user_id (FK to users table, indexed), item_type (Enum with values 'vocab' and 'grammar'), item_id (UUID, the FK to either vocabulary or grammar item), learned_at (DateTime, server default), last_reviewed_at (DateTime, nullable), next_review_at (DateTime, indexed), interval_days (Float, default 1.0), ease_factor (Float, default 2.5), mastery_percent (Float, default 0.0)",
+                "A composite unique constraint exists on (user_id, item_type, item_id) to prevent duplicate tracking entries for the same user-item pair",
+                "An index exists on (user_id, next_review_at) to efficiently query the review queue for a specific user",
+                "The item_type column uses a PostgreSQL Enum type with proper naming convention and migration support",
+                "Alembic migration is generated with appropriate index definitions and applies cleanly to the database"
+              ],
+              "depends_on": ["task-0.2.1", "task-2.1.1"],
+              "priority": "critical",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-2.2.2",
+              "title": "Implement SM-2 Algorithm Service",
+              "description": "Implement a pure algorithmic service that calculates the next review interval and updated ease factor based on the SM-2 spaced repetition algorithm. This service performs only mathematical computations with zero external dependencies — no database calls, no AI calls. It accepts the current item state and a quality-of-response rating (0-5) and returns the computed next state.",
+              "acceptance_criteria": [
+                "SM2AlgorithmService exposes a calculate_next_review method that accepts current ease_factor (float), current interval_days (float), repetition_number (int), and quality (int, 0-5), and returns a dataclass/schema containing new_interval_days, new_ease_factor, new_mastery_percent, and next_review_date",
+                "The algorithm correctly implements SM-2 rules: quality < 3 resets interval to 1 day and repetition to 0; quality >= 3 progresses the interval (1 → 6 → previous_interval * ease_factor); ease_factor is updated as EF' = EF + (0.1 - (5-q) * (0.08 + (5-q) * 0.02)) with a minimum floor of 1.3",
+                "Mastery percent is derived from a combination of consecutive successful reviews and current ease factor, capped at 100.0",
+                "The service is stateless and has no constructor dependencies (no repository, no database session, no external service), making it trivially unit-testable",
+                "Unit tests cover all quality ratings (0-5), edge cases (minimum ease factor floor, first review vs subsequent reviews), and verify interval progression matches the SM-2 specification"
+              ],
+              "depends_on": [],
+              "priority": "critical",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-2.2.3",
+              "title": "Implement Review Queue Builder Service",
+              "description": "Implement a service that constructs the daily review queue for a user by querying SpacedRepetitionItem records where next_review_at is less than or equal to the current timestamp. The queue is ordered by priority (overdue items first, then by mastery_percent ascending) and supports configurable batch sizes.",
+              "acceptance_criteria": [
+                "ReviewQueueService provides a get_review_queue method that accepts user_id, optional item_type filter, and batch_size (default 20), returning an ordered list of SpacedRepetitionItem records due for review",
+                "Items are ordered by: overdue duration descending (most overdue first), then mastery_percent ascending (weakest items prioritized), then ease_factor ascending",
+                "The service provides a get_queue_stats method returning a summary dataclass with total_due_count, vocab_due_count, grammar_due_count, and next_review_at (earliest upcoming review if queue is empty)",
+                "The service correctly handles timezone-aware datetime comparisons using UTC throughout",
+                "The batch_size parameter limits the number of returned items to prevent overwhelming the user, while get_queue_stats always reflects the full count of due items"
+              ],
+              "depends_on": ["task-2.2.1"],
+              "priority": "high",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-2.2.4",
+              "title": "Implement Spaced Repetition Repository",
+              "description": "Implement the repository class for SpacedRepetitionItem that encapsulates all database access patterns required by the SM-2 system. This includes CRUD operations, queue queries, and aggregation queries for dashboard analytics.",
+              "acceptance_criteria": [
+                "SpacedRepetitionRepository class inherits from BaseRepository and provides methods: get_by_id, get_by_user_and_item (user_id, item_type, item_id), create, update, list_due_items (user_id, cutoff_datetime, item_type filter, limit), count_due_items",
+                "The list_due_items method constructs a query filtering by user_id and next_review_at <= cutoff_datetime with configurable ordering and pagination",
+                "The repository provides a get_daily_review_counts method that returns a list of (date, count) tuples for the last N days for a given user, using a PostgreSQL date_trunc aggregation query",
+                "The create method checks for existing (user_id, item_type, item_id) combinations and raises a DuplicateItemError if a record already exists",
+                "All methods use async SQLAlchemy sessions and return model instances or raise domain-specific exceptions"
+              ],
+              "depends_on": ["task-2.2.1", "task-0.2.3"],
+              "priority": "high",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-2.2.5",
+              "title": "Create Review API Router",
+              "description": "Create the FastAPI router exposing review queue and review response submission endpoints. These endpoints allow the frontend to fetch the user's current review queue and submit quality ratings after each review card.",
+              "acceptance_criteria": [
+                "GET /review/queue endpoint accepts optional query parameters (item_type, batch_size) and returns the authenticated user's review queue as a list of review card schemas including the item details (word/grammar rule), item_type, due_since timestamp, and current mastery_percent",
+                "POST /review/{item_id}/respond endpoint accepts a ReviewResponse request body (quality: int 0-5, response_time_ms: int), invokes SM2AlgorithmService to calculate the next state, persists the update via the repository, and returns the updated item state including next_review_at",
+                "GET /review/stats endpoint returns the user's review statistics including total_due_today, completed_today, streak_days, and daily_counts for the last 30 days for chart rendering",
+                "All endpoints are protected by JWT authentication and validate that the requested items belong to the authenticated user (returning 403 if not)",
+                "Error responses use consistent error schemas with appropriate HTTP status codes (404 for unknown item_id, 422 for invalid quality rating outside 0-5 range)"
+              ],
+              "depends_on": ["task-2.2.2", "task-2.2.3", "task-2.2.4", "task-0.3.5"],
+              "priority": "high",
+              "estimated_hours": 5
+            },
+            {
+              "id": "task-2.2.6",
+              "title": "Implement Daily Review Count Aggregation for Dashboard Display",
+              "description": "Implement a dashboard analytics service method that aggregates review activity data for display on the user's learning dashboard. This includes daily review counts, current streak calculation, and trend analysis over configurable time windows.",
+              "acceptance_criteria": [
+                "DashboardAnalyticsService (or extension of existing analytics service) provides a get_review_analytics method that accepts user_id and period_days (default 30) and returns a ReviewAnalytics schema",
+                "ReviewAnalytics schema includes: daily_counts (list of date-count pairs), total_reviews_in_period, average_daily_reviews, current_streak_days, longest_streak_days, mastery_distribution (dict mapping mastery percentage buckets to item counts)",
+                "Current streak is calculated by counting consecutive days with at least one review working backward from today; a day with zero reviews breaks the streak",
+                "Mastery distribution buckets items into ranges: 0-25% (struggling), 26-50% (learning), 51-75% (familiar), 76-100% (mastered) with counts for each",
+                "The aggregation query is optimized to run as a single database round-trip using PostgreSQL window functions or CTEs rather than loading all items into application memory"
+              ],
+              "depends_on": ["task-2.2.4"],
+              "priority": "medium",
+              "estimated_hours": 5
+            }
+          ]
+        },
+        {
+          "id": "mod-2.3",
+          "name": "AI Error Correction Engine",
+          "description": "Intelligent error tracking and correction system that uses Vertex AI to detect, categorize, aggregate, and explain user errors. Frequent error patterns are signaled to the lesson generator to prioritize review content.",
+          "tasks": [
+            {
+              "id": "task-2.3.1",
+              "title": "Create UserError SQLAlchemy Model",
+              "description": "Define the UserError ORM model that stores individual error instances detected in user responses. Each error records the erroneous text, the corrected version, an AI-generated explanation, the error category, and an occurrence counter for aggregation.",
+              "acceptance_criteria": [
+                "UserError model defines columns: id (UUID, primary key), user_id (FK to users table, indexed), category (Enum with values 'grammar' and 'vocabulary'), error_text (Text, the incorrect user input), correct_text (Text, the AI-corrected version), explanation (Text, AI-generated explanation in user's ui_language), related_lesson_id (FK to lessons table, nullable), occurrence_count (Integer, default 1), last_occurred_at (DateTime, server default, updated on each occurrence)",
+                "The model includes created_at timestamp with server-side default",
+                "An index exists on (user_id, category) for filtered queries and on (user_id, occurrence_count) for frequent error lookups",
+                "Relationship to User model and optional relationship to Lesson model are defined with lazy loading",
+                "Alembic migration is generated and applies cleanly with proper enum type registration and index creation"
+              ],
+              "depends_on": ["task-0.2.1", "task-0.3.1"],
+              "priority": "critical",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-2.3.2",
+              "title": "Implement Error Detection Service",
+              "description": "Implement a service that analyzes user responses from exercises, writing tasks, and chat conversations to detect grammatical and vocabulary errors using Vertex AI. The service sends the user's text along with the expected context to the LLM and parses the structured error response.",
+              "acceptance_criteria": [
+                "ErrorDetectionService accepts the user's response text, the exercise/context type, the target language, and the user's CEFR level, constructs a Vertex AI prompt instructing the model to identify errors and return a structured JSON array of detected errors",
+                "Each detected error in the response includes: error_text (the exact erroneous substring), correct_text (the correction), category (grammar or vocabulary), and a brief explanation suitable for the user's level",
+                "The prompt explicitly instructs the model to be lenient according to the user's CEFR level (e.g., not flagging advanced grammar in A1-level responses) and to focus on errors that impede communication",
+                "The service uses response_mime_type='application/json' in the Vertex AI generate_content call to enforce structured output and validates the response against a Pydantic schema",
+                "Error detection is idempotent — analyzing the same response text twice produces consistent results without side effects until the results are explicitly persisted via the error aggregation logic"
+              ],
+              "depends_on": ["task-0.4.2"],
+              "priority": "critical",
+              "estimated_hours": 7
+            },
+            {
+              "id": "task-2.3.3",
+              "title": "Implement Error Aggregation Logic",
+              "description": "Implement logic that intelligently aggregates detected errors rather than storing duplicate entries. When a user makes the same type of error repeatedly, the system increments the occurrence_count on the existing record and updates last_occurred_at instead of creating a new row. Similarity matching is used to determine if two errors are 'the same type'.",
+              "acceptance_criteria": [
+                "ErrorAggregationService provides a record_errors method that accepts a list of detected errors (from ErrorDetectionService) and the user_id, and either creates new UserError records or updates existing ones",
+                "Two errors are considered 'the same type' if they share the same user_id, category, and the error_text matches an existing record's error_text via case-insensitive exact match or normalized text comparison (stripping punctuation and extra whitespace)",
+                "When a matching existing error is found, the service increments occurrence_count by 1, updates last_occurred_at to the current timestamp, and optionally updates the explanation if the new explanation is longer/more detailed",
+                "When no match is found, a new UserError record is created with occurrence_count=1",
+                "The aggregation handles concurrent writes safely using SELECT FOR UPDATE or optimistic locking to prevent race conditions on the occurrence_count increment"
+              ],
+              "depends_on": ["task-2.3.1", "task-2.3.2"],
+              "priority": "high",
+              "estimated_hours": 5
+            },
+            {
+              "id": "task-2.3.4",
+              "title": "Implement Error Explanation Generation via Vertex AI",
+              "description": "Implement a service that generates detailed, pedagogically appropriate explanations for detected errors using Vertex AI. The explanations are generated in the user's ui_language and tailored to their CEFR level, including the grammar rule violated, a corrected example, and a tip for avoiding the error in the future.",
+              "acceptance_criteria": [
+                "ErrorExplanationService provides a generate_explanation method that accepts the error_text, correct_text, category, target_language, user's CEFR level, and user's ui_language, and returns a structured explanation string",
+                "The Vertex AI prompt instructs the model to produce the explanation in the user's ui_language with three sections: what went wrong, the applicable rule/pattern, and a memorable tip or mnemonic for avoiding the error",
+                "The explanation complexity scales with the user's CEFR level (e.g., A1 gets simple short explanations, C1 gets nuanced linguistic analysis)",
+                "The service caches explanations by a hash of (error_text, correct_text, category, target_language) to avoid regenerating identical explanations for recurring error patterns",
+                "API failures or timeouts result in a fallback generic explanation (e.g., 'The correct form is: {correct_text}') rather than leaving the explanation field empty"
+              ],
+              "depends_on": ["task-0.4.2"],
+              "priority": "high",
+              "estimated_hours": 5
+            },
+            {
+              "id": "task-2.3.5",
+              "title": "Implement Error Repository",
+              "description": "Implement the repository class for UserError that provides all database access methods required by the error correction engine, including filtered queries, frequency-based lookups, and aggregation queries.",
+              "acceptance_criteria": [
+                "ErrorRepository class inherits from BaseRepository and provides methods: get_by_id, create, update, find_matching_error (user_id, category, error_text), list_by_user (user_id, category filter, pagination), list_frequent (user_id, min_occurrence_count, limit)",
+                "The find_matching_error method performs case-insensitive comparison on error_text and returns the first matching record or None",
+                "The list_frequent method returns errors ordered by occurrence_count descending, filtered to only include errors with occurrence_count >= min_occurrence_count (default 3)",
+                "The repository provides a get_error_summary method returning aggregate counts: total_errors, grammar_errors, vocabulary_errors, most_common_error_text for a given user",
+                "All methods use async SQLAlchemy sessions and handle edge cases (empty results, nullable fields) without raising unexpected exceptions"
+              ],
+              "depends_on": ["task-2.3.1", "task-0.2.3"],
+              "priority": "high",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-2.3.6",
+              "title": "Create Error API Router",
+              "description": "Create the FastAPI router exposing error tracking endpoints that allow the frontend to display the user's error history and their most frequent mistakes for focused review.",
+              "acceptance_criteria": [
+                "GET /errors endpoint accepts query parameters (category, page, per_page, sort_by with options 'recent' and 'frequent') and returns a paginated list of the authenticated user's errors with full details including explanation",
+                "GET /errors/frequent endpoint accepts query parameters (category, min_count default 3, limit default 10) and returns the user's most frequently occurring errors ordered by occurrence_count descending",
+                "Each error response includes id, category, error_text, correct_text, explanation, occurrence_count, last_occurred_at, and optionally the related_lesson_id with lesson title",
+                "All endpoints are protected by JWT authentication and scoped to the authenticated user's data only",
+                "Response schemas are defined as Pydantic models with proper field descriptions and examples for OpenAPI documentation"
+              ],
+              "depends_on": ["task-2.3.5", "task-2.3.4", "task-0.3.5"],
+              "priority": "high",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-2.3.7",
+              "title": "Implement Error Signal Emission to Lesson Generator",
+              "description": "Implement a mechanism that signals the lesson generation system when a user accumulates frequent errors in a specific category or pattern. This signal causes the lesson generator to prioritize creating review lessons that target the user's weak areas, closing the feedback loop between error detection and adaptive content generation.",
+              "acceptance_criteria": [
+                "ErrorSignalService provides a check_and_emit_signals method that is called after error aggregation, evaluates whether any error has crossed the frequency threshold (configurable, default 5 occurrences), and emits a signal to the lesson generation pipeline",
+                "The signal payload includes: user_id, error_category, error_text, correct_text, occurrence_count, and a suggested_focus string describing what the review lesson should reinforce",
+                "The signal is implemented as either an internal event (using an in-process event bus or direct service call) or a database-backed queue entry that the lesson generator polls",
+                "The service tracks which errors have already triggered signals (via a signaled_at timestamp on the UserError record) to avoid emitting duplicate signals for the same error pattern",
+                "Integration test verifies the end-to-end flow: user response → error detection → aggregation → threshold crossed → signal emitted with correct payload"
+              ],
+              "depends_on": ["task-2.3.3", "task-2.3.5"],
+              "priority": "medium",
+              "estimated_hours": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Interactive Features",
+      "description": "User-facing interactive features including real-time AI tutoring via WebSocket and scenario-based real-world communication missions that simulate practical language use situations.",
+      "modules": [
+        {
+          "id": "mod-3.1",
+          "name": "AI Live Tutor (WebSocket Chat)",
+          "description": "Real-time conversational AI tutor powered by Vertex AI with streaming responses delivered over WebSocket connections. Includes session management, conversation history tracking, context-aware system prompts, and rate limiting.",
+          "tasks": [
+            {
+              "id": "task-3.1.1",
+              "title": "Implement WebSocket Connection Manager",
+              "description": "Implement a WebSocket connection manager class that handles the lifecycle of WebSocket connections including connect, disconnect, and broadcast operations. The manager maintains a registry of active connections keyed by user_id and session_id, supporting multiple concurrent sessions per user.",
+              "acceptance_criteria": [
+                "WebSocketConnectionManager class provides async methods: connect (registers a WebSocket and session_id), disconnect (removes a WebSocket from the registry and performs cleanup), send_personal_message (sends a message to a specific connection by session_id), broadcast_to_user (sends a message to all active connections for a user_id)",
+                "The internal registry uses a dict mapping user_id to a dict of session_id → WebSocket, allowing O(1) lookup for message routing",
+                "The disconnect method handles cases where the WebSocket is already closed or the connection was never properly registered without raising exceptions",
+                "The manager provides an active_connections_count property and a get_user_sessions method for monitoring and debugging purposes",
+                "Connection and disconnection events are logged at INFO level with user_id and session_id for observability"
+              ],
+              "depends_on": ["task-0.1.1"],
+              "priority": "critical",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-3.1.2",
+              "title": "Create TutorSession SQLAlchemy Model",
+              "description": "Define the TutorSession ORM model that represents a single tutoring conversation session between a user and the AI tutor. Each session tracks the topic context, active lesson association, and session lifecycle timestamps.",
+              "acceptance_criteria": [
+                "TutorSession model defines columns: id (UUID, primary key), user_id (FK to users table, indexed), title (String, auto-generated or user-provided), topic_context (JSONB, nullable, storing the lesson topic, learning goals, and other context passed to the system prompt), active_lesson_id (FK to lessons table, nullable), started_at (DateTime, server default), ended_at (DateTime, nullable), is_active (Boolean, default true, indexed)",
+                "A composite index exists on (user_id, is_active) for quickly retrieving a user's active sessions",
+                "Relationship to User model and optional relationship to Lesson model are defined",
+                "The model includes a message_count integer column (default 0) that is incremented as messages are added for quick count access without JOIN",
+                "Alembic migration is generated and applies cleanly with all indexes and foreign keys properly defined"
+              ],
+              "depends_on": ["task-0.2.1", "task-0.3.1"],
+              "priority": "critical",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-3.1.3",
+              "title": "Create TutorMessage SQLAlchemy Model",
+              "description": "Define the TutorMessage ORM model that stores individual messages within a tutoring session. Each message records the sender role (user or assistant), the message content, and metadata for conversation history reconstruction.",
+              "acceptance_criteria": [
+                "TutorMessage model defines columns: id (UUID, primary key), session_id (FK to tutor_sessions table, indexed), role (Enum with values 'user' and 'assistant'), content (Text, the message body), token_count (Integer, nullable, estimated tokens consumed by this message), created_at (DateTime, server default, indexed within session)",
+                "A composite index exists on (session_id, created_at) for efficient ordered retrieval of conversation history",
+                "Relationship to TutorSession model is defined with cascade delete (deleting a session removes all its messages)",
+                "The model supports storing structured content (e.g., corrections inline) via an optional metadata JSONB column",
+                "Alembic migration is generated and applies cleanly with proper index and foreign key definitions"
+              ],
+              "depends_on": ["task-3.1.2"],
+              "priority": "critical",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-3.1.4",
+              "title": "Implement Tutor Session Repository",
+              "description": "Implement the repository class for TutorSession that provides all database access methods for creating, retrieving, and managing tutoring sessions.",
+              "acceptance_criteria": [
+                "TutorSessionRepository inherits from BaseRepository and provides methods: create, get_by_id, get_active_session (user_id), list_by_user (user_id, pagination, include_ended filter), end_session (sets ended_at and is_active=false), increment_message_count",
+                "The get_active_session method returns the most recently started active session for a user or None if no active session exists",
+                "The list_by_user method supports pagination and ordering by started_at descending, with an option to exclude ended sessions",
+                "The end_session method atomically sets ended_at to current timestamp and is_active to false, returning the updated session",
+                "All methods use async SQLAlchemy sessions and raise SessionNotFoundError for invalid session_id lookups"
+              ],
+              "depends_on": ["task-3.1.2", "task-0.2.3"],
+              "priority": "high",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-3.1.5",
+              "title": "Implement Tutor Message Repository",
+              "description": "Implement the repository class for TutorMessage that provides database access for storing and retrieving conversation messages within tutoring sessions.",
+              "acceptance_criteria": [
+                "TutorMessageRepository inherits from BaseRepository and provides methods: create, list_by_session (session_id, limit, offset, order), get_last_n_messages (session_id, n), count_by_session (session_id)",
+                "The get_last_n_messages method retrieves the N most recent messages for a session ordered by created_at ascending (chronological order for prompt construction)",
+                "The create method accepts role, content, and optional token_count, creates the message record, and returns it with populated id and created_at fields",
+                "The list_by_session method supports cursor-based pagination using created_at for infinite scroll in the chat UI",
+                "All methods validate that the session_id refers to an existing TutorSession and raise SessionNotFoundError otherwise"
+              ],
+              "depends_on": ["task-3.1.3", "task-0.2.3"],
+              "priority": "high",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-3.1.6",
+              "title": "Implement Tutor Service with Streaming LLM Responses",
+              "description": "Implement the core tutor service that processes user messages, constructs context-aware prompts, sends them to Vertex AI using streaming generation, and yields response chunks for real-time delivery over WebSocket. The service coordinates session management, message persistence, and AI interaction.",
+              "acceptance_criteria": [
+                "TutorService provides an async generator method process_message that accepts session_id, user_message text, and user context, yields string chunks of the AI response as they arrive from the streaming API",
+                "The method persists the user message before calling Vertex AI, accumulates the full assistant response from streamed chunks, and persists the complete assistant message after the stream finishes",
+                "Vertex AI is called using client.models.generate_content_stream with model='gemini-2.5-flash', passing the system prompt and conversation history as the contents parameter",
+                "If the Vertex AI stream raises an exception mid-stream, the service yields an error message chunk, persists a partial response with an error metadata flag, and logs the exception with full context",
+                "The service respects a configurable max_context_messages parameter (default 20) limiting how many historical messages are included in the prompt to manage token usage"
+              ],
+              "depends_on": ["task-3.1.4", "task-3.1.5", "task-0.4.2"],
+              "priority": "critical",
+              "estimated_hours": 8
+            },
+            {
+              "id": "task-3.1.7",
+              "title": "Build System Prompt Constructor for Tutor",
+              "description": "Implement a service that dynamically constructs the system prompt for the AI tutor based on the user's profile, current learning context, and session topic. The prompt establishes the tutor's persona, communication style, and instructional constraints.",
+              "acceptance_criteria": [
+                "TutorPromptBuilder class provides a build method that accepts user_profile (including cefr_level, target_language, ui_language, learning_goals) and session_context (active_lesson_topic, session_title) and returns a fully formatted system prompt string",
+                "The system prompt instructs the AI to communicate in the user's target_language at the appropriate CEFR level complexity, with explanations and metalinguistic comments in the user's ui_language",
+                "The prompt includes the active lesson topic (if any) as the conversation focus, the user's declared learning goals as long-term context, and instructions to gently correct errors inline using a consistent correction format",
+                "The builder supports prompt templates stored as configurable strings (not hardcoded) that can be updated without code changes, using Python string formatting or Jinja2-style template variables",
+                "The generated prompt is validated to be under a configurable token limit (default 2000 tokens) using a token estimation function, with truncation of lower-priority sections if the limit is exceeded"
+              ],
+              "depends_on": ["task-0.3.1"],
+              "priority": "high",
+              "estimated_hours": 5
+            },
+            {
+              "id": "task-3.1.8",
+              "title": "Implement WebSocket Endpoint for Tutor Chat",
+              "description": "Implement the FastAPI WebSocket endpoint that handles the real-time tutor chat communication. The endpoint authenticates the user, validates the session, processes incoming messages through the TutorService, and streams response chunks back to the client.",
+              "acceptance_criteria": [
+                "WebSocket endpoint at /ws/tutor/{session_id} accepts a WebSocket connection, validates the JWT token passed as a query parameter or first message, and registers the connection with the WebSocketConnectionManager",
+                "Incoming messages are parsed as JSON with a type field ('message', 'ping', 'end_session') and dispatched accordingly: 'message' type is forwarded to TutorService.process_message, 'end_session' triggers session closure",
+                "AI response chunks from the TutorService async generator are sent to the client as JSON messages with type='chunk' and content fields, followed by a type='done' message when the stream completes",
+                "The endpoint handles WebSocketDisconnect exceptions by cleaning up the connection from the manager and ending the session if configured to do so",
+                "Connection errors, authentication failures, and session validation failures result in a JSON error message sent to the client followed by a clean WebSocket close with an appropriate close code (4001 for auth failure, 4004 for session not found)"
+              ],
+              "depends_on": ["task-3.1.1", "task-3.1.6", "task-3.1.7", "task-0.3.5"],
+              "priority": "critical",
+              "estimated_hours": 6
+            },
+            {
+              "id": "task-3.1.9",
+              "title": "Implement Session Context Management",
+              "description": "Implement context management logic that maintains a sliding window of conversation history for inclusion in the Vertex AI prompt. The context manager retrieves the last N messages from the session, formats them as the expected prompt structure, and manages the total token budget to stay within model limits.",
+              "acceptance_criteria": [
+                "SessionContextManager provides a build_context method that accepts session_id and max_messages (default 20), retrieves the last N messages from TutorMessageRepository, and returns them formatted as a list of content dicts with role and parts keys matching the Vertex AI API schema",
+                "The method estimates the total token count of the context window using a configurable token estimator (character-based approximation or tokenizer) and drops the oldest messages first if the total exceeds a max_context_tokens limit (default 8000)",
+                "The system prompt from TutorPromptBuilder is prepended as the first element in the contents list with role='user' and model acknowledgment as role='model', ensuring the AI always has its instructions",
+                "The context includes a summary of dropped messages (if any) as a brief system note, so the AI is aware that earlier conversation history exists but is not included",
+                "Unit tests verify correct message ordering (chronological), token budget enforcement, and proper formatting of the Vertex AI content structure"
+              ],
+              "depends_on": ["task-3.1.5", "task-3.1.7"],
+              "priority": "high",
+              "estimated_hours": 5
+            },
+            {
+              "id": "task-3.1.10",
+              "title": "Implement Rate Limiting for Tutor Messages",
+              "description": "Implement a rate limiting mechanism that restricts the number of tutor messages a user can send per day. The limit is configurable and prevents abuse of the AI tutor feature. Rate limit status is communicated to the client so the frontend can display remaining message counts.",
+              "acceptance_criteria": [
+                "TutorRateLimiter class provides methods: check_limit (user_id) returning a RateLimitStatus with allowed (bool), remaining (int), reset_at (datetime); and increment (user_id) to record a message",
+                "The daily limit is configurable via application settings with a default of 50 messages per day, and the daily window resets at midnight UTC",
+                "Rate limit state is stored in the database (in a UserDailyUsage table or similar) rather than in-memory, so it persists across server restarts and works in multi-instance deployments",
+                "When the rate limit is exceeded, the TutorService returns a structured error message to the client with the rate limit status and reset_at timestamp instead of processing the message through Vertex AI",
+                "The WebSocket endpoint includes rate limit information in the 'done' message after each AI response so the frontend can display the remaining message count to the user"
+              ],
+              "depends_on": ["task-3.1.6", "task-0.3.1"],
+              "priority": "medium",
+              "estimated_hours": 5
+            }
+          ]
+        },
+        {
+          "id": "mod-3.2",
+          "name": "Real World Missions",
+          "description": "Scenario-based communicative tasks that simulate real-world language use situations (ordering food, job interviews, asking directions). Missions reuse the tutor chat engine with specialized scenario prompts and provide AI-generated completion feedback.",
+          "tasks": [
+            {
+              "id": "task-3.2.1",
+              "title": "Create Mission SQLAlchemy Model",
+              "description": "Define the Mission ORM model representing a predefined communicative scenario that users can attempt. Each mission defines a scenario context, the communicative goal it targets, and the minimum CEFR level required to attempt it.",
+              "acceptance_criteria": [
+                "Mission model defines columns: id (UUID, primary key), title (String, the mission name displayed to users), description (Text, a brief user-facing description of the scenario), scenario_prompt (Text, the detailed system prompt used to configure the AI tutor for this mission), related_goal (Enum matching the user learning goals: 'travel', 'work', 'study', 'daily_life', 'exam_prep'), cefr_level_min (String enum A1-C2, the minimum level required)",
+                "The model includes columns: estimated_duration_minutes (Integer), difficulty_rating (Integer 1-5), and is_active (Boolean, default true) for content management",
+                "The model includes created_at and updated_at timestamp columns",
+                "Indexes exist on related_goal and cefr_level_min for filtered listing queries",
+                "Alembic migration is generated and applies cleanly with proper enum type registration"
+              ],
+              "depends_on": ["task-0.2.1"],
+              "priority": "critical",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-3.2.2",
+              "title": "Create UserMissionAttempt SQLAlchemy Model",
+              "description": "Define the UserMissionAttempt ORM model that records a user's attempt at completing a mission. Each attempt stores the full conversation transcript, the AI-generated feedback on performance, and completion metadata.",
+              "acceptance_criteria": [
+                "UserMissionAttempt model defines columns: id (UUID, primary key), user_id (FK to users table, indexed), mission_id (FK to missions table, indexed), transcript (JSONB, storing the full array of message objects with role and content), feedback (Text, nullable, the AI-generated evaluation of the attempt), score (Float, nullable, 0-100 representing performance), status (Enum: 'in_progress', 'completed', 'abandoned'), started_at (DateTime, server default), completed_at (DateTime, nullable)",
+                "The transcript JSONB column stores messages in chronological order as [{role: 'user'|'assistant', content: '...', timestamp: '...'}] for replay and analysis",
+                "Relationships to User and Mission models are defined with appropriate loading strategies",
+                "An index exists on (user_id, mission_id) for querying a user's attempts at a specific mission",
+                "Alembic migration is generated and applies cleanly with proper enum, index, and foreign key definitions"
+              ],
+              "depends_on": ["task-3.2.1", "task-0.3.1"],
+              "priority": "critical",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-3.2.3",
+              "title": "Implement Mission Repository",
+              "description": "Implement the repository class for Mission and UserMissionAttempt that provides all database access methods for mission management and attempt tracking.",
+              "acceptance_criteria": [
+                "MissionRepository inherits from BaseRepository and provides methods: get_by_id, list_available (cefr_level, related_goal filter, pagination), list_all_active, count_by_goal_and_level",
+                "The list_available method filters missions where cefr_level_min <= the provided user level and is_active is true, ordered by difficulty_rating ascending",
+                "MissionAttemptRepository inherits from BaseRepository and provides methods: create, get_by_id, update, list_by_user (user_id, mission_id filter, status filter, pagination), get_latest_attempt (user_id, mission_id), count_completed (user_id)",
+                "The get_latest_attempt method returns the most recent attempt for a user-mission pair, useful for determining if the user has already completed or is currently attempting a mission",
+                "All methods use async SQLAlchemy sessions and raise domain-specific exceptions (MissionNotFoundError, AttemptNotFoundError) for invalid lookups"
+              ],
+              "depends_on": ["task-3.2.1", "task-3.2.2", "task-0.2.3"],
+              "priority": "high",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-3.2.4",
+              "title": "Implement Mission Service",
+              "description": "Implement the mission service that orchestrates mission lifecycle including starting a mission (creating an attempt and initializing a tutor session with the mission's scenario prompt), processing messages (reusing the tutor chat engine), and completing a mission (triggering feedback generation).",
+              "acceptance_criteria": [
+                "MissionService accepts MissionRepository, MissionAttemptRepository, TutorService, and MissionFeedbackService as constructor dependencies",
+                "The start_mission method validates that the user meets the CEFR level requirement, creates a UserMissionAttempt with status 'in_progress', creates a TutorSession with topic_context populated from the mission's scenario data, and returns the session_id for WebSocket connection",
+                "The service reuses the TutorService and WebSocket infrastructure for message processing — mission conversations are regular tutor sessions with a specialized system prompt derived from the Mission's scenario_prompt field",
+                "The complete_mission method updates the attempt status to 'completed', sets completed_at, retrieves the full transcript from TutorMessageRepository, stores it in the attempt's transcript JSONB, and triggers async feedback generation",
+                "The abandon_mission method sets the attempt status to 'abandoned' and ends the associated tutor session, without generating feedback"
+              ],
+              "depends_on": ["task-3.2.3", "task-3.1.6"],
+              "priority": "critical",
+              "estimated_hours": 7
+            },
+            {
+              "id": "task-3.2.5",
+              "title": "Implement Mission Completion Feedback Generation via Vertex AI",
+              "description": "Implement a service that evaluates a completed mission transcript using Vertex AI and generates structured feedback on how well the user handled the communicative task. The feedback covers task completion, language accuracy, fluency, and specific improvement suggestions.",
+              "acceptance_criteria": [
+                "MissionFeedbackService provides a generate_feedback method that accepts the mission scenario_prompt, the conversation transcript, the user's CEFR level, and ui_language, and returns a MissionFeedback schema with score, summary, strengths, weaknesses, and improvement_suggestions",
+                "The Vertex AI prompt instructs the model to evaluate the transcript against the mission's communicative objectives (derived from scenario_prompt) and rate performance on: task_completion (did they achieve the communicative goal), accuracy (grammatical correctness), vocabulary_range (appropriateness and variety), and fluency (natural flow of conversation)",
+                "The overall score (0-100) is a weighted average of the sub-scores with configurable weights (default: task_completion 40%, accuracy 25%, vocabulary 20%, fluency 15%)",
+                "The feedback summary and improvement suggestions are generated in the user's ui_language for comprehension",
+                "The service uses response_mime_type='application/json' to enforce structured output and validates the response against the MissionFeedback Pydantic schema, falling back to a generic feedback message if parsing fails"
+              ],
+              "depends_on": ["task-0.4.2"],
+              "priority": "high",
+              "estimated_hours": 6
+            },
+            {
+              "id": "task-3.2.6",
+              "title": "Create Mission API Router",
+              "description": "Create the FastAPI router exposing mission-related endpoints for browsing available missions, starting mission attempts, and completing missions with feedback retrieval.",
+              "acceptance_criteria": [
+                "GET /missions endpoint accepts query parameters (related_goal, cefr_level, page, per_page) and returns a paginated list of available missions filtered by the user's level and optionally by learning goal, each mission includes whether the user has completed it before and their best score",
+                "POST /missions/{id}/start endpoint validates the user meets the CEFR prerequisite, creates a new mission attempt via MissionService.start_mission, and returns the attempt_id and tutor session_id for WebSocket connection",
+                "POST /missions/{id}/complete endpoint accepts the attempt_id in the request body, triggers mission completion and feedback generation via MissionService.complete_mission, and returns the attempt record with feedback (or a 202 Accepted if feedback is being generated asynchronously with a polling URL)",
+                "GET /missions/{id}/attempts endpoint returns the authenticated user's attempt history for a specific mission, ordered by started_at descending, including scores and feedback for completed attempts",
+                "All endpoints are protected by JWT authentication, validate that resources belong to the authenticated user, and return consistent error responses with appropriate HTTP status codes (403 for CEFR level mismatch, 404 for unknown mission, 409 for already in-progress attempt)"
+              ],
+              "depends_on": ["task-3.2.4", "task-3.2.5", "task-0.3.5"],
+              "priority": "high",
+              "estimated_hours": 5
+            },
+            {
+              "id": "task-3.2.7",
+              "title": "Create Seed Migration with Initial Mission Scenarios",
+              "description": "Create a data migration that populates the missions table with 12 initial mission scenarios covering a range of learning goals and CEFR levels. Each mission includes a detailed scenario prompt that instructs the AI tutor to roleplay the appropriate situation.",
+              "acceptance_criteria": [
+                "The seed migration inserts 12 mission records covering all five related_goal values (travel: 3, work: 3, study: 2, daily_life: 2, exam_prep: 2) distributed across CEFR levels A1 through C1",
+                "Each mission has a unique, descriptive title (e.g., 'Order Dinner at a Restaurant', 'Job Interview: Software Developer', 'Ask for Directions in a New City'), a user-facing description summarizing the scenario, and an estimated_duration_minutes value",
+                "Each mission's scenario_prompt is a detailed system prompt (200-400 words) that instructs the AI to roleplay a specific character in the scenario, defines the conversational context, specifies what constitutes successful task completion, and sets the language complexity appropriate to the cefr_level_min",
+                "The migration is idempotent — running it multiple times does not create duplicate missions (uses INSERT ON CONFLICT DO NOTHING or checks for existing records by title)",
+                "The migration includes a reverse operation that removes only the seeded missions by their known UUIDs or titles without affecting user-created content"
+              ],
+              "depends_on": ["task-3.2.1"],
+              "priority": "medium",
+              "estimated_hours": 5
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
