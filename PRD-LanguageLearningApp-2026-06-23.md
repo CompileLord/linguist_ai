@@ -113,7 +113,7 @@ Core principle: **content, repetitions, errors, and recommendations are generate
 - Final quiz on the lesson topic (5 questions)
 - A brief speaking task (for use in Real World Missions/AI Tutor)
 - A short reading text on the topic
-- Listening material (text script, subsequently voiced via Google TTS in a separate call)
+- Listening material (text script, subsequently voiced via Piper TTS in a separate call)
 
 **Logic for Selecting the Next Topic (simplified for MVP):**
 - Topics follow a predefined curriculum for each level (admin-curated topic list per CEFR level), but the order and pace adapt: if the user makes many mistakes on the current topic — the system inserts an additional review lesson before moving on
@@ -146,7 +146,7 @@ Core principle: **content, repetitions, errors, and recommendations are generate
 
 **Logic:**
 - New words are automatically added to the user's vocabulary from each completed lesson
-- Audio for a word is generated once via Google Cloud TTS and cached (Cloud Storage) — not regenerated for other users
+- Audio for a word is generated once via Piper TTS and cached locally (Local Storage) — not regenerated for other users
 
 **Data Model:**
 - `vocabulary`: id, language_id, word, translation_context (JSONB by ui_language), transcription, audio_url, cefr_level, frequency_rank
@@ -246,7 +246,7 @@ Core principle: **content, repetitions, errors, and recommendations are generate
 
 **Logic:**
 1. AI Lesson Generator (or a separate call) creates a text script of appropriate difficulty (CEFR level)
-2. The text is voiced via Google Cloud TTS
+2. The text is voiced via Piper TTS
 3. The user listens to the audio (without the ability to read the transcript during playback — critical for test integrity)
 4. Afterwards — answers comprehension questions (multiple choice)
 5. The system displays the result + transcript for self-review
@@ -352,10 +352,10 @@ Core principle: **content, repetitions, errors, and recommendations are generate
 | AI Models | `gemini-2.5-flash` (default), `gemini-2.5-pro` (high-accuracy) | Flash for most generation tasks (lessons, exercises, chat, error correction); Pro only for AI Coach weekly reports and Writing Exam final grading where accuracy is critical |
 | AI Content Generation | `client.models.generate_content()` with structured output | `response_mime_type='application/json'` + `response_schema=PydanticModel` for type-safe structured responses; `client.models.generate_content_stream()` for streaming (AI Tutor, Missions) |
 | Speech-to-Text | Google Cloud STT (`google-cloud-speech`) | For voice input (Speaking mode) |
-| Text-to-Speech | Google Cloud TTS (`google-cloud-texttospeech`) | For word audio, listening exams, dialogue voicing |
+| Text-to-Speech | Piper TTS (Local) | For word audio, listening exams, dialogue voicing |
 | Backend Hosting | VPS (budget provider) | Reduces base infrastructure cost compared to fully managed GCloud |
-| AI Call Hosting | Google Cloud (Vertex AI via google-genai, STT, TTS) | Only services requiring the Google ecosystem are used on GCloud — everything else runs on VPS for cost savings |
-| File Storage (audio) | Google Cloud Storage | Caching generated TTS audio to avoid regeneration |
+| AI Call Hosting | Google Cloud (Vertex AI via google-genai, STT) | Only services requiring the Google ecosystem are used on GCloud — everything else runs on VPS for cost savings |
+| File Storage (audio) | Local Storage | Caching generated TTS audio locally to avoid regeneration |
 | Authentication | Username/password + hashing (bcrypt/argon2) + JWT sessions | Simple model per requirements; OAuth/email providers — Phase 2 |
 
 **Alternative to keep in mind:** if WebSocket chat load grows, consider a managed message broker (Redis Pub/Sub) for horizontal scaling of WebSocket connections across multiple backend instances — architected as a future option, not required for a single-server MVP.
@@ -581,7 +581,7 @@ Functionally, the interface must include the following main screens/areas:
 ## 8. Development Milestones
 
 **Milestone 0 — Infrastructure and Core Architecture**
-FastAPI + PostgreSQL + Next.js setup, deployment pipeline on VPS, Vertex AI/STT/TTS integration via `google-genai` SDK, basic authentication
+FastAPI + PostgreSQL + Next.js setup, deployment pipeline on VPS, Vertex AI/STT/Piper TTS integration, basic authentication
 
 **Milestone 1 — Onboarding and Content Engine**
 Registration → placement test → goals (3.2, 3.3) + AI Lesson Generator (3.4) + Multi-language architecture (3.1)
@@ -607,7 +607,7 @@ Load testing of AI costs, fine-tuning of limits (section 10.4), prioritization o
 
 | Risk | Mitigation |
 |---|---|
-| Uncontrolled cost growth for Vertex AI/STT/TTS as the user base grows | Hard limits on Speaking (5 min/day), caching TTS audio and frequently requested lesson content, using affordable models by default, cost monitoring with budget overage alerts |
+| Uncontrolled cost growth for Vertex AI/STT as the user base grows | Hard limits on Speaking (5 min/day), caching TTS audio and frequently requested lesson content, using affordable models by default, cost monitoring with budget overage alerts |
 | Response delay when generating a full lesson (multiple sequential AI calls) | Parallelization of independent generation blocks (vocabulary, exercises, reading can be generated simultaneously, not sequentially), caching across users of the same level |
 | WebSocket connections don't scale under load on a single VPS instance | Architecturally allow for adding Redis Pub/Sub for horizontal scaling in the future (do not implement in MVP, but do not block this possibility through technology choices) |
 | Quality of AI-generated content (grammatical errors in the lessons themselves) | In MVP — selective manual review by an administrator of generated content before publishing to a wide audience (AI Content Review from the original spec — partial, in a lightweight manual form); fully automated AI review — Phase 2 |

@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     
     CORS_ORIGINS: List[str] = []
     
-    GCS_BUCKET_NAME: str = "linguist-ai-audio"
+    LOCAL_STORAGE_DIR: str = "media/audio"
 
     model_config = SettingsConfigDict(
         env_file=".env",

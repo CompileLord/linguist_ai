@@ -2,6 +2,7 @@ import time
 from datetime import datetime
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, status
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.core.config import settings
@@ -9,7 +10,7 @@ from app.core.database import db_manager
 from app.core.exceptions import register_exception_handlers
 from app.core.middleware import RateLimitMiddleware
 from app.core.logging import LoggerFactory
-from app.api.routers import auth, onboarding, lessons
+from app.api.routers import auth, onboarding, lessons, vocabulary, review, errors
 
 logger = LoggerFactory.get_logger("LinguistAI")
 
@@ -57,9 +58,14 @@ app.add_middleware(RateLimitMiddleware)
 
 register_exception_handlers(app)
 
+app.mount("/static", StaticFiles(directory="media"), name="static")
+
 app.include_router(auth.router)
 app.include_router(onboarding.router)
 app.include_router(lessons.router)
+app.include_router(vocabulary.router)
+app.include_router(review.router)
+app.include_router(errors.router)
 
 @app.get("/")
 async def root():

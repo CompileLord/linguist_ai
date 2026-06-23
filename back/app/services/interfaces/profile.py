@@ -22,3 +22,11 @@ class AbstractProfileService(AbstractService[AbstractProfileRepository]):
     @abstractmethod
     async def complete_placement(self, user_id: uuid.UUID, level: CEFRLevel, score: float) -> ProfileResponse:
         pass
+
+    @abstractmethod
+    async def add_xp(self, user_id: uuid.UUID, xp: int) -> ProfileResponse:
+        pass
+
+    @abstractmethod
+    async def update_streak(self, user_id: uuid.UUID, increment: int) -> ProfileResponse:
+        pass

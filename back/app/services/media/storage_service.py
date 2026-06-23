@@ -1,96 +1,42 @@
+import os
 import hashlib
-from datetime import timedelta
-from google.cloud import storage
-from google.api_core.exceptions import GoogleAPIError
+from pathlib import Path
 from app.core.config import settings
-from app.core.exceptions import ExternalServiceException
 
 class StorageService:
     def __init__(self) -> None:
-        self.bucket_name = settings.GCS_BUCKET_NAME
-        try:
-            self.client = storage.Client()
-        except Exception:
-            self.client = None
-
-    def _get_bucket(self) -> storage.Bucket:
-        if not self.client:
-            raise ExternalServiceException(
-                detail="Google Cloud Storage client is not initialized",
-                error_code="STORAGE_CLIENT_NOT_INITIALIZED"
-            )
-        try:
-            return self.client.bucket(self.bucket_name)
-        except GoogleAPIError as e:
-            raise ExternalServiceException(
-                detail=f"Failed to access bucket {self.bucket_name}: {str(e)}",
-                error_code="STORAGE_BUCKET_ERROR"
-            )
+        self.base_dir = Path(settings.LOCAL_STORAGE_DIR)
+        self.base_dir.mkdir(parents=True, exist_ok=True)
 
     def generate_hash_path(self, data: bytes, extension: str) -> str:
         sha256_hash = hashlib.sha256(data).hexdigest()
         return f"{sha256_hash[:2]}/{sha256_hash[2:4]}/{sha256_hash}.{extension}"
 
     async def upload(self, data: bytes, destination_path: str, content_type: str) -> str:
-        try:
-            bucket = self._get_bucket()
-            blob = bucket.blob(destination_path)
-            blob.upload_from_string(data, content_type=content_type)
-            return f"gs://{self.bucket_name}/{destination_path}"
-        except GoogleAPIError as e:
-            raise ExternalServiceException(
-                detail=f"Storage upload failed: {str(e)}",
-                error_code="STORAGE_UPLOAD_ERROR"
-            )
+        file_path = self.base_dir / destination_path
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(file_path, "wb") as f:
+            f.write(data)
+        return str(file_path)
 
     async def download(self, source_path: str) -> bytes:
-        try:
-            bucket = self._get_bucket()
-            blob = bucket.blob(source_path)
-            return blob.download_as_bytes()
-        except GoogleAPIError as e:
-            raise ExternalServiceException(
-                detail=f"Storage download failed: {str(e)}",
-                error_code="STORAGE_DOWNLOAD_ERROR"
-            )
+        file_path = self.base_dir / source_path
+        if not file_path.exists():
+            raise FileNotFoundError(f"File not found: {file_path}")
+        with open(file_path, "rb") as f:
+            return f.read()
 
     async def get_signed_url(self, path: str, expiration_minutes: int = 60) -> str:
-        try:
-            bucket = self._get_bucket()
-            blob = bucket.blob(path)
-            url = blob.generate_signed_url(
-                version="v4",
-                expiration=timedelta(minutes=expiration_minutes),
-                method="GET"
-            )
-            return url
-        except GoogleAPIError as e:
-            raise ExternalServiceException(
-                detail=f"Failed to generate signed URL: {str(e)}",
-                error_code="STORAGE_SIGNED_URL_ERROR"
-            )
+        return f"/static/audio/{path}"
 
     async def exists(self, path: str) -> bool:
-        try:
-            bucket = self._get_bucket()
-            blob = bucket.blob(path)
-            return blob.exists()
-        except GoogleAPIError as e:
-            raise ExternalServiceException(
-                detail=f"Failed to check object existence: {str(e)}",
-                error_code="STORAGE_EXIST_ERROR"
-            )
+        file_path = self.base_dir / path
+        return file_path.exists()
 
     async def delete(self, path: str) -> None:
-        try:
-            bucket = self._get_bucket()
-            blob = bucket.blob(path)
-            blob.delete()
-        except GoogleAPIError as e:
-            raise ExternalServiceException(
-                detail=f"Failed to delete object: {str(e)}",
-                error_code="STORAGE_DELETE_ERROR"
-            )
+        file_path = self.base_dir / path
+        if file_path.exists():
+            os.remove(file_path)
 
 _storage_service = StorageService()
 

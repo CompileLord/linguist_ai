@@ -30,7 +30,7 @@
             {
               "id": "task-0.1.2",
               "title": "Configure pyproject.toml with all project dependencies",
-              "description": "Create pyproject.toml using the [project] table with all required runtime dependencies: fastapi, uvicorn[standard], sqlalchemy[asyncio], asyncpg, alembic, pydantic>=2.0, pydantic-settings, google-genai, google-cloud-texttospeech, google-cloud-speech, google-cloud-storage, python-jose[cryptography], passlib[bcrypt], httpx. Add optional dev dependency groups for pytest, pytest-asyncio, httpx (test client), ruff, mypy. Pin minimum versions for critical packages.",
+              "description": "Create pyproject.toml using the [project] table with all required runtime dependencies: fastapi, uvicorn[standard], sqlalchemy[asyncio], asyncpg, alembic, pydantic>=2.0, pydantic-settings, google-genai, google-cloud-speech, python-jose[cryptography], passlib[bcrypt], httpx. Add optional dev dependency groups for pytest, pytest-asyncio, httpx (test client), ruff, mypy. Pin minimum versions for critical packages.",
               "acceptance_criteria": [
                 "pyproject.toml is valid and parseable by pip/uv/poetry without errors",
                 "All 14 runtime dependencies are listed with minimum version constraints",
@@ -353,7 +353,7 @@
         {
           "id": "mod-0.5",
           "name": "Vertex AI Integration Foundation",
-          "description": "Abstract AI provider interface, concrete Vertex AI implementation using the google-genai SDK, AI service factory, prompt management, and GCP media services (TTS, STT, Cloud Storage).",
+          "description": "Abstract AI provider interface, concrete Vertex AI implementation using the google-genai SDK, AI service factory, prompt management, and media services (Piper TTS, STT, Local Storage).",
           "tasks": [
             {
               "id": "task-0.5.1",
@@ -418,13 +418,13 @@
             {
               "id": "task-0.5.5",
               "title": "Create TTS service class",
-              "description": "Create a TextToSpeechService class in services/media/tts_service.py wrapping google-cloud-texttospeech. Methods: synthesize(text: str, language_code: str, voice_name: str | None, speaking_rate: float) -> bytes (returns MP3 audio bytes), synthesize_and_store(text: str, language_code: str, storage_path: str) -> str (synthesizes, uploads to Cloud Storage, returns public URL). Support SSML input for advanced prosody control. Default voice selection strategy: pick a WaveNet voice for the given language code. Handle API errors with ExternalServiceException.",
+              "description": "Create a TextToSpeechService class in services/media/tts_service.py wrapping Piper TTS. Methods: synthesize(text: str, language_code: str, voice_name: str | None, speaking_rate: float) -> bytes (returns WAV audio bytes), synthesize_and_store(text: str, language_code: str, storage_path: str) -> str (synthesizes, saves locally, returns local URL). Default voice selection strategy: pick a Piper voice for the given language code. Handle execution errors with ExternalServiceException.",
               "acceptance_criteria": [
-                "synthesize returns MP3 audio bytes for a given text and language code",
-                "synthesize_and_store uploads the audio to Cloud Storage and returns a signed URL or public URL",
-                "Voice selection defaults to a WaveNet voice for the specified language_code",
-                "SSML input is detected (starts with <speak>) and processed using the SSML input type",
-                "Google Cloud API errors are caught and wrapped in ExternalServiceException"
+                "synthesize returns WAV audio bytes for a given text and language code",
+                "synthesize_and_store saves the audio to local storage and returns a local URL",
+                "Voice selection defaults to a Piper voice for the specified language_code",
+                "WAV output is successfully generated",
+                "Piper execution errors are caught and wrapped in ExternalServiceException"
               ],
               "depends_on": ["task-0.1.2", "task-0.1.4", "task-0.5.7"],
               "priority": "high",
@@ -447,13 +447,13 @@
             },
             {
               "id": "task-0.5.7",
-              "title": "Create Cloud Storage service for audio caching",
-              "description": "Create a StorageService class in services/media/storage_service.py wrapping google-cloud-storage. Methods: upload(data: bytes, destination_path: str, content_type: str) -> str (returns GCS URI), download(source_path: str) -> bytes, get_signed_url(path: str, expiration_minutes: int) -> str, exists(path: str) -> bool, delete(path: str) -> None. The bucket name is sourced from Settings (GCS_BUCKET_NAME). Implement a content-hash-based naming strategy for deduplication: hash the audio content to generate the storage key so identical content is stored only once.",
+              "title": "Create Local Storage service for audio caching",
+              "description": "Create a StorageService class in services/media/storage_service.py managing local file storage. Methods: upload(data: bytes, destination_path: str, content_type: str) -> str (returns local file path), download(source_path: str) -> bytes, get_signed_url(path: str, expiration_minutes: int) -> str (returns local URL), exists(path: str) -> bool, delete(path: str) -> None. The local storage path is sourced from Settings (LOCAL_STORAGE_DIR). Implement a content-hash-based naming strategy for deduplication: hash the audio content to generate the storage key so identical content is stored only once.",
               "acceptance_criteria": [
-                "upload stores bytes in the configured GCS bucket and returns the gs:// URI",
-                "download retrieves bytes from GCS by path",
-                "get_signed_url generates a time-limited signed URL for the specified object",
-                "exists returns True if the object exists in the bucket, False otherwise",
+                "upload stores bytes in the configured local directory and returns the local path",
+                "download retrieves bytes from local storage by path",
+                "get_signed_url generates a local URL for the specified object",
+                "exists returns True if the file exists in the directory, False otherwise",
                 "Content-hash naming generates a deterministic key from the file content, preventing duplicate storage"
               ],
               "depends_on": ["task-0.1.2", "task-0.4.1"],
@@ -835,10 +835,10 @@
             },
             {
               "id": "task-1.3.10",
-              "title": "Implement TTS generation for listening material with Cloud Storage caching",
-              "description": "Extend LessonGeneratorService with a post-generation step that converts listening_script.script_text to audio via TextToSpeechService, uploads to Cloud Storage via StorageService, and stores the signed URL in the Lesson's audio_urls JSONB field. Use content-hash-based storage keys (from StorageService) to avoid regenerating audio for identical scripts. Generate audio for vocabulary pronunciations as well — batch TTS requests for all VocabItem entries. Update the Lesson record with populated audio_url fields.",
+              "title": "Implement TTS generation for listening material with Local Storage caching",
+              "description": "Extend LessonGeneratorService with a post-generation step that converts listening_script.script_text to audio via TextToSpeechService, saves to local storage via StorageService, and stores the local URL in the Lesson's audio_urls JSONB field. Use content-hash-based storage keys (from StorageService) to avoid regenerating audio for identical scripts. Generate audio for vocabulary pronunciations as well — batch TTS requests for all VocabItem entries. Update the Lesson record with populated audio_url fields.",
               "acceptance_criteria": [
-                "Listening script text is converted to MP3 audio via TextToSpeechService.synthesize_and_store",
+                "Listening script text is converted to WAV audio via TextToSpeechService.synthesize_and_store",
                 "The audio URL is stored in the Lesson's audio_urls JSONB under key 'listening_audio'",
                 "Content-hash storage keys prevent duplicate audio files for identical script text",
                 "Vocabulary items receive individual pronunciation audio URLs stored in their audio_url field",

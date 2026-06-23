@@ -106,3 +106,17 @@ class ProfileService(AbstractProfileService):
 
         await self._repository.update_level(user_id, level, score)
         return await self.get_profile(user_id)
+
+    async def add_xp(self, user_id: uuid.UUID, xp: int) -> ProfileResponse:
+        if not await self._repository.exists_for_user(user_id):
+            raise NotFoundException("Profile not found")
+
+        await self._repository.add_xp(user_id, xp)
+        return await self.get_profile(user_id)
+
+    async def update_streak(self, user_id: uuid.UUID, increment: int) -> ProfileResponse:
+        if not await self._repository.exists_for_user(user_id):
+            raise NotFoundException("Profile not found")
+
+        await self._repository.update_streak(user_id, increment)
+        return await self.get_profile(user_id)

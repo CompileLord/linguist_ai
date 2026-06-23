@@ -34,3 +34,12 @@ class CEFRLevel(str, Enum):
             return cls.C1
         else:
             return cls.C2
+
+class SpacedRepetitionItemType(str, Enum):
+    VOCAB = "vocab"
+    GRAMMAR = "grammar"
+
+class ErrorCategory(str, Enum):
+    GRAMMAR = "grammar"
+    VOCABULARY = "vocabulary"
+

@@ -13,7 +13,10 @@ class ProfileRepository(AbstractProfileRepository):
             .filter(UserProfile.id == id)
             .options(joinedload(UserProfile.target_language))
         )
-        return result.scalar_one_or_none()
+        profile = result.scalar_one_or_none()
+        if profile and profile.target_language is None:
+            await self._session.refresh(profile, ["target_language"])
+        return profile
 
     async def get_all(self, skip: int = 0, limit: int = 100) -> List[UserProfile]:
         result = await self._session.execute(
@@ -48,7 +51,10 @@ class ProfileRepository(AbstractProfileRepository):
             .filter(UserProfile.user_id == user_id)
             .options(joinedload(UserProfile.target_language))
         )
-        return result.scalar_one_or_none()
+        profile = result.scalar_one_or_none()
+        if profile and profile.target_language is None:
+            await self._session.refresh(profile, ["target_language"])
+        return profile
 
     async def exists_for_user(self, user_id: uuid.UUID) -> bool:
         stmt = select(exists().where(UserProfile.user_id == user_id))

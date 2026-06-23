@@ -88,16 +88,10 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id', name=op.f('pk_user_lessons')),
     sa.UniqueConstraint('user_id', 'lesson_id', name='uq_user_lessons_user_id_lesson_id')
     )
-    op.alter_column('users', 'id',
-               existing_type=sa.NUMERIC(),
-               type_=sa.UUID(),
-               existing_nullable=False)
+
 
 def downgrade() -> None:
-    op.alter_column('users', 'id',
-               existing_type=sa.UUID(),
-               type_=sa.NUMERIC(),
-               existing_nullable=False)
+
     op.drop_table('user_lessons')
     op.drop_index(op.f('ix_user_profiles_user_id'), table_name='user_profiles')
     op.drop_table('user_profiles')

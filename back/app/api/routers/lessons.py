@@ -1,6 +1,6 @@
 import uuid
 from typing import List, Optional
-from fastapi import APIRouter, Depends, status, Query
+from fastapi import APIRouter, Depends, status, Query, BackgroundTasks
 from app.models.user import User
 from app.models.enums import CEFRLevel
 from app.api.dependencies.auth import get_current_active_user
@@ -138,6 +138,7 @@ async def get_lesson_by_id(
 async def complete_lesson(
     lesson_id: uuid.UUID,
     schema: LessonCompletionRequest,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_active_user),
     lesson_repository: LessonRepository = Depends(get_lesson_repository),
     lesson_scoring_service: LessonScoringService = Depends(get_lesson_scoring_service)
@@ -146,4 +147,4 @@ async def complete_lesson(
     if not lesson:
         raise NotFoundException("Lesson not found")
 
-    return await lesson_scoring_service.calculate_score(current_user.id, lesson, schema)
+    return await lesson_scoring_service.calculate_score(current_user.id, lesson, schema, background_tasks)
