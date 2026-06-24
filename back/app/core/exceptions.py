@@ -60,6 +60,10 @@ class ItemNotFoundError(NotFoundException):
     def __init__(self, detail: str = "Item Not Found", error_code: str = "ITEM_NOT_FOUND", details: Any = None) -> None:
         super().__init__(detail=detail, error_code=error_code, details=details)
 
+class SessionNotFoundError(NotFoundException):
+    def __init__(self, detail: str = "Session Not Found", error_code: str = "SESSION_NOT_FOUND", details: Any = None) -> None:
+        super().__init__(detail=detail, error_code=error_code, details=details)
+
 class AttemptNotFoundError(NotFoundException):
     def __init__(self, detail: str = "Attempt Not Found", error_code: str = "ATTEMPT_NOT_FOUND", details: Any = None) -> None:
         super().__init__(detail=detail, error_code=error_code, details=details)

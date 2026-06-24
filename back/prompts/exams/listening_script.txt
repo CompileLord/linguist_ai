@@ -1,0 +1,23 @@
+You are an expert language teacher and material developer.
+Generate a listening comprehension exam in $target_language at CEFR level $level.
+Scenario Type: $scenario_type
+
+Requirements:
+- The script should be realistic, natural, and formatted appropriately for $scenario_type (e.g., dialogues should have speaker names, monologues should be continuous paragraphs).
+- Script length:
+  - If A1 or A2, make it 150 to 300 words, using simple vocabulary and sentences.
+  - If B1 or B2, make it 300 to 500 words, using intermediate vocabulary and sentences.
+  - If C1 or C2, make it 500 to 800 words, using complex structure, nuanced phrasing, and rich vocabulary.
+- Comprehension Questions:
+  - Generate between 5 and 8 multiple-choice questions testing different parts of the script (details, main idea, inference, vocabulary in context).
+  - Each question must have exactly 4 options.
+  - Specify the 0-indexed correct option (correct_answer_index, 0 to 3).
+  - Provide a clear, educational explanation of why the correct answer is correct and why other options are incorrect based on the script.
+
+Return a JSON object matching this schema:
+1. "script_text": the full transcript of the scenario.
+2. "questions": list of questions, where each question contains:
+   - "question_text": the question.
+   - "options": list of exactly 4 strings.
+   - "correct_answer_index": integer between 0 and 3.
+   - "explanation": the explanation.

@@ -28,6 +28,20 @@ from app.services.error_explanation_service import ErrorExplanationService
 from app.services.error_aggregation_service import ErrorAggregationService
 from app.services.error_signal_service import ErrorSignalService
 from app.services.vocabulary_extraction_service import VocabularyExtractionService
+from app.repositories.tutor_session_repository import TutorSessionRepository
+from app.repositories.tutor_message_repository import TutorMessageRepository
+from app.repositories.mission_repository import MissionRepository, MissionAttemptRepository
+from app.services.websocket_manager import WebSocketConnectionManager
+from app.services.tutor_prompt_builder import TutorPromptBuilder
+from app.services.session_context_manager import SessionContextManager
+from app.services.tutor_rate_limiter import TutorRateLimiter
+from app.services.tutor_service import TutorService
+from app.services.mission_feedback_service import MissionFeedbackService
+from app.services.mission_service import MissionService
+from app.repositories.writing_exam_repository import WritingExamRepository
+from app.repositories.listening_exam_repository import ListeningExamRepository
+from app.services.writing_exam_service import WritingPromptGenerationService, WritingEvaluationService
+from app.services.listening_exam_service import ListeningExamScriptGenerationService, ListeningAudioService, ListeningExamService
 
 _tts_service = None
 
@@ -158,5 +172,110 @@ async def get_lesson_scoring_service(
         error_aggregate,
         error_signal
     )
+
+_websocket_manager = None
+
+def get_websocket_manager() -> WebSocketConnectionManager:
+    global _websocket_manager
+    if _websocket_manager is None:
+        _websocket_manager = WebSocketConnectionManager()
+    return _websocket_manager
+
+async def get_tutor_session_repository(db: AsyncSession = Depends(get_db_session)) -> TutorSessionRepository:
+    return TutorSessionRepository(db)
+
+async def get_tutor_message_repository(db: AsyncSession = Depends(get_db_session)) -> TutorMessageRepository:
+    return TutorMessageRepository(db)
+
+async def get_tutor_prompt_builder(prompt_manager = Depends(get_prompt_manager)) -> TutorPromptBuilder:
+    return TutorPromptBuilder(prompt_manager)
+
+async def get_session_context_manager(
+    db: AsyncSession = Depends(get_db_session),
+    session_repo = Depends(get_tutor_session_repository),
+    message_repo = Depends(get_tutor_message_repository),
+    prompt_builder = Depends(get_tutor_prompt_builder)
+) -> SessionContextManager:
+    profile_repo = ProfileRepository(db)
+    goals_repo = GoalsRepository(db)
+    return SessionContextManager(session_repo, message_repo, prompt_builder, profile_repo, goals_repo)
+
+async def get_tutor_rate_limiter(db: AsyncSession = Depends(get_db_session)) -> TutorRateLimiter:
+    return TutorRateLimiter(db)
+
+async def get_tutor_service(
+    session_repo = Depends(get_tutor_session_repository),
+    message_repo = Depends(get_tutor_message_repository),
+    context_manager = Depends(get_session_context_manager),
+    rate_limiter = Depends(get_tutor_rate_limiter),
+    ai_provider = Depends(get_ai_provider)
+) -> TutorService:
+    return TutorService(session_repo, message_repo, context_manager, rate_limiter, ai_provider)
+
+async def get_mission_repository(db: AsyncSession = Depends(get_db_session)) -> MissionRepository:
+    return MissionRepository(db)
+
+async def get_mission_attempt_repository(db: AsyncSession = Depends(get_db_session)) -> MissionAttemptRepository:
+    return MissionAttemptRepository(db)
+
+async def get_mission_feedback_service(
+    ai_provider = Depends(get_ai_provider),
+    prompt_manager = Depends(get_prompt_manager)
+) -> MissionFeedbackService:
+    return MissionFeedbackService(ai_provider, prompt_manager)
+
+async def get_mission_service(
+    db: AsyncSession = Depends(get_db_session),
+    mission_repo = Depends(get_mission_repository),
+    attempt_repo = Depends(get_mission_attempt_repository),
+    session_repo = Depends(get_tutor_session_repository),
+    message_repo = Depends(get_tutor_message_repository),
+    feedback_service = Depends(get_mission_feedback_service)
+) -> MissionService:
+    profile_repo = ProfileRepository(db)
+    return MissionService(
+        mission_repo,
+        attempt_repo,
+        session_repo,
+        message_repo,
+        profile_repo,
+        feedback_service
+    )
+
+async def get_writing_exam_repository(db: AsyncSession = Depends(get_db_session)) -> WritingExamRepository:
+    return WritingExamRepository(db)
+
+async def get_listening_exam_repository(db: AsyncSession = Depends(get_db_session)) -> ListeningExamRepository:
+    return ListeningExamRepository(db)
+
+async def get_writing_prompt_generation_service(
+    ai_provider = Depends(get_ai_provider),
+    prompt_manager = Depends(get_prompt_manager)
+) -> WritingPromptGenerationService:
+    return WritingPromptGenerationService(ai_provider, prompt_manager)
+
+async def get_writing_evaluation_service(
+    ai_provider = Depends(get_ai_provider),
+    prompt_manager = Depends(get_prompt_manager),
+    repo = Depends(get_writing_exam_repository)
+) -> WritingEvaluationService:
+    return WritingEvaluationService(ai_provider, prompt_manager, repo)
+
+async def get_listening_exam_script_generation_service(
+    ai_provider = Depends(get_ai_provider),
+    prompt_manager = Depends(get_prompt_manager)
+) -> ListeningExamScriptGenerationService:
+    return ListeningExamScriptGenerationService(ai_provider, prompt_manager)
+
+def get_listening_audio_service() -> ListeningAudioService:
+    return ListeningAudioService()
+
+async def get_listening_exam_service(
+    repo = Depends(get_listening_exam_repository),
+    script_service = Depends(get_listening_exam_script_generation_service),
+    audio_service = Depends(get_listening_audio_service)
+) -> ListeningExamService:
+    return ListeningExamService(repo, script_service, audio_service)
+
 
 
