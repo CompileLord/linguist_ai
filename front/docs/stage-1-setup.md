@@ -14,7 +14,7 @@ We use **Next.js 15 (App Router)** because it provides SSR/SSG out of the box, w
 - **`src/components/`**: Atomic UI components (Buttons, Inputs, Modals).
 - **`src/features/`**: Domain-specific logic (e.g., `features/lessons`, `features/onboarding`).
 - **`src/services/`**: API fetching logic (`apiClient.ts`) and WebSocket managers.
-- **`src/store/`**: Global state management (Zustand).
+- **`src/store/`**: Global state management (Redux Toolkit - RTK).
 
 ### 2. Multi-Language Architecture (PRD 3.1)
 
