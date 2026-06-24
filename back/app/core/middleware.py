@@ -1,29 +1,38 @@
 import time
 from collections import defaultdict
-from typing import List, Tuple
-from fastapi import Request, Response
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import JSONResponse
 from app.core.config import settings
 from app.core.logging import LoggerFactory
 
 logger = LoggerFactory.get_logger("RateLimitMiddleware")
 
-class RateLimitMiddleware(BaseHTTPMiddleware):
+class RateLimitMiddleware:
     def __init__(self, app) -> None:
-        super().__init__(app)
+        self.app = app
         self.requests = defaultdict(list)
 
-    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
-        path = request.url.path
-        if path in ["/health", "/docs", "/openapi.json"] or path.startswith("/static"):
-            return await call_next(request)
+    async def __call__(self, scope, receive, send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
 
-        forwarded = request.headers.get("x-forwarded-for")
+        path = scope.get("path", "")
+        if path in ["/health", "/docs", "/openapi.json"] or path.startswith("/static"):
+            await self.app(scope, receive, send)
+            return
+
+        client_ip = "unknown"
+        headers = dict(scope.get("headers", []))
+        forwarded = headers.get(b"x-forwarded-for")
         if forwarded:
-            client_ip = forwarded.split(",")[0].strip()
+            try:
+                client_ip = forwarded.decode("latin-1").split(",")[0].strip()
+            except Exception:
+                pass
         else:
-            client_ip = request.client.host if request.client else "unknown"
+            client = scope.get("client")
+            if client:
+                client_ip = client[0]
 
         now = time.time()
         window_start = now - settings.RATE_LIMIT_WINDOW_SECONDS
@@ -37,7 +46,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 f"Rate limit exceeded for IP: {client_ip}. Path: {path}. Count: {current_count}"
             )
             retry_after = int(settings.RATE_LIMIT_WINDOW_SECONDS - (now - self.requests[client_ip][0]))
-            return JSONResponse(
+            response = JSONResponse(
                 status_code=429,
                 headers={"Retry-After": str(retry_after)},
                 content={
@@ -48,6 +57,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                     }
                 }
             )
+            await response(scope, receive, send)
+            return
 
         self.requests[client_ip].append(now)
-        return await call_next(request)
+        await self.app(scope, receive, send)

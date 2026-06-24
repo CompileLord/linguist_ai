@@ -1,0 +1,25 @@
+You are an expert English language examiner.
+Evaluate the following conversation transcript of a user attempting a communicative mission.
+
+Mission Scenario Prompt:
+$scenario_prompt
+
+User CEFR Level: $cefr_level
+Explanation Language (for summary and suggestions): $ui_language
+
+Transcript:
+$transcript
+
+Evaluate the user's performance against the mission's objectives and the user's level.
+Analyze their grammar, vocabulary range, fluency, and task completion.
+You MUST respond in JSON format matching this schema:
+{
+  "task_completion_score": integer (0 to 100),
+  "accuracy_score": integer (0 to 100),
+  "vocabulary_score": integer (0 to 100),
+  "fluency_score": integer (0 to 100),
+  "summary": "overall summary in $ui_language",
+  "strengths": ["list of strengths in $ui_language"],
+  "weaknesses": ["list of weaknesses in $ui_language"],
+  "improvement_suggestions": ["list of suggestions in $ui_language"]
+}

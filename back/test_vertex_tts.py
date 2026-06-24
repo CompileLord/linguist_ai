@@ -1,24 +1,11 @@
+import asyncio
 import os
 import sys
 from pathlib import Path
-from google import genai
-from google.cloud import texttospeech
+from app.services.media.storage_service import StorageService
+from app.services.media.tts_service import TextToSpeechService
 
-project_id = os.getenv("GCLOUD_PROJECT_ID", "project-7f48a3c4-a89e-4b43-9bc")
-
-def test_vertex_ai() -> None:
-    client = genai.Client(
-        vertexai=True,
-        project=project_id,
-        location="us-central1"
-    )
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents="Say hello in French"
-    )
-    print("Vertex AI Response:", response.text)
-
-def generate_speech() -> None:
+async def run_test() -> None:
     text = (
         "Learning a new language is a beautiful journey that opens doors to new worlds, "
         "connects cultures, and broadens our understanding of humanity. When we practice "
@@ -31,42 +18,27 @@ def generate_speech() -> None:
         "global communication. It is a rewarding experience."
     )
     
-    words = text.split()
-    print(f"Text word count: {len(words)}")
-
-    client = texttospeech.TextToSpeechClient()
-    synthesis_input = texttospeech.SynthesisInput(text=text)
-
-    voice = texttospeech.VoiceSelectionParams(
-        language_code="en-US",
-        name="en-US-Wavenet-F"
+    storage_service = StorageService()
+    tts_service = TextToSpeechService(storage_service)
+    
+    audio_content = await tts_service.synthesize(
+        text=text,
+        language_code="en",
+        voice_name="hfc_female"
     )
-
-    audio_config = texttospeech.AudioConfig(
-        audio_encoding=texttospeech.AudioEncoding.MP3
-    )
-
-    response = client.synthesize_speech(
-        input=synthesis_input,
-        voice=voice,
-        audio_config=audio_config
-    )
-
+    
     output_dir = Path("media/audio")
     output_dir.mkdir(parents=True, exist_ok=True)
-    output_file = output_dir / "output.mp3"
-
+    output_file = output_dir / "output_piper.wav"
+    
     with open(output_file, "wb") as out:
-        out.write(response.audio_content)
+        out.write(audio_content)
         
     print(f"Speech saved successfully to: {output_file.resolve()}")
 
 if __name__ == "__main__":
     try:
-        print("Testing Vertex AI...")
-        test_vertex_ai()
-        print("\nTesting Text-to-Speech...")
-        generate_speech()
+        asyncio.run(run_test())
     except Exception as e:
-        print(f"Error during execution: {str(sys.exc_info()[1])}")
+        print(f"Error: {str(e)}")
         sys.exit(1)

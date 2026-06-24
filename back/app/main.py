@@ -10,7 +10,7 @@ from app.core.database import db_manager
 from app.core.exceptions import register_exception_handlers
 from app.core.middleware import RateLimitMiddleware
 from app.core.logging import LoggerFactory
-from app.api.routers import auth, onboarding, lessons, vocabulary, review, errors
+from app.api.routers import auth, onboarding, lessons, vocabulary, review, errors, tutor, missions, writing_exam, listening_exam
 
 logger = LoggerFactory.get_logger("LinguistAI")
 
@@ -66,6 +66,12 @@ app.include_router(lessons.router)
 app.include_router(vocabulary.router)
 app.include_router(review.router)
 app.include_router(errors.router)
+app.include_router(tutor.router)
+app.include_router(tutor.ws_router)
+app.include_router(missions.router)
+app.include_router(writing_exam.router)
+app.include_router(listening_exam.router)
+
 
 @app.get("/")
 async def root():

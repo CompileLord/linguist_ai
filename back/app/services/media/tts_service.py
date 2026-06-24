@@ -1,6 +1,8 @@
 import asyncio
 import os
 import tempfile
+import urllib.request
+from pathlib import Path
 from typing import Optional
 from app.core.exceptions import ExternalServiceException
 from app.services.media.storage_service import StorageService
@@ -8,9 +10,60 @@ from app.core.logging import LoggerFactory
 
 logger = LoggerFactory.get_logger("TTSService")
 
+VOICE_MAP = {
+    "hfc_female": {
+        "dir_name": "hfc_female",
+        "onnx_name": "en_US-hfc_female-medium.onnx",
+        "onnx_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/hfc_female/medium/en_US-hfc_female-medium.onnx",
+        "json_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/hfc_female/medium/en_US-hfc_female-medium.onnx.json"
+    },
+    "hfc_male": {
+        "dir_name": "hfc_male",
+        "onnx_name": "en_US-hfc_male-medium.onnx",
+        "onnx_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/hfc_male/medium/en_US-hfc_male-medium.onnx",
+        "json_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/hfc_male/medium/en_US-hfc_male-medium.onnx.json"
+    }
+}
+
 class TextToSpeechService:
     def __init__(self, storage_service: StorageService) -> None:
         self._storage_service = storage_service
+
+    async def _ensure_voice_files(self, voice_key: str) -> Path:
+        if voice_key not in VOICE_MAP:
+            raise ValueError(f"Unknown voice model: {voice_key}")
+        
+        voice_info = VOICE_MAP[voice_key]
+        voices_dir = Path(__file__).resolve().parent.parent.parent.parent / "voices"
+        voice_dir = voices_dir / voice_info["dir_name"]
+        voice_dir.mkdir(parents=True, exist_ok=True)
+        
+        onnx_path = voice_dir / voice_info["onnx_name"]
+        json_path = voice_dir / (voice_info["onnx_name"] + ".json")
+        
+        if not onnx_path.exists():
+            logger.info(f"Downloading voice model {voice_key} from {voice_info['onnx_url']}...")
+            try:
+                urllib.request.urlretrieve(voice_info["onnx_url"], str(onnx_path))
+                logger.info(f"Successfully downloaded {voice_info['onnx_name']}")
+            except Exception as e:
+                logger.error(f"Failed to download voice model {voice_key}: {e}")
+                if onnx_path.exists():
+                    onnx_path.unlink()
+                raise e
+                
+        if not json_path.exists():
+            logger.info(f"Downloading config for {voice_key} from {voice_info['json_url']}...")
+            try:
+                urllib.request.urlretrieve(voice_info["json_url"], str(json_path))
+                logger.info(f"Successfully downloaded config {voice_info['onnx_name']}.json")
+            except Exception as e:
+                logger.error(f"Failed to download config for {voice_key}: {e}")
+                if json_path.exists():
+                    json_path.unlink()
+                raise e
+                
+        return onnx_path
 
     async def synthesize(
         self,
@@ -26,11 +79,24 @@ class TextToSpeechService:
         fd, temp_path = tempfile.mkstemp(suffix=".wav")
         os.close(fd)
 
-        model_name = voice_name or f"{language_code}-medium.onnx"
+        resolved_voice = voice_name or "hfc_female"
+        if resolved_voice in VOICE_MAP:
+            try:
+                model_path = await self._ensure_voice_files(resolved_voice)
+                model_name = str(model_path)
+            except Exception as e:
+                logger.error(f"Failed to ensure voice files: {e}")
+                model_name = resolved_voice
+        else:
+            model_name = resolved_voice
+
+        import sys
+        piper_bin = Path(sys.executable).parent / "piper"
+        piper_cmd = str(piper_bin) if piper_bin.exists() else "piper"
 
         try:
             process = await asyncio.create_subprocess_exec(
-                "piper",
+                piper_cmd,
                 "--model", model_name,
                 "--output_file", temp_path,
                 stdin=asyncio.subprocess.PIPE,
