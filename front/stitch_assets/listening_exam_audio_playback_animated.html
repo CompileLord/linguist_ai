@@ -3,73 +3,47 @@
 <html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Listening Exam - Lumina Axiom</title>
+<title>Listening Exam - Linguist AI</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@500;600&amp;family=Geist:wght@400;500&amp;family=Inter:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@500;600;700&amp;family=Geist:wght@400;500&amp;family=Inter:wght@400;500&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
-                    "colors": {
-                        "on-tertiary-fixed-variant": "#733500",
-                        "on-secondary-fixed": "#170065",
-                        "surface-container-low": "#1c1a24",
-                        "on-tertiary-container": "#ffffff",
-                        "on-error-container": "#ffdad6",
-                        "surface-container-highest": "#35343e",
-                        "tertiary": "#ffb688",
-                        "primary-fixed": "#e4dfff",
-                        "on-secondary-fixed-variant": "#422db2",
-                        "outline": "#928ea1",
-                        "tertiary-fixed": "#ffdbc7",
-                        "secondary-fixed": "#e4dfff",
-                        "surface-container": "#201e28",
-                        "surface": "#13121c",
-                        "primary-container": "#6e5bff",
-                        "primary": "#c6bfff",
-                        "secondary": "#c7bfff",
-                        "surface-dim": "#13121c",
-                        "outline-variant": "#474555",
-                        "on-secondary": "#2a039d",
-                        "on-primary": "#2700a0",
-                        "on-tertiary": "#512400",
-                        "inverse-on-surface": "#312f39",
-                        "background": "#13121c",
-                        "on-primary-fixed": "#160066",
-                        "error-container": "#93000a",
-                        "surface-bright": "#393842",
-                        "surface-variant": "#35343e",
-                        "surface-tint": "#c6bfff",
-                        "error": "#ffb4ab",
-                        "on-primary-fixed-variant": "#3d1acf",
-                        "secondary-fixed-dim": "#c7bfff",
-                        "on-surface-variant": "#c8c4d8",
-                        "on-secondary-container": "#b4abff",
-                        "inverse-surface": "#e5e0ee",
-                        "on-tertiary-fixed": "#311300",
-                        "secondary-container": "#422db2",
-                        "on-background": "#e5e0ee",
-                        "inverse-primary": "#563fe6",
-                        "surface-container-lowest": "#0e0d16",
-                        "on-surface": "#e5e0ee",
-                        "on-primary-container": "#fffeff",
-                        "tertiary-container": "#bb5b00",
-                        "surface-container-high": "#2a2933",
-                        "on-error": "#690005",
-                        "tertiary-fixed-dim": "#ffb688",
-                        "primary-fixed-dim": "#c6bfff",
-                        "background-level-0": "#0A0A0C",
-                        "accent-glow": "#8B7CFF"
+                    colors: {
+                        background: "#0A0A0C",
+                        surface: "#15151A",
+                        "surface-raised": "#1E1E24",
+                        outline: "#2A2A32",
+                        "outline-variant": "#2A2A32",
+                        primary: "#6E5BFF",
+                        "primary-container": "#6E5BFF",
+                        "on-primary-container": "#F5F5F7",
+                        "on-surface": "#F5F5F7",
+                        "on-surface-variant": "#9A9AA5",
+                        "text-tertiary": "#62626C",
+                        accent: "#6E5BFF",
+                        "accent-glow": "#8B7CFF",
+                        success: "#3DD68C",
+                        warning: "#E8B339",
+                        error: "#FF5C6C",
+                        // Keep compatibility with existing container levels
+                        "surface-container-lowest": "#0A0A0C",
+                        "surface-container-low": "#15151A",
+                        "surface-container": "#15151A",
+                        "surface-container-high": "#1E1E24",
+                        "surface-container-highest": "#2A2A32",
                     },
-                    "borderRadius": {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
+                    borderRadius: {
+                        "DEFAULT": "8px",
+                        "md": "8px",
+                        "lg": "12px",
+                        "xl": "16px",
                         "full": "9999px"
                     },
-                    "spacing": {
+                    spacing: {
                         "gutter": "24px",
                         "xl": "64px",
                         "lg": "40px",
@@ -79,17 +53,17 @@
                         "base": "4px",
                         "xs": "8px"
                     },
-                    "fontFamily": {
-                        "display": ["Hanken Grotesk"],
-                        "label-md": ["Geist"],
-                        "code-sm": ["Geist"],
-                        "headline-lg": ["Hanken Grotesk"],
-                        "body-md": ["Inter"],
-                        "body-lg": ["Inter"],
-                        "body-sm": ["Inter"],
-                        "headline-md": ["Hanken Grotesk"]
+                    fontFamily: {
+                        "display": ["Hanken Grotesk", "sans-serif"],
+                        "label-md": ["Geist", "sans-serif"],
+                        "code-sm": ["Geist", "monospace"],
+                        "headline-lg": ["Hanken Grotesk", "sans-serif"],
+                        "body-md": ["Inter", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"],
+                        "body-sm": ["Inter", "sans-serif"],
+                        "headline-md": ["Hanken Grotesk", "sans-serif"]
                     },
-                    "fontSize": {
+                    fontSize: {
                         "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
                         "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500" }],
                         "code-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
@@ -106,6 +80,7 @@
 <style>
         body {
             background-color: #0A0A0C;
+            color: #F5F5F7;
         }
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
@@ -113,21 +88,21 @@
         
         @keyframes pulse-glow {
             0%, 100% {
-                box-shadow: 0 0 20px 5px rgba(139, 124, 255, 0.2);
+                box-shadow: 0 0 24px 4px rgba(139, 124, 255, 0.15);
             }
             50% {
-                box-shadow: 0 0 40px 15px rgba(139, 124, 255, 0.4);
+                box-shadow: 0 0 48px 12px rgba(139, 124, 255, 0.35);
             }
         }
 
         @keyframes glow-pulse {
             0%, 100% {
-                box-shadow: 0 0 40px rgba(139, 124, 255, 0.2);
+                box-shadow: 0 0 32px rgba(110, 91, 255, 0.15);
                 transform: scale(1);
             }
             50% {
-                box-shadow: 0 0 60px rgba(139, 124, 255, 0.5);
-                transform: scale(1.05);
+                box-shadow: 0 0 54px rgba(110, 91, 255, 0.35);
+                transform: scale(1.03);
             }
         }
         
@@ -145,25 +120,78 @@
         .paused .pause-icon { display: none; }
     </style>
 </head>
-<body class="text-on-background min-h-screen flex flex-col font-body-md overflow-hidden relative selection:bg-primary-container selection:text-on-primary-container">
-<!-- TopAppBar from JSON -->
-<header class="fixed top-0 w-full flex justify-between items-center px-md py-sm bg-background dark:bg-background transition-all duration-200 ease-out z-50">
-<div class="flex items-center gap-sm">
-<span class="font-headline-md text-headline-md text-on-background font-bold tracking-tight">Listening Exam</span>
+<body class="flex min-h-screen bg-background font-body-md text-body-md antialiased selection:bg-primary/20 selection:text-primary overflow-hidden">
+<!-- SideNavBar -->
+<nav class="h-screen w-64 fixed left-0 top-0 bg-background border-r border-outline flex flex-col justify-between py-md px-sm z-20">
+<div class="flex flex-col gap-lg">
+<div class="mb-sm px-sm mt-sm">
+<h1 class="font-display text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent-glow tracking-tight leading-tight mb-1">Linguist AI</h1>
+<p class="text-on-surface-variant font-body-sm text-xs font-semibold">Premium Tier</p>
 </div>
-<div class="flex items-center gap-sm">
+<nav class="flex flex-col gap-1.5">
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_dashboard.html">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-label-md font-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="real_world_missions.html">
+<span class="material-symbols-outlined">explore</span>
+<span class="text-label-md font-label-md">Missions</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="ai_tutor_panel.html">
+<span class="material-symbols-outlined">smart_toy</span>
+<span class="text-label-md font-label-md">Tutor</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="vocabulary_list.html">
+<span class="material-symbols-outlined">translate</span>
+<span class="text-label-md font-label-md">Vocabulary</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_progress_profile.html">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-label-md font-label-md">Progress</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_settings.html">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-label-md font-label-md">Settings</span>
+</a>
+</nav>
+</div>
+<div class="px-xs pb-4">
+<a href="ai_voice_conversation_premium_interface.html" class="block w-full text-center bg-primary hover:bg-primary/90 text-white font-medium py-2.5 px-4 rounded-lg active:scale-[0.96] transition-[transform,background-color] duration-150 shadow-[0_0_12px_rgba(110,91,255,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+    New Session
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 ml-64 flex flex-col h-screen overflow-hidden relative">
+<!-- TopAppBar -->
+<header class="bg-surface/85 backdrop-blur-md border-b border-outline flex justify-between items-center w-full h-16 px-xl sticky top-0 z-10 shrink-0">
+<div class="font-headline-lg text-2xl font-bold text-on-surface tracking-tight">
+    Listening Exam
+</div>
+<div class="flex items-center gap-md">
 <!-- Timer Indicator -->
-<div class="flex items-center gap-xs px-sm py-xs rounded-full border border-outline-variant bg-surface-container-low text-on-surface-variant font-label-md text-label-md">
+<div class="flex items-center gap-xs px-3.5 py-1.5 rounded-full border border-outline bg-surface-raised text-on-surface-variant font-label-md text-label-md tabular-nums font-medium">
 <span class="material-symbols-outlined text-[18px]">timer</span>
 <span>12:45</span>
 </div>
-<button aria-label="Close" class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-container-high transition-colors text-on-surface-variant border border-transparent hover:border-outline-variant">
-<span class="material-symbols-outlined" data-icon="close">close</span>
-</button>
+<!-- Streak -->
+<div class="flex items-center gap-xs bg-surface-raised border border-[#2A2A32] rounded-full py-1 px-3">
+<span class="material-symbols-outlined text-warning text-lg" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+<span class="font-label-md text-label-md text-on-surface tabular-nums">7 Day Streak</span>
+</div>
+<!-- XP -->
+<div class="flex items-center gap-xs bg-surface-raised border border-[#2A2A32] rounded-full py-1 px-3">
+<span class="material-symbols-outlined text-primary text-lg">military_tech</span>
+<span class="font-label-md text-label-md text-on-surface tabular-nums">1,250 XP</span>
+</div>
+<!-- Avatar -->
+<a href="linguist_ai_progress_profile.html">
+<img alt="User avatar" class="w-8 h-8 rounded-full border border-[#2A2A32] object-cover hover:border-primary/50 hover:shadow-[0_0_8px_rgba(110,91,255,0.4)] transition-all duration-200 cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAV5ByEFKVdjnv8F4NQRiNvpfpkfwGW5AoOADF6sg1NuI3TEEKMTpMRGurWxkqtI_oLbs0bFso6QhcJR8flD4u5R7vqJ7C_q_Qsf_AlR3eTZeAHFhM8GfuvdqE_G5CICHIw9ohRlN1lSowE47fl7U8hOXoTtZ07kkOekd1srA953bRSCysv9GeXR1KfAQZkVw2x5US5nIbuE28h2Zd0r-81urPJ9UpCTZLMr938jYJfrfC8FYLGMnt1QYnQDCbwbnjjNDC0lb8xWQ"/>
+</a>
 </div>
 </header>
 <!-- Main Canvas -->
-<main class="flex-grow flex flex-col items-center justify-center pt-xl relative z-10 w-full max-w-container-max mx-auto px-md">
+<div class="flex-grow flex flex-col items-center justify-center pt-xl relative z-10 w-full max-w-container-max mx-auto px-md">
 <!-- Focused Center Content -->
 <div class="flex flex-col items-center justify-center space-y-xl max-w-[800px] w-full text-center">
 <!-- Play Button Container -->
@@ -171,22 +199,22 @@
 <!-- Ambient Glow Layer -->
 <div class="absolute inset-0 rounded-full bg-accent-glow opacity-0 transition-opacity duration-700 ease-in-out blur-xl group-hover:opacity-20" id="glow-layer"></div>
 <!-- Main Button -->
-<button class="paused relative z-10 w-32 h-32 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center transition-transform duration-300 ease-out hover:scale-105 active:scale-95 shadow-[0_0_0_1px_#2A2A32]" id="play-button">
-<span class="material-symbols-outlined text-display play-icon" data-icon="play_arrow" data-weight="fill" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
-<span class="material-symbols-outlined text-display pause-icon hidden" data-icon="pause" data-weight="fill" style="font-variation-settings: 'FILL' 1;">pause</span>
+<button class="paused relative z-10 w-32 h-32 rounded-full bg-primary text-white flex items-center justify-center transition-all duration-300 ease-out hover:scale-105 active:scale-95 shadow-[0_0_24px_rgba(110,91,255,0.3)] hover:shadow-[0_0_36px_rgba(110,91,255,0.5)] border border-[#8B7CFF]/30 focus:outline-none" id="play-button">
+<span class="material-symbols-outlined text-display play-icon" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+<span class="material-symbols-outlined text-display pause-icon hidden" style="font-variation-settings: 'FILL' 1;">pause</span>
 </button>
 </div>
 <!-- Contextual Text -->
 <div class="space-y-base max-w-md mx-auto">
-<p class="font-body-md text-body-md text-on-surface-variant opacity-80 transition-opacity duration-500" id="status-text">
-                    Listen carefully — the transcript will be available after the questions
-                </p>
+<p class="font-body-md text-sm text-on-surface-variant transition-opacity duration-500 text-pretty" id="status-text">
+    Listen carefully — the transcript will be available after the questions
+</p>
 </div>
 </div>
-</main>
+</div>
 <!-- Bottom Actions -->
-<footer class="fixed bottom-0 right-0 p-lg w-full flex justify-end z-40 bg-gradient-to-t from-background-level-0 to-transparent pointer-events-none">
-<button class="pointer-events-auto px-lg py-sm rounded-lg bg-surface text-on-surface-variant border border-outline-variant font-label-md text-label-md transition-all duration-300 ease-out opacity-30 cursor-not-allowed flex items-center gap-sm" disabled="" id="continue-btn">
+<footer class="fixed bottom-0 left-64 right-0 p-lg flex justify-end z-40 bg-gradient-to-t from-background via-background/40 to-transparent pointer-events-none">
+<button class="pointer-events-auto px-lg py-sm rounded-lg bg-surface text-on-surface-variant border border-outline font-label-md text-label-md transition-all duration-300 ease-out opacity-30 cursor-not-allowed flex items-center gap-sm" disabled="" id="continue-btn">
 <span>Continue to questions</span>
 <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
 </button>
@@ -218,7 +246,7 @@
                     setTimeout(() => {
                         continueBtn.disabled = false;
                         continueBtn.classList.remove('opacity-30', 'cursor-not-allowed', 'bg-surface', 'text-on-surface-variant');
-                        continueBtn.classList.add('bg-primary-container', 'text-on-primary-container', 'hover:bg-inverse-primary', 'cursor-pointer');
+                        continueBtn.classList.add('bg-primary', 'text-white', 'hover:bg-primary/95', 'cursor-pointer', 'active:scale-[0.97]', 'shadow-[0_0_12px_rgba(110,91,255,0.25)]');
                     }, 3000);
 
                 } else {
@@ -231,6 +259,13 @@
                     playContainer.classList.add('ambient-glow');
                 }
             });
+
+            continueBtn.addEventListener('click', () => {
+                if (!continueBtn.disabled) {
+                    window.location.href = 'writing_exam_essay_submission.html';
+                }
+            });
         });
     </script>
+</main>
 </body></html>

@@ -16,66 +16,33 @@
             theme: {
                 extend: {
                     "colors": {
-                        "error": "#ffb4ab",
-                        "tertiary-container": "#bb5b00",
-                        "outline-variant": "#474555",
-                        "error-container": "#93000a",
-                        "on-primary-container": "#fffeff",
-                        "tertiary-fixed-dim": "#ffb688",
-                        "on-secondary-fixed": "#170065",
-                        "inverse-surface": "#e5e0ee",
-                        "on-tertiary-fixed": "#311300",
-                        "on-background": "#e5e0ee",
-                        "primary-fixed-dim": "#c6bfff",
-                        "surface-tint": "#c6bfff",
-                        "on-secondary-fixed-variant": "#422db2",
-                        "inverse-on-surface": "#312f39",
-                        "secondary-fixed-dim": "#c7bfff",
-                        "on-tertiary-container": "#ffffff",
-                        "background": "#13121c",
-                        "surface-container-lowest": "#0e0d16",
-                        "primary": "#c6bfff",
-                        "outline": "#928ea1",
-                        "on-primary-fixed": "#160066",
-                        "surface-bright": "#393842",
-                        "surface-container-low": "#1c1a24",
-                        "on-secondary-container": "#b4abff",
-                        "surface-container-highest": "#35343e",
-                        "surface-container-high": "#2a2933",
-                        "on-surface-variant": "#c8c4d8",
-                        "surface-variant": "#35343e",
-                        "on-primary-fixed-variant": "#3d1acf",
-                        "on-error": "#690005",
-                        "on-tertiary": "#512400",
-                        "on-error-container": "#ffdad6",
-                        "on-surface": "#e5e0ee",
-                        "secondary": "#c7bfff",
-                        "on-tertiary-fixed-variant": "#733500",
-                        "surface": "#13121c",
-                        "secondary-container": "#422db2",
-                        "on-secondary": "#2a039d",
-                        "tertiary-fixed": "#ffdbc7",
-                        "inverse-primary": "#563fe6",
-                        "surface-container": "#201e28",
-                        "secondary-fixed": "#e4dfff",
-                        "on-primary": "#2700a0",
-                        "tertiary": "#ffb688",
-                        "surface-dim": "#13121c",
-                        "primary-container": "#6e5bff",
-                        "primary-fixed": "#e4dfff",
+                        "background": "#0A0A0C",
+                        "surface": "#15151A",
+                        "surface-container": "#1C1C24",
+                        "surface-container-low": "#15151A",
+                        "surface-container-high": "#22222A",
+                        "surface-container-highest": "#2E2E38",
+                        "surface-container-lowest": "#070709",
+                        "outline-variant": "#2A2A32",
+                        "outline": "#474555",
+                        "primary": "#6E5BFF",
+                        "primary-container": "#6E5BFF",
+                        "on-surface": "#F5F5F7",
+                        "on-surface-variant": "#9A9AA5",
+                        "surface-input": "#1E1E24",
+                        "error": "#FF5C6C",
+                        "success": "#3DD68C",
+                        "warning": "#E8B339",
                         
-                        "success": "#3dd68c",
                         "success-bg": "rgba(61, 214, 140, 0.1)",
-                        "custom-error": "#ff5c6c",
-                        "custom-error-bg": "rgba(255, 92, 108, 0.1)",
-                        "border-default": "#2a2a32"
+                        "border-default": "#2A2A32"
                     },
                     "borderRadius": {
                         "DEFAULT": "0.25rem",
                         "lg": "0.5rem",
                         "xl": "0.75rem",
                         "full": "9999px",
-                        "card": "10px"
+                        "card": "12px"
                     },
                     "spacing": {
                         "xs": "8px",
@@ -117,35 +84,85 @@
         }
     </style>
 </head>
-<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md antialiased selection:bg-primary-container selection:text-white">
-<!-- Top App Bar (Minimal per JSON/Prompt intent, but suppressing standard nav for focus) -->
-<header class="w-full bg-background flex flex-col pt-xs px-sm md:px-gutter max-w-container-max mx-auto h-16 shrink-0 relative z-10">
-<!-- Progress Bar (Thin line at absolute top) -->
-<div class="absolute top-0 left-0 w-full h-1 bg-surface-container-high">
-<div class="h-full bg-primary-container progress-bar-fill" style="width: 45%;"></div>
+<body class="flex min-h-screen bg-background font-body-md text-body-md antialiased selection:bg-primary/20 selection:text-primary">
+<!-- SideNavBar -->
+<nav class="h-screen w-64 fixed left-0 top-0 bg-background border-r border-outline flex flex-col justify-between py-md px-sm z-20">
+<div class="flex flex-col gap-lg">
+<div class="mb-sm px-sm mt-sm">
+<h1 class="font-display text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent-glow tracking-tight leading-tight mb-1">Linguist AI</h1>
+<p class="text-on-surface-variant font-body-sm text-xs font-semibold">Premium Tier</p>
 </div>
-<div class="flex justify-between items-center w-full h-full">
-<div class="w-10"></div> <!-- Spacer for balance -->
-<div class="font-label-md text-label-md text-on-surface-variant flex items-center gap-2">
-<span aria-hidden="true" class="material-symbols-outlined text-sm" data-icon="exercise">exercise</span>
-<span>Present Perfect Practice</span>
+<nav class="flex flex-col gap-1.5">
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_dashboard.html">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-label-md font-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="real_world_missions.html">
+<span class="material-symbols-outlined">explore</span>
+<span class="text-label-md font-label-md">Missions</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="ai_tutor_panel.html">
+<span class="material-symbols-outlined">smart_toy</span>
+<span class="text-label-md font-label-md">Tutor</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="vocabulary_list.html">
+<span class="material-symbols-outlined">translate</span>
+<span class="text-label-md font-label-md">Vocabulary</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_progress_profile.html">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-label-md font-label-md">Progress</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_settings.html">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-label-md font-label-md">Settings</span>
+</a>
+</nav>
 </div>
-<!-- Close Action (Transactional departure) -->
-<button aria-label="Exit practice" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors duration-200 text-on-surface-variant focus:outline-none focus:ring-1 focus:ring-primary-container">
-<span class="material-symbols-outlined" data-icon="close">close</span>
-</button>
+<div class="px-xs pb-4">
+<a href="ai_voice_conversation_premium_interface.html" class="block w-full text-center bg-primary hover:bg-primary/90 text-white font-medium py-2.5 px-4 rounded-lg active:scale-[0.96] transition-[transform,background-color] duration-150 shadow-[0_0_12px_rgba(110,91,255,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+    New Session
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 ml-64 flex flex-col h-screen overflow-y-auto custom-scrollbar">
+<!-- TopAppBar -->
+<header class="bg-surface/85 backdrop-blur-md border-b border-outline flex justify-between items-center w-full h-16 px-xl sticky top-0 z-10 shrink-0">
+<div class="font-headline-lg text-2xl font-bold text-on-surface tracking-tight">
+    Grammar Practice
+</div>
+<div class="flex items-center gap-md">
+<!-- Streak -->
+<div class="flex items-center gap-xs bg-surface-raised border border-[#2A2A32] rounded-full py-1 px-3">
+<span class="material-symbols-outlined text-warning text-lg" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+<span class="font-label-md text-label-md text-on-surface tabular-nums">7 Day Streak</span>
+</div>
+<!-- XP -->
+<div class="flex items-center gap-xs bg-surface-raised border border-[#2A2A32] rounded-full py-1 px-3">
+<span class="material-symbols-outlined text-primary text-lg">military_tech</span>
+<span class="font-label-md text-label-md text-on-surface tabular-nums">1,250 XP</span>
+</div>
+<!-- Avatar -->
+<a href="linguist_ai_progress_profile.html">
+<img alt="User avatar" class="w-8 h-8 rounded-full border border-[#2A2A32] object-cover hover:border-primary/50 hover:shadow-[0_0_8px_rgba(110,91,255,0.4)] transition-all duration-200 cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAV5ByEFKVdjnv8F4NQRiNvpfpkfwGW5AoOADF6sg1NuI3TEEKMTpMRGurWxkqtI_oLbs0bFso6QhcJR8flD4u5R7vqJ7C_q_Qsf_AlR3eTZeAHFhM8GfuvdqE_G5CICHIw9ohRlN1lSowE47fl7U8hOXoTtZ07kkOekd1srA953bRSCysv9GeXR1KfAQZkVw2x5US5nIbuE28h2Zd0r-81urPJ9UpCTZLMr938jYJfrfC8FYLGMnt1QYnQDCbwbnjjNDC0lb8xWQ"/>
+</a>
 </div>
 </header>
+<!-- Progress Bar -->
+<div class="w-full h-1 bg-surface-container-high z-10 sticky top-16 shrink-0">
+<div class="h-full bg-primary progress-bar-fill" style="width: 45%;"></div>
+</div>
 <!-- Main Content Canvas -->
-<main class="flex-1 flex flex-col items-center w-full px-sm pb-xl overflow-y-auto">
+<div class="flex-grow flex flex-col items-center w-full px-sm pb-24 overflow-y-auto">
 <!-- Focused Canvas (Max 560px) -->
-<div class="w-full max-w-[560px] flex flex-col pt-lg md:pt-xl gap-lg">
+<div class="w-full max-w-[560px] flex flex-col pt-lg md:pt-xl gap-lg pb-32">
 <!-- Question Area -->
 <section aria-labelledby="question-heading" class="flex flex-col gap-sm">
-<h1 class="font-headline-md text-headline-md text-on-background" id="question-heading">
+<h1 class="font-headline-md text-headline-md text-on-surface text-balance" id="question-heading">
                     Choose the correct form:
                 </h1>
-<p class="font-body-lg text-body-lg text-on-surface">
+<p class="font-body-lg text-body-lg text-on-surface text-pretty">
                     She <span aria-hidden="true" class="inline-block border-b border-outline-variant w-12 text-center pb-1 text-on-surface-variant">___</span> in London for five years.
                 </p>
 </section>
@@ -153,42 +170,42 @@
 <section aria-labelledby="options-heading" class="flex flex-col gap-sm mt-sm">
 <h2 class="sr-only" id="options-heading">Answer Options</h2>
 <!-- Option 1: Default -->
-<button class="group w-full bg-[#15151A] border border-border-default rounded-card p-sm flex items-center justify-between text-left transition-all duration-200 hover:border-primary-container hover:bg-surface-container-low focus:outline-none focus:ring-1 focus:ring-primary-container">
-<span class="font-body-md text-body-md text-on-surface">lives</span>
+<button class="group w-full bg-surface border border-border-default rounded-card p-sm flex items-center justify-between text-left transition-[transform,border-color,background-color] duration-200 hover:border-primary hover:bg-surface-container active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20">
+<span class="font-body-md text-body-md text-on-surface text-pretty">lives</span>
 </button>
 <!-- Option 2: Default -->
-<button class="group w-full bg-[#15151A] border border-border-default rounded-card p-sm flex items-center justify-between text-left transition-all duration-200 hover:border-primary-container hover:bg-surface-container-low focus:outline-none focus:ring-1 focus:ring-primary-container">
-<span class="font-body-md text-body-md text-on-surface">is living</span>
+<button class="group w-full bg-surface border border-border-default rounded-card p-sm flex items-center justify-between text-left transition-[transform,border-color,background-color] duration-200 hover:border-primary hover:bg-surface-container active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20">
+<span class="font-body-md text-body-md text-on-surface text-pretty">is living</span>
 </button>
 <!-- Option 3: Selected Correct (Mock State) -->
-<button aria-describedby="feedback-success" aria-pressed="true" class="group w-full bg-success-bg border border-success rounded-card p-sm flex items-center justify-between text-left transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-success">
-<span class="font-body-md text-body-md text-on-surface">has lived</span>
+<button aria-describedby="feedback-success" aria-pressed="true" class="group w-full bg-success-bg border border-success rounded-card p-sm flex items-center justify-between text-left transition-[transform,border-color,background-color] duration-200 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-success/20">
+<span class="font-body-md text-body-md text-on-surface text-pretty">has lived</span>
 <span class="material-symbols-outlined text-success" data-icon="check_circle">check_circle</span>
 </button>
 <!-- Option 4: Default -->
-<button class="group w-full bg-[#15151A] border border-border-default rounded-card p-sm flex items-center justify-between text-left transition-all duration-200 hover:border-primary-container hover:bg-surface-container-low focus:outline-none focus:ring-1 focus:ring-primary-container">
-<span class="font-body-md text-body-md text-on-surface">was living</span>
+<button class="group w-full bg-surface border border-border-default rounded-card p-sm flex items-center justify-between text-left transition-[transform,border-color,background-color] duration-200 hover:border-primary hover:bg-surface-container active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20">
+<span class="font-body-md text-body-md text-on-surface text-pretty">was living</span>
 </button>
 </section>
 <!-- Explanation / Context Panel -->
-<div aria-live="polite" class="flex flex-col gap-xs mt-sm bg-surface-container-lowest border border-border-default rounded-lg p-sm" id="feedback-success" role="region">
+<div aria-live="polite" class="flex flex-col gap-xs mt-sm bg-surface-container border border-border-default rounded-lg p-sm shadow-sm" id="feedback-success" role="region">
 <div class="flex items-center gap-xs text-primary">
 <span class="material-symbols-outlined text-[18px]" data-icon="info">info</span>
 <span class="font-label-md text-label-md">Explanation</span>
 </div>
-<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed text-pretty">
                     We use the present perfect ('has lived') to describe an action that started in the past and continues to the present.
                 </p>
 </div>
 </div>
-</main>
 <!-- Bottom Action Bar -->
-<footer class="w-full bg-background border-t border-surface-container p-sm md:p-md shrink-0 sticky bottom-0 z-20">
+<footer class="fixed bottom-0 left-64 right-0 bg-background border-t border-surface-container p-sm md:p-md shrink-0 z-20">
 <div class="max-w-[560px] mx-auto flex justify-end">
-<button class="bg-primary-container hover:bg-primary text-white font-label-md text-label-md px-lg py-xs rounded-lg transition-colors duration-200 focus:outline-none focus:ring-1 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background flex items-center gap-2">
-                Continue
-                <span aria-hidden="true" class="material-symbols-outlined text-[18px]" data-icon="arrow_forward">arrow_forward</span>
-</button>
+<a href="vocabulary_flashcard_achievement.html" class="bg-primary hover:bg-primary/90 text-white font-label-md text-label-md px-lg py-2.5 rounded-lg transition-[transform,colors] duration-200 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-primary/20 flex items-center gap-2 text-center">
+    Continue
+    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
 </div>
 </footer>
+</main>
 </body></html>

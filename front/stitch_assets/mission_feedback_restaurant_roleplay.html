@@ -3,273 +3,211 @@
 <html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Mission Feedback</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Hanken+Grotesk:wght@500;600&amp;family=Geist:wght@400;500&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<title>Mission Feedback - Linguist AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Hanken+Grotesk:wght@500;600;700&amp;family=Geist:wght@400;500&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script id="tailwind-config">
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            "colors": {
-                    "surface-container-lowest": "#0e0d16",
-                    "secondary-container": "#422db2",
-                    "on-background": "#e5e0ee",
-                    "tertiary-fixed-dim": "#ffb688",
-                    "on-tertiary-container": "#ffffff",
-                    "surface": "#13121c",
-                    "background": "#13121c",
-                    "outline": "#928ea1",
-                    "error-container": "#93000a",
-                    "on-tertiary-fixed-variant": "#733500",
-                    "surface-variant": "#35343e",
-                    "on-tertiary": "#512400",
-                    "on-secondary-fixed": "#170065",
-                    "on-surface-variant": "#c8c4d8",
-                    "on-error-container": "#ffdad6",
-                    "on-secondary-container": "#b4abff",
-                    "surface-container-low": "#1c1a24",
-                    "tertiary-fixed": "#ffdbc7",
-                    "surface-bright": "#393842",
-                    "on-primary-fixed": "#160066",
-                    "on-error": "#690005",
-                    "tertiary": "#ffb688",
-                    "on-tertiary-fixed": "#311300",
-                    "surface-tint": "#c6bfff",
-                    "on-primary-container": "#fffeff",
-                    "tertiary-container": "#bb5b00",
-                    "surface-container": "#201e28",
-                    "secondary": "#c7bfff",
-                    "primary-fixed": "#e4dfff",
-                    "primary": "#c6bfff",
-                    "on-secondary": "#2a039d",
-                    "secondary-fixed-dim": "#c7bfff",
-                    "secondary-fixed": "#e4dfff",
-                    "on-surface": "#e5e0ee",
-                    "on-secondary-fixed-variant": "#422db2",
-                    "on-primary-fixed-variant": "#3d1acf",
-                    "inverse-primary": "#563fe6",
-                    "surface-container-highest": "#35343e",
-                    "surface-container-high": "#2a2933",
-                    "inverse-surface": "#e5e0ee",
-                    "outline-variant": "#474555",
-                    "surface-dim": "#13121c",
-                    "primary-fixed-dim": "#c6bfff",
-                    "primary-container": "#6e5bff",
-                    "inverse-on-surface": "#312f39",
-                    "on-primary": "#2700a0",
-                    "error": "#ffb4ab"
-            },
-            "borderRadius": {
-                    "DEFAULT": "0.25rem",
-                    "lg": "0.5rem",
-                    "xl": "0.75rem",
-                    "full": "9999px"
-            },
-            "spacing": {
-                    "xs": "8px",
-                    "base": "4px",
-                    "xl": "64px",
-                    "container-max": "1440px",
-                    "md": "24px",
-                    "sm": "16px",
-                    "lg": "40px",
-                    "gutter": "24px"
-            },
-            "fontFamily": {
-                    "label-md": [
-                            "Geist"
-                    ],
-                    "body-lg": [
-                            "Inter"
-                    ],
-                    "headline-md": [
-                            "Hanken Grotesk"
-                    ],
-                    "body-sm": [
-                            "Inter"
-                    ],
-                    "body-md": [
-                            "Inter"
-                    ],
-                    "display": [
-                            "Hanken Grotesk"
-                    ],
-                    "code-sm": [
-                            "Geist"
-                    ],
-                    "headline-lg": [
-                            "Hanken Grotesk"
-                    ]
-            },
-            "fontSize": {
-                    "label-md": [
-                            "14px",
-                            {
-                                    "lineHeight": "20px",
-                                    "letterSpacing": "0.02em",
-                                    "fontWeight": "500"
-                            }
-                    ],
-                    "body-lg": [
-                            "18px",
-                            {
-                                    "lineHeight": "28px",
-                                    "fontWeight": "400"
-                            }
-                    ],
-                    "headline-md": [
-                            "24px",
-                            {
-                                    "lineHeight": "32px",
-                                    "fontWeight": "500"
-                            }
-                    ],
-                    "body-sm": [
-                            "14px",
-                            {
-                                    "lineHeight": "20px",
-                                    "fontWeight": "400"
-                            }
-                    ],
-                    "body-md": [
-                            "16px",
-                            {
-                                    "lineHeight": "24px",
-                                    "fontWeight": "400"
-                            }
-                    ],
-                    "display": [
-                            "48px",
-                            {
-                                    "lineHeight": "56px",
-                                    "letterSpacing": "-0.02em",
-                                    "fontWeight": "600"
-                            }
-                    ],
-                    "code-sm": [
-                            "13px",
-                            {
-                                    "lineHeight": "18px",
-                                    "fontWeight": "400"
-                            }
-                    ],
-                    "headline-lg": [
-                            "32px",
-                            {
-                                    "lineHeight": "40px",
-                                    "letterSpacing": "-0.01em",
-                                    "fontWeight": "600"
-                            }
-                    ]
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        background: "#0A0A0C",
+                        surface: "#15151A",
+                        "surface-raised": "#1E1E24",
+                        outline: "#2A2A32",
+                        "outline-variant": "#2A2A32",
+                        primary: "#6E5BFF",
+                        "primary-container": "#6E5BFF",
+                        "on-primary-container": "#F5F5F7",
+                        "on-surface": "#F5F5F7",
+                        "on-surface-variant": "#9A9AA5",
+                        "text-tertiary": "#62626C",
+                        accent: "#6E5BFF",
+                        "accent-glow": "#8B7CFF",
+                        success: "#3DD68C",
+                        warning: "#E8B339",
+                        error: "#FF5C6C",
+                        // Keep compatibility with existing container levels
+                        "surface-container-lowest": "#0A0A0C",
+                        "surface-container-low": "#15151A",
+                        "surface-container": "#15151A",
+                        "surface-container-high": "#1E1E24",
+                        "surface-container-highest": "#2A2A32",
+                    },
+                    borderRadius: {
+                        "DEFAULT": "8px",
+                        "md": "8px",
+                        "lg": "12px",
+                        "xl": "16px",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "xs": "8px",
+                        "base": "4px",
+                        "xl": "64px",
+                        "container-max": "1440px",
+                        "md": "24px",
+                        "sm": "16px",
+                        "lg": "40px",
+                        "gutter": "24px"
+                    },
+                    fontFamily: {
+                        "label-md": ["Geist", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"],
+                        "headline-md": ["Hanken Grotesk", "sans-serif"],
+                        "body-sm": ["Inter", "sans-serif"],
+                        "body-md": ["Inter", "sans-serif"],
+                        "display": ["Hanken Grotesk", "sans-serif"],
+                        "code-sm": ["Geist", "monospace"],
+                        "headline-lg": ["Hanken Grotesk", "sans-serif"]
+                    },
+                    fontSize: {
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "code-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                }
             }
-    },
-        },
-      }
+        }
     </script>
+<style>
+        body {
+            background-color: #0A0A0C;
+            color: #F5F5F7;
+        }
+    </style>
 </head>
-<body class="bg-background text-on-background min-h-screen flex flex-col md:flex-row antialiased">
-<!-- Mobile Top Navigation (Visible only on small screens) -->
-<nav class="md:hidden bg-surface flex justify-between items-center w-full px-xl h-16 border-b border-outline-variant">
-<div class="font-headline-md text-headline-md font-bold text-on-surface">Linguist AI</div>
-<div class="flex items-center gap-sm">
-<span class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors duration-200 cursor-pointer" data-icon="help">help</span>
-<span class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors duration-200 cursor-pointer" data-icon="settings">settings</span>
+<body class="flex min-h-screen bg-background font-body-md text-body-md antialiased selection:bg-primary/20 selection:text-primary">
+<!-- SideNavBar -->
+<nav class="h-screen w-64 fixed left-0 top-0 bg-background border-r border-outline flex flex-col justify-between py-md px-sm z-20">
+<div class="flex flex-col gap-lg">
+<div class="mb-sm px-sm mt-sm">
+<h1 class="font-display text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent-glow tracking-tight leading-tight mb-1">Linguist AI</h1>
+<p class="text-on-surface-variant font-body-sm text-xs font-semibold">Premium Tier</p>
+</div>
+<nav class="flex flex-col gap-1.5">
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_dashboard.html">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-label-md font-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg bg-surface-raised text-primary font-semibold border-l-2 border-primary active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="real_world_missions.html">
+<span class="material-symbols-outlined">explore</span>
+<span class="text-label-md font-label-md">Missions</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="ai_tutor_panel.html">
+<span class="material-symbols-outlined">smart_toy</span>
+<span class="text-label-md font-label-md">Tutor</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="vocabulary_list.html">
+<span class="material-symbols-outlined">translate</span>
+<span class="text-label-md font-label-md">Vocabulary</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_progress_profile.html">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-label-md font-label-md">Progress</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_settings.html">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-label-md font-label-md">Settings</span>
+</a>
+</nav>
+</div>
+<div class="px-xs pb-4">
+<a href="ai_voice_conversation_premium_interface.html" class="block w-full text-center bg-primary hover:bg-primary/90 text-white font-medium py-2.5 px-4 rounded-lg active:scale-[0.96] transition-[transform,background-color] duration-150 shadow-[0_0_12px_rgba(110,91,255,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+    New Session
+</a>
 </div>
 </nav>
-<!-- Desktop Side Navigation (Visible only on md+ screens) -->
-<aside class="hidden md:flex flex-col h-full py-md gap-sm bg-surface-container-low w-64 border-r border-outline-variant shrink-0 min-h-screen">
-<div class="px-md pb-md">
-<h1 class="font-headline-md text-headline-md text-primary font-bold">Linguist AI</h1>
-<p class="font-label-md text-label-md text-on-surface-variant mt-base">Premium Learning</p>
-</div>
-<nav class="flex flex-col gap-base px-sm flex-grow">
-<!-- Active Nav Item -->
-<a class="flex items-center gap-sm px-sm py-xs rounded-md bg-surface-container-high text-primary font-bold border-l-2 border-primary transition-transform duration-200 hover:bg-surface-container-highest" href="#">
-<span class="material-symbols-outlined" data-icon="dashboard" style="font-variation-settings: 'FILL' 1;">dashboard</span>
-<span class="font-label-md text-label-md">Dashboard</span>
-</a>
-<a class="flex items-center gap-sm px-sm py-xs rounded-md text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
-<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
-<span class="font-label-md text-label-md">Library</span>
-</a>
-<a class="flex items-center gap-sm px-sm py-xs rounded-md text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
-<span class="material-symbols-outlined" data-icon="translate">translate</span>
-<span class="font-label-md text-label-md">Vocabulary</span>
-</a>
-<a class="flex items-center gap-sm px-sm py-xs rounded-md text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
-<span class="material-symbols-outlined" data-icon="groups">groups</span>
-<span class="font-label-md text-label-md">Community</span>
-</a>
-</nav>
-<div class="px-md mt-auto">
-<button class="w-full bg-primary-container text-on-primary-container font-label-md text-label-md py-xs rounded-lg hover:opacity-90 transition-opacity duration-200">
-                Start Lesson
-            </button>
-</div>
-</aside>
 <!-- Main Content Area -->
-<main class="flex-grow w-full">
-<div class="max-w-[800px] mx-auto px-gutter py-xl">
+<main class="flex-1 ml-64 flex flex-col h-screen overflow-y-auto custom-scrollbar">
+<!-- TopAppBar -->
+<header class="bg-surface/85 backdrop-blur-md border-b border-outline flex justify-between items-center w-full h-16 px-xl sticky top-0 z-10 shrink-0">
+<div class="font-headline-lg text-2xl font-bold text-on-surface tracking-tight">
+    Mission Feedback
+</div>
+<div class="flex items-center gap-md">
+<!-- Streak -->
+<div class="flex items-center gap-xs bg-surface-raised border border-[#2A2A32] rounded-full py-1 px-3">
+<span class="material-symbols-outlined text-warning text-lg" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+<span class="font-label-md text-label-md text-on-surface tabular-nums">7 Day Streak</span>
+</div>
+<!-- XP -->
+<div class="flex items-center gap-xs bg-surface-raised border border-[#2A2A32] rounded-full py-1 px-3">
+<span class="material-symbols-outlined text-primary text-lg">military_tech</span>
+<span class="font-label-md text-label-md text-on-surface tabular-nums">1,250 XP</span>
+</div>
+<!-- Avatar -->
+<a href="linguist_ai_progress_profile.html">
+<img alt="User avatar" class="w-8 h-8 rounded-full border border-[#2A2A32] object-cover hover:border-primary/50 hover:shadow-[0_0_8px_rgba(110,91,255,0.4)] transition-all duration-200 cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAV5ByEFKVdjnv8F4NQRiNvpfpkfwGW5AoOADF6sg1NuI3TEEKMTpMRGurWxkqtI_oLbs0bFso6QhcJR8flD4u5R7vqJ7C_q_Qsf_AlR3eTZeAHFhM8GfuvdqE_G5CICHIw9ohRlN1lSowE47fl7U8hOXoTtZ07kkOekd1srA953bRSCysv9GeXR1KfAQZkVw2x5US5nIbuE28h2Zd0r-81urPJ9UpCTZLMr938jYJfrfC8FYLGMnt1QYnQDCbwbnjjNDC0lb8xWQ"/>
+</a>
+</div>
+</header>
+<!-- Canvas -->
+<div class="flex-grow p-xl max-w-[800px] w-full mx-auto pb-24">
 <!-- Header Section -->
 <header class="mb-lg">
-<p class="font-label-md text-label-md text-on-surface-variant mb-base uppercase tracking-wider">Mission complete</p>
-<h2 class="font-headline-lg text-headline-lg text-on-surface">Order food at a restaurant</h2>
+<p class="font-label-md text-xs font-bold text-primary mb-1 uppercase tracking-widest">Mission complete</p>
+<h2 class="font-headline-lg text-3xl font-bold text-on-surface tracking-tight text-balance">Order food at a restaurant</h2>
 </header>
 <!-- Content Area: Cards -->
-<div class="flex flex-col gap-sm">
+<div class="flex flex-col gap-md">
 <!-- Card 1: What went well -->
-<section class="bg-surface border border-outline-variant rounded-xl p-md">
-<h3 class="font-body-lg text-body-lg text-on-surface font-semibold mb-sm">What went well</h3>
-<ul class="flex flex-col gap-sm">
+<section class="bg-surface border border-outline rounded-xl p-6 shadow-md hover:border-primary/20 transition-all duration-300">
+<h3 class="font-body-lg text-base text-on-surface font-bold mb-4 tracking-tight">What went well</h3>
+<ul class="flex flex-col gap-3">
 <li class="flex items-start gap-sm">
-<span class="material-symbols-outlined mt-base" data-icon="check_circle" style="color: #3DD68C; font-variation-settings: 'FILL' 1;">check_circle</span>
-<span class="font-body-md text-body-md text-on-surface-variant">Natural greeting</span>
+<span class="material-symbols-outlined mt-0.5 text-success text-xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-sm text-on-surface-variant">Natural greeting</span>
 </li>
 <li class="flex items-start gap-sm">
-<span class="material-symbols-outlined mt-base" data-icon="check_circle" style="color: #3DD68C; font-variation-settings: 'FILL' 1;">check_circle</span>
-<span class="font-body-md text-body-md text-on-surface-variant">Clear pronunciation of order</span>
+<span class="material-symbols-outlined mt-0.5 text-success text-xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-sm text-on-surface-variant">Clear pronunciation of order</span>
 </li>
 <li class="flex items-start gap-sm">
-<span class="material-symbols-outlined mt-base" data-icon="check_circle" style="color: #3DD68C; font-variation-settings: 'FILL' 1;">check_circle</span>
-<span class="font-body-md text-body-md text-on-surface-variant">Polite request for specials</span>
+<span class="material-symbols-outlined mt-0.5 text-success text-xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-sm text-on-surface-variant">Polite request for specials</span>
 </li>
 </ul>
 </section>
 <!-- Card 2: What you could say differently -->
-<section class="bg-surface border border-outline-variant rounded-xl p-md">
-<h3 class="font-body-lg text-body-lg text-on-surface font-semibold mb-sm">What you could say differently</h3>
-<div class="flex flex-col gap-sm">
+<section class="bg-surface border border-outline rounded-xl p-6 shadow-md hover:border-primary/20 transition-all duration-300">
+<h3 class="font-body-lg text-base text-on-surface font-bold mb-4 tracking-tight">What you could say differently</h3>
+<div class="flex flex-col gap-3.5">
 <!-- Row 1 -->
-<div class="flex flex-col md:flex-row md:items-center gap-xs md:gap-sm bg-surface-container-low rounded-lg p-sm border border-outline-variant border-opacity-50">
+<div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 bg-surface-raised/40 rounded-lg p-4 border border-outline hover:border-primary/20 transition-all duration-200">
 <div class="flex-1">
-<p class="font-body-md text-body-md text-on-surface-variant line-through opacity-70">"I want see menu"</p>
+<p class="font-body-md text-sm text-on-surface-variant line-through opacity-65 text-pretty">"I want see menu"</p>
 </div>
-<span class="material-symbols-outlined text-outline hidden md:block" data-icon="arrow_forward">arrow_forward</span>
+<span class="material-symbols-outlined text-on-surface-variant text-lg hidden md:block">arrow_forward</span>
 <div class="flex-1">
-<p class="font-body-md text-body-md" style="color: #3DD68C;">"I'd like to see the menu, please"</p>
+<p class="font-body-md text-sm text-success font-semibold text-pretty">"I'd like to see the menu, please"</p>
 </div>
 </div>
 <!-- Row 2 -->
-<div class="flex flex-col md:flex-row md:items-center gap-xs md:gap-sm bg-surface-container-low rounded-lg p-sm border border-outline-variant border-opacity-50">
+<div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 bg-surface-raised/40 rounded-lg p-4 border border-outline hover:border-primary/20 transition-all duration-200">
 <div class="flex-1">
-<p class="font-body-md text-body-md text-on-surface-variant line-through opacity-70">"What is special today?"</p>
+<p class="font-body-md text-sm text-on-surface-variant line-through opacity-65 text-pretty">"What is special today?"</p>
 </div>
-<span class="material-symbols-outlined text-outline hidden md:block" data-icon="arrow_forward">arrow_forward</span>
+<span class="material-symbols-outlined text-on-surface-variant text-lg hidden md:block">arrow_forward</span>
 <div class="flex-1">
-<p class="font-body-md text-body-md" style="color: #3DD68C;">"Do you have any specials today?"</p>
+<p class="font-body-md text-sm text-success font-semibold text-pretty">"Do you have any specials today?"</p>
 </div>
 </div>
 <!-- Row 3 -->
-<div class="flex flex-col md:flex-row md:items-center gap-xs md:gap-sm bg-surface-container-low rounded-lg p-sm border border-outline-variant border-opacity-50">
+<div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 bg-surface-raised/40 rounded-lg p-4 border border-outline hover:border-primary/20 transition-all duration-200">
 <div class="flex-1">
-<p class="font-body-md text-body-md text-on-surface-variant line-through opacity-70">"Give me water"</p>
+<p class="font-body-md text-sm text-on-surface-variant line-through opacity-65 text-pretty">"Give me water"</p>
 </div>
-<span class="material-symbols-outlined text-outline hidden md:block" data-icon="arrow_forward">arrow_forward</span>
+<span class="material-symbols-outlined text-on-surface-variant text-lg hidden md:block">arrow_forward</span>
 <div class="flex-1">
-<p class="font-body-md text-body-md" style="color: #3DD68C;">"Could I have some water, please?"</p>
+<p class="font-body-md text-sm text-success font-semibold text-pretty">"Could I have some water, please?"</p>
 </div>
 </div>
 </div>
@@ -277,12 +215,12 @@
 </div>
 <!-- Bottom Actions -->
 <div class="mt-lg flex flex-col md:flex-row justify-end gap-sm">
-<button class="font-label-md text-label-md text-on-surface border border-outline-variant bg-transparent px-md py-xs rounded-lg hover:bg-surface-container-high transition-colors duration-200">
-                    Try again
-                </button>
-<button class="font-label-md text-label-md bg-primary-container text-on-primary-container px-md py-xs rounded-lg hover:opacity-90 transition-opacity duration-200">
-                    Back to Missions
-                </button>
+<a href="active_mission_restaurant_roleplay.html" class="font-label-md text-sm text-on-surface border border-outline bg-transparent px-5 py-2.5 rounded-lg hover:bg-surface-raised active:scale-[0.96] transition-all duration-150 focus:outline-none text-center">
+    Try again
+</a>
+<a href="real_world_missions.html" class="font-label-md text-sm bg-primary hover:bg-primary/95 text-white px-5 py-2.5 rounded-lg active:scale-[0.96] transition-all duration-150 shadow-[0_0_12px_rgba(110,91,255,0.25)] border border-[#8B7CFF]/30 hover:border-[#8B7CFF]/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 text-center">
+    Back to Missions
+</a>
 </div>
 </div>
 </main>

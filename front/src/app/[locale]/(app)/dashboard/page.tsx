@@ -2,6 +2,7 @@
 
 import { useGetNextLessonQuery, useGetRecentActivityQuery } from "@/services/dashboardApi";
 import { useGetReviewStatsQuery } from "@/services/reviewApi";
+import { Link } from "@/i18n/navigation";
 
 export default function DashboardPage() {
   const { data: nextLesson, isLoading: isLoadingLesson } = useGetNextLessonQuery();
@@ -81,27 +82,26 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Quick Actions Scroll */}
       <div className="mb-lg">
-        <h2 className="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider mb-sm">Quick Actions</h2>
-        <div className="flex gap-md overflow-x-auto pb-sm" style={{ scrollbarWidth: 'none' }}>
+        <h2 className="text-label-md text-on-surface-variant uppercase tracking-wider mb-sm">Quick Actions</h2>
+        <div className="flex gap-md overflow-x-auto pb-sm" style={{ scrollbarWidth: "none" }}>
           {[
-            { icon: 'smart_toy', label: 'AI Tutor' },
-            { icon: 'explore', label: 'Real World Missions' },
-            { icon: 'workspace_premium', label: 'Exams' },
-            { icon: 'translate', label: 'Vocabulary' }
+            { icon: "settings_voice", label: "AI Speaking", href: "/speaking" },
+            { icon: "smart_toy", label: "AI Tutor", href: "/tutor" },
+            { icon: "explore", label: "Real World Missions", href: "/missions" },
+            { icon: "workspace_premium", label: "Exams", href: "/progress" },
+            { icon: "translate", label: "Vocabulary", href: "/dashboard" }
           ].map(action => (
-            <button key={action.label} className="flex-shrink-0 w-[200px] bg-[#15151A] border border-[#2A2A32] rounded-lg p-sm flex items-center gap-sm hover:bg-[#1C1C24] hover:border-primary/30 transition-all text-left">
+            <Link key={action.label} href={action.href} className="flex-shrink-0 w-[200px] bg-[#15151A] border border-[#2A2A32] rounded-lg p-sm flex items-center gap-sm hover:bg-[#1C1C24] hover:border-primary/30 transition-all text-left">
               <div className="p-xs bg-[#1C1C24] rounded border border-[#2A2A32] text-on-surface-variant">
                 <span className="material-symbols-outlined">{action.icon}</span>
               </div>
               <span className="text-label-md font-label-md text-on-surface">{action.label}</span>
-            </button>
+            </Link>
           ))}
         </div>
       </div>
 
-      {/* Recent Activity List */}
       <div className="bg-[#15151A] border border-[#2A2A32] rounded-xl overflow-hidden min-h-[200px]">
         <div className="p-sm border-b border-[#2A2A32] bg-[#1C1C24]/50">
           <h3 className="text-label-md font-label-md text-on-surface">Recent Activity</h3>

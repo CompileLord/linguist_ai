@@ -3,7 +3,7 @@
 <html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Settings - Linguist AI</title>
+<title>Vocabulary Library - Linguist AI</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Hanken+Grotesk:wght@500;600;700&amp;family=Geist:wght@400;500&amp;display=swap" rel="stylesheet"/>
@@ -94,21 +94,6 @@
         .row-border:last-child {
             border-bottom: none;
         }
-        .toggle-active {
-            background-color: #6E5BFF;
-        }
-        .toggle-inactive {
-            background-color: #2A2A32;
-        }
-        .section-header {
-            color: #9A9AA5;
-            text-transform: uppercase;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            margin-bottom: 10px;
-            padding-left: 16px;
-        }
         .custom-scrollbar::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -143,7 +128,7 @@
 <span class="material-symbols-outlined">smart_toy</span>
 <span class="text-label-md font-label-md">Tutor</span>
 </a>
-<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="vocabulary_list.html">
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg bg-surface-raised text-primary font-semibold border-l-2 border-primary active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="vocabulary_list.html">
 <span class="material-symbols-outlined">translate</span>
 <span class="text-label-md font-label-md">Vocabulary</span>
 </a>
@@ -151,7 +136,7 @@
 <span class="material-symbols-outlined">analytics</span>
 <span class="text-label-md font-label-md">Progress</span>
 </a>
-<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg bg-surface-raised text-primary font-semibold border-l-2 border-primary active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_settings.html">
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_settings.html">
 <span class="material-symbols-outlined">settings</span>
 <span class="text-label-md font-label-md">Settings</span>
 </a>
@@ -168,136 +153,101 @@
 <!-- TopAppBar -->
 <header class="bg-surface/85 backdrop-blur-md border-b border-outline flex justify-between items-center w-full h-16 px-xl sticky top-0 z-10 shrink-0">
 <div class="font-headline-lg text-2xl font-bold text-on-surface tracking-tight">
-    Settings
+    Vocabulary Library
 </div>
-<div class="flex items-center gap-md">
-<!-- Streak -->
-<div class="flex items-center gap-xs bg-surface-raised border border-[#2A2A32] rounded-full py-1 px-3">
-<span class="material-symbols-outlined text-warning text-lg" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
-<span class="font-label-md text-label-md text-on-surface tabular-nums">7 Day Streak</span>
-</div>
-<!-- XP -->
-<div class="flex items-center gap-xs bg-surface-raised border border-[#2A2A32] rounded-full py-1 px-3">
-<span class="material-symbols-outlined text-primary text-lg">military_tech</span>
-<span class="font-label-md text-label-md text-on-surface tabular-nums">1,250 XP</span>
-</div>
-<!-- Avatar -->
-<a href="linguist_ai_progress_profile.html">
-<img alt="User avatar" class="w-8 h-8 rounded-full border border-[#2A2A32] object-cover hover:border-primary/50 hover:shadow-[0_0_8px_rgba(110,91,255,0.4)] transition-all duration-200 cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAV5ByEFKVdjnv8F4NQRiNvpfpkfwGW5AoOADF6sg1NuI3TEEKMTpMRGurWxkqtI_oLbs0bFso6QhcJR8flD4u5R7vqJ7C_q_Qsf_AlR3eTZeAHFhM8GfuvdqE_G5CICHIw9ohRlN1lSowE47fl7U8hOXoTtZ07kkOekd1srA953bRSCysv9GeXR1KfAQZkVw2x5US5nIbuE28h2Zd0r-81urPJ9UpCTZLMr938jYJfrfC8FYLGMnt1QYnQDCbwbnjjNDC0lb8xWQ"/>
-</a>
+<div class="flex items-center gap-sm">
+<button class="text-on-surface-variant hover:text-primary transition-colors active:scale-95 transition-transform p-2 rounded-lg hover:bg-surface-raised/50">
+<span class="material-symbols-outlined text-xl">help</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors active:scale-95 transition-transform p-2 rounded-lg hover:bg-surface-raised/50">
+<span class="material-symbols-outlined text-xl">notifications</span>
+</button>
 </div>
 </header>
-<!-- Settings Content -->
-<div class="flex-grow p-xl max-w-[800px] w-full mx-auto pb-24">
-<!-- Account Section -->
-<div class="mb-lg">
-<div class="section-header">Account</div>
+<!-- Content -->
+<div class="flex-grow p-xl max-w-[1000px] w-full mx-auto pb-24 space-y-lg">
+<!-- Search and CEFR Level Filters -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-md">
+<div class="relative w-full max-w-sm">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+<input class="w-full bg-surface border border-outline rounded-lg py-2 pl-10 pr-4 font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/40 focus:border-primary focus:outline-none transition-all duration-200 focus:shadow-[0_0_14px_rgba(110,91,255,0.15)]" placeholder="Search vocabulary..." type="text"/>
+</div>
+<div class="flex flex-wrap gap-2">
+<button class="px-3 py-1 text-xs font-semibold rounded-full bg-primary text-white border border-primary/20">All</button>
+<button class="px-3 py-1 text-xs font-semibold rounded-full bg-surface-raised border border-outline text-on-surface-variant hover:border-primary hover:text-primary transition-colors">A1</button>
+<button class="px-3 py-1 text-xs font-semibold rounded-full bg-surface-raised border border-outline text-on-surface-variant hover:border-primary hover:text-primary transition-colors">A2</button>
+<button class="px-3 py-1 text-xs font-semibold rounded-full bg-surface-raised border border-outline text-on-surface-variant hover:border-primary hover:text-primary transition-colors">B1</button>
+<button class="px-3 py-1 text-xs font-semibold rounded-full bg-surface-raised border border-outline text-on-surface-variant hover:border-primary hover:text-primary transition-colors">B2</button>
+<button class="px-3 py-1 text-xs font-semibold rounded-full bg-surface-raised border border-outline text-on-surface-variant hover:border-primary hover:text-primary transition-colors">C1</button>
+</div>
+</div>
+<!-- Vocabulary Table Card -->
 <div class="surface-card rounded-xl overflow-hidden shadow-md">
-<div class="flex justify-between items-center p-sm px-md row-border">
-<span class="text-on-surface font-medium text-sm">Email</span>
-<span class="text-on-surface-variant text-sm">test@example.com</span>
-</div>
-<div class="flex justify-between items-center p-sm px-md row-border cursor-pointer hover:bg-surface-raised/40 active:scale-[0.995] transition-all duration-150 group">
-<span class="text-on-surface font-medium text-sm group-hover:text-primary transition-colors">Password</span>
-<div class="flex items-center gap-xs">
-<span class="text-on-surface-variant text-sm tracking-widest font-mono">••••••••</span>
-<span class="material-symbols-outlined text-on-surface-variant text-lg">chevron_right</span>
-</div>
-</div>
-</div>
-</div>
-<!-- Learning Goals Section -->
-<div class="mb-lg">
-<div class="section-header">Learning Goals</div>
-<div class="surface-card rounded-xl overflow-hidden shadow-md">
-<div class="flex justify-between items-center p-sm px-md row-border cursor-pointer hover:bg-surface-raised/40 active:scale-[0.995] transition-all duration-150 group">
-<span class="text-on-surface font-medium text-sm group-hover:text-primary transition-colors">Primary Goal</span>
-<div class="flex items-center gap-xs">
-<span class="text-on-surface-variant text-sm">Professional</span>
-<span class="material-symbols-outlined text-on-surface-variant text-lg">chevron_right</span>
-</div>
-</div>
-<div class="flex justify-between items-center p-sm px-md row-border cursor-pointer hover:bg-surface-raised/40 active:scale-[0.995] transition-all duration-150 group">
-<span class="text-on-surface font-medium text-sm group-hover:text-primary transition-colors">Weekly Target</span>
-<div class="flex items-center gap-xs">
-<span class="text-on-surface-variant text-sm tabular-nums">5 lessons</span>
-<span class="material-symbols-outlined text-on-surface-variant text-lg">chevron_right</span>
-</div>
-</div>
-</div>
-</div>
-<!-- Interface Language Section -->
-<div class="mb-lg">
-<div class="section-header">Interface Language</div>
-<div class="surface-card rounded-xl overflow-hidden shadow-md">
-<div class="flex justify-between items-center p-sm px-md row-border cursor-pointer hover:bg-surface-raised/40 active:scale-[0.995] transition-all duration-150 group">
-<span class="text-on-surface font-medium text-sm group-hover:text-primary transition-colors">Language</span>
-<div class="flex items-center gap-xs">
-<span class="text-on-surface-variant text-sm">English</span>
-<span class="material-symbols-outlined text-on-surface-variant text-lg">chevron_right</span>
-</div>
-</div>
-</div>
-</div>
-<!-- Notifications Section -->
-<div class="mb-lg">
-<div class="section-header">Notifications</div>
-<div class="surface-card rounded-xl overflow-hidden shadow-md">
-<div class="flex justify-between items-center p-sm px-md row-border">
-<span class="text-on-surface font-medium text-sm">Email alerts</span>
-<button class="w-10 h-6 rounded-full toggle-active relative transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 shrink-0">
-<span class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200"></span>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-raised/40 border-b border-outline text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+<th class="p-4 pl-6">Word</th>
+<th class="p-4">Translation</th>
+<th class="p-4">CEFR</th>
+<th class="p-4 text-center">Reviews</th>
+<th class="p-4 text-center">Mistakes</th>
+<th class="p-4 pr-6 text-right">Pronounce</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline">
+<!-- Word 1 -->
+<tr class="hover:bg-surface-raised/30 transition-colors group">
+<td class="p-4 pl-6">
+<div class="font-bold text-on-surface group-hover:text-primary transition-colors">achievement</div>
+<div class="text-xs text-on-surface-variant font-mono mt-0.5">/əˈtʃiːvmənt/</div>
+</td>
+<td class="p-4 text-sm text-on-surface-variant">достижение</td>
+<td class="p-4 text-xs font-bold text-primary tabular-nums">B2</td>
+<td class="p-4 text-center text-sm font-semibold tabular-nums text-on-surface">12</td>
+<td class="p-4 text-center text-sm font-semibold tabular-nums text-error">1</td>
+<td class="p-4 pr-6 text-right">
+<button class="w-8 h-8 rounded-full bg-primary/10 hover:bg-primary/20 text-primary inline-flex items-center justify-center active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">volume_up</span>
 </button>
-</div>
-<div class="flex justify-between items-center p-sm px-md row-border">
-<span class="text-on-surface font-medium text-sm">Push notifications</span>
-<button class="w-10 h-6 rounded-full toggle-inactive relative transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 shrink-0">
-<span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200"></span>
+</td>
+</tr>
+<!-- Word 2 -->
+<tr class="hover:bg-surface-raised/30 transition-colors group">
+<td class="p-4 pl-6">
+<div class="font-bold text-on-surface group-hover:text-primary transition-colors">vocabulary</div>
+<div class="text-xs text-on-surface-variant font-mono mt-0.5">/vəˈkæbjələri/</div>
+</td>
+<td class="p-4 text-sm text-on-surface-variant">словарный запас</td>
+<td class="p-4 text-xs font-bold text-primary tabular-nums">A2</td>
+<td class="p-4 text-center text-sm font-semibold tabular-nums text-on-surface">8</td>
+<td class="p-4 text-center text-sm font-semibold tabular-nums text-error">0</td>
+<td class="p-4 pr-6 text-right">
+<button class="w-8 h-8 rounded-full bg-primary/10 hover:bg-primary/20 text-primary inline-flex items-center justify-center active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">volume_up</span>
 </button>
-</div>
-</div>
-</div>
-<!-- Daily Limits Section -->
-<div class="mb-lg">
-<div class="section-header">Daily Limits</div>
-<div class="surface-card rounded-xl overflow-hidden shadow-md">
-<div class="flex justify-between items-center p-sm px-md row-border cursor-pointer hover:bg-surface-raised/40 active:scale-[0.995] transition-all duration-150 group">
-<span class="text-on-surface font-medium text-sm group-hover:text-primary transition-colors">AI Speaking time</span>
-<div class="flex items-center gap-xs">
-<span class="text-on-surface-variant text-sm tabular-nums">30 mins</span>
-<span class="material-symbols-outlined text-on-surface-variant text-lg">chevron_right</span>
-</div>
-</div>
-<div class="flex justify-between items-center p-sm px-md row-border cursor-pointer hover:bg-surface-raised/40 active:scale-[0.995] transition-all duration-150 group">
-<span class="text-on-surface font-medium text-sm group-hover:text-primary transition-colors">Daily XP Goal</span>
-<div class="flex items-center gap-xs">
-<span class="text-on-surface-variant text-sm tabular-nums font-semibold">500 XP</span>
-<span class="material-symbols-outlined text-on-surface-variant text-lg">chevron_right</span>
-</div>
-</div>
+</td>
+</tr>
+<!-- Word 3 -->
+<tr class="hover:bg-surface-raised/30 transition-colors group">
+<td class="p-4 pl-6">
+<div class="font-bold text-on-surface group-hover:text-primary transition-colors">autonomous</div>
+<div class="text-xs text-on-surface-variant font-mono mt-0.5">/ɔːˈtɒnəməs/</div>
+</td>
+<td class="p-4 text-sm text-on-surface-variant">автономный</td>
+<td class="p-4 text-xs font-bold text-primary tabular-nums">C1</td>
+<td class="p-4 text-center text-sm font-semibold tabular-nums text-on-surface">15</td>
+<td class="p-4 text-center text-sm font-semibold tabular-nums text-error">4</td>
+<td class="p-4 pr-6 text-right">
+<button class="w-8 h-8 rounded-full bg-primary/10 hover:bg-primary/20 text-primary inline-flex items-center justify-center active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>
 </main>
-<script>
-        // Simple toggle interaction logic
-        document.querySelectorAll('button[class*="toggle-"]').forEach(button => {
-            button.addEventListener('click', function() {
-                const isON = this.classList.contains('toggle-active');
-                const dot = this.querySelector('span');
-                
-                if (isON) {
-                    this.classList.remove('toggle-active');
-                    this.classList.add('toggle-inactive');
-                    dot.classList.remove('right-1');
-                    dot.classList.add('left-1');
-                } else {
-                    this.classList.remove('toggle-inactive');
-                    this.classList.add('toggle-active');
-                    dot.classList.remove('left-1');
-                    dot.classList.add('right-1');
-                }
-            });
-        });
-    </script>
 </body></html>

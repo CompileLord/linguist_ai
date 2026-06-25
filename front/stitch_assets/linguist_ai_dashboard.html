@@ -13,62 +13,38 @@
             darkMode: "class",
             theme: {
                 extend: {
-                    "colors": {
-                        "primary": "#c6bfff",
-                        "on-surface-variant": "#c8c4d8",
-                        "surface-container-low": "#1c1a24",
-                        "on-background": "#e5e0ee",
-                        "tertiary-fixed": "#ffdbc7",
-                        "on-error-container": "#ffdad6",
-                        "inverse-surface": "#e5e0ee",
-                        "tertiary-container": "#bb5b00",
-                        "surface": "#13121c",
-                        "on-primary-fixed-variant": "#3d1acf",
-                        "background": "#13121c",
-                        "secondary-fixed-dim": "#c7bfff",
-                        "primary-fixed": "#e4dfff",
-                        "primary-container": "#6e5bff",
-                        "on-secondary-fixed-variant": "#422db2",
-                        "on-primary-container": "#fffeff",
-                        "surface-container-high": "#2a2933",
-                        "on-tertiary-fixed": "#311300",
-                        "on-tertiary-fixed-variant": "#733500",
-                        "on-surface": "#e5e0ee",
-                        "on-error": "#690005",
-                        "outline-variant": "#474555",
-                        "surface-container-lowest": "#0e0d16",
-                        "on-secondary-container": "#b4abff",
-                        "on-primary-fixed": "#160066",
-                        "error": "#ffb4ab",
-                        "on-primary": "#2700a0",
-                        "inverse-on-surface": "#312f39",
-                        "on-secondary": "#2a039d",
-                        "surface-tint": "#c6bfff",
-                        "tertiary-fixed-dim": "#ffb688",
-                        "on-secondary-fixed": "#170065",
-                        "on-tertiary": "#512400",
-                        "surface-container-highest": "#35343e",
-                        "surface-container": "#201e28",
-                        "secondary": "#c7bfff",
-                        "surface-variant": "#35343e",
-                        "surface-bright": "#393842",
-                        "outline": "#928ea1",
-                        "error-container": "#93000a",
-                        "secondary-fixed": "#e4dfff",
-                        "surface-dim": "#13121c",
-                        "primary-fixed-dim": "#c6bfff",
-                        "on-tertiary-container": "#ffffff",
-                        "tertiary": "#ffb688",
-                        "inverse-primary": "#563fe6",
-                        "secondary-container": "#422db2"
+                    colors: {
+                        background: "#0A0A0C",
+                        surface: "#15151A",
+                        "surface-raised": "#1E1E24",
+                        outline: "#2A2A32",
+                        "outline-variant": "#2A2A32",
+                        primary: "#6E5BFF",
+                        "primary-container": "#6E5BFF",
+                        "on-primary-container": "#F5F5F7",
+                        "on-surface": "#F5F5F7",
+                        "on-surface-variant": "#9A9AA5",
+                        "text-tertiary": "#62626C",
+                        accent: "#6E5BFF",
+                        "accent-glow": "#8B7CFF",
+                        success: "#3DD68C",
+                        warning: "#E8B339",
+                        error: "#FF5C6C",
+                        // Keep compatibility with existing container levels
+                        "surface-container-lowest": "#0A0A0C",
+                        "surface-container-low": "#15151A",
+                        "surface-container": "#15151A",
+                        "surface-container-high": "#1E1E24",
+                        "surface-container-highest": "#2A2A32",
                     },
-                    "borderRadius": {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
+                    borderRadius: {
+                        "DEFAULT": "8px",
+                        "md": "8px",
+                        "lg": "12px",
+                        "xl": "16px",
                         "full": "9999px"
                     },
-                    "spacing": {
+                    spacing: {
                         "sm": "16px",
                         "gutter": "24px",
                         "base": "4px",
@@ -78,17 +54,17 @@
                         "container-max": "1440px",
                         "xl": "64px"
                     },
-                    "fontFamily": {
-                        "body-lg": ["Inter"],
-                        "headline-md": ["Hanken Grotesk"],
-                        "display": ["Hanken Grotesk"],
-                        "label-md": ["Geist"],
-                        "headline-lg": ["Hanken Grotesk"],
-                        "body-md": ["Inter"],
-                        "code-sm": ["Geist"],
-                        "body-sm": ["Inter"]
+                    fontFamily: {
+                        "body-lg": ["Inter", "sans-serif"],
+                        "headline-md": ["Hanken Grotesk", "sans-serif"],
+                        "display": ["Hanken Grotesk", "sans-serif"],
+                        "label-md": ["Geist", "sans-serif"],
+                        "headline-lg": ["Hanken Grotesk", "sans-serif"],
+                        "body-md": ["Inter", "sans-serif"],
+                        "code-sm": ["Geist", "monospace"],
+                        "body-sm": ["Inter", "sans-serif"]
                     },
-                    "fontSize": {
+                    fontSize: {
                         "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
                         "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
                         "display": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
@@ -105,14 +81,14 @@
 <style>
         body {
             background-color: #0A0A0C;
-            color: #e5e0ee;
+            color: #F5F5F7;
         }
         .surface-card {
             background-color: #15151A;
             border: 1px solid #2A2A32;
         }
         .glow-accent {
-            box-shadow: 0 0 12px 2px rgba(139, 124, 255, 0.1);
+            box-shadow: 0 0 20px 2px rgba(110, 91, 255, 0.08);
         }
         /* Custom scrollbar for horizontal lists */
         .hide-scroll::-webkit-scrollbar {
@@ -124,178 +100,197 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col font-body-md text-body-md antialiased selection:bg-primary-container selection:text-on-primary-container">
-<!-- TopNavBar -->
-<nav class="fixed top-0 w-full z-50 bg-[#15151A]/80 backdrop-blur-md border-b border-[#2A2A32] flex justify-between items-center h-16 px-gutter max-w-container-max mx-auto">
-<div class="flex items-center gap-sm">
-<span class="text-headline-md font-headline-lg text-primary tracking-tight">Linguist AI</span>
-<div class="hidden md:flex items-center gap-xs text-on-surface-variant ml-md">
-<span class="material-symbols-outlined text-[#E8B339]" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
-<span class="font-label-md text-label-md">7 Day Streak</span>
+<body class="flex min-h-screen bg-background font-body-md text-body-md antialiased selection:bg-primary/20 selection:text-primary">
+<!-- SideNavBar -->
+<nav class="h-screen w-64 fixed left-0 top-0 bg-background border-r border-outline flex flex-col justify-between py-md px-sm z-20">
+<div class="flex flex-col gap-lg">
+<div class="mb-sm px-sm mt-sm">
+<h1 class="font-display text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent-glow tracking-tight leading-tight mb-1">Linguist AI</h1>
+<p class="text-on-surface-variant font-body-sm text-xs font-semibold">Premium Tier</p>
 </div>
-</div>
-<div class="flex items-center gap-md">
-<div class="hidden md:flex items-center gap-xs text-on-surface-variant">
-<span class="material-symbols-outlined">military_tech</span>
-<span class="font-label-md text-label-md">1,250 XP</span>
-</div>
-<img alt="User avatar" class="w-8 h-8 rounded-full border border-[#2A2A32] object-cover" data-alt="A small, high-tech stylized avatar profile picture. Dark mode aesthetic with subtle purple glowing accents. Minimalist and professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAV5ByEFKVdjnv8F4NQRiNvpfpkfwGW5AoOADF6sg1NuI3TEEKMTpMRGurWxkqtI_oLbs0bFso6QhcJR8flD4u5R7vqJ7C_q_Qsf_AlR3eTZeAHFhM8GfuvdqE_G5CICHIw9ohRlN1lSowE47fl7U8hOXoTtZ07kkOekd1srA953bRSCysv9GeXR1KfAQZkVw2x5US5nIbuE28h2Zd0r-81urPJ9UpCTZLMr938jYJfrfC8FYLGMnt1QYnQDCbwbnjjNDC0lb8xWQ"/>
-</div>
-</nav>
-<!-- Main Layout -->
-<div class="flex flex-1 pt-16">
-<!-- SideNavBar (Desktop) -->
-<aside class="hidden md:flex flex-col py-lg px-sm fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-surface-container-lowest border-r border-[#2A2A32]">
-<div class="mb-lg px-xs">
-<h2 class="text-headline-sm font-headline-sm text-primary">Linguist AI</h2>
-<p class="text-label-md font-label-md text-on-surface-variant mt-base">Mastery Level 4</p>
-</div>
-<nav class="flex flex-col gap-base flex-1">
-<a class="flex items-center gap-sm px-sm py-xs rounded-lg bg-surface-container-high text-primary font-bold border-l-2 border-primary transition-all duration-200" href="#">
+<nav class="flex flex-col gap-1.5">
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg bg-surface-raised text-primary font-semibold border-l-2 border-primary active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_dashboard.html">
 <span class="material-symbols-outlined">dashboard</span>
 <span class="text-label-md font-label-md">Dashboard</span>
 </a>
-<a class="flex items-center gap-sm px-sm py-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all duration-200" href="#">
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="real_world_missions.html">
 <span class="material-symbols-outlined">explore</span>
 <span class="text-label-md font-label-md">Missions</span>
 </a>
-<a class="flex items-center gap-sm px-sm py-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all duration-200" href="#">
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="ai_tutor_panel.html">
 <span class="material-symbols-outlined">smart_toy</span>
 <span class="text-label-md font-label-md">Tutor</span>
 </a>
-<a class="flex items-center gap-sm px-sm py-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all duration-200" href="#">
-<span class="material-symbols-outlined">leaderboard</span>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="vocabulary_list.html">
+<span class="material-symbols-outlined">translate</span>
+<span class="text-label-md font-label-md">Vocabulary</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_progress_profile.html">
+<span class="material-symbols-outlined">analytics</span>
 <span class="text-label-md font-label-md">Progress</span>
 </a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_settings.html">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-label-md font-label-md">Settings</span>
+</a>
 </nav>
-<button class="w-full py-xs px-sm bg-primary-container text-on-primary-container rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity">
-                Start Lesson
-            </button>
-</aside>
+</div>
+<div class="px-xs pb-4">
+<a href="ai_voice_conversation_premium_interface.html" class="block w-full text-center bg-primary hover:bg-primary/90 text-white font-medium py-2.5 px-4 rounded-lg active:scale-[0.96] transition-[transform,background-color] duration-150 shadow-[0_0_12px_rgba(110,91,255,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+    New Session
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 ml-64 flex flex-col h-screen overflow-y-auto custom-scrollbar">
+<!-- TopAppBar -->
+<header class="bg-surface/85 backdrop-blur-md border-b border-outline flex justify-between items-center w-full h-16 px-xl sticky top-0 z-10 shrink-0">
+<div class="font-headline-lg text-2xl font-bold text-on-surface tracking-tight">
+    Dashboard
+</div>
+<div class="flex items-center gap-md">
+<!-- Streak -->
+<div class="flex items-center gap-xs bg-surface-raised border border-[#2A2A32] rounded-full py-1 px-3">
+<span class="material-symbols-outlined text-warning text-lg" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+<span class="font-label-md text-label-md text-on-surface tabular-nums">7 Day Streak</span>
+</div>
+<!-- XP -->
+<div class="flex items-center gap-xs bg-surface-raised border border-[#2A2A32] rounded-full py-1 px-3">
+<span class="material-symbols-outlined text-primary text-lg">military_tech</span>
+<span class="font-label-md text-label-md text-on-surface tabular-nums">1,250 XP</span>
+</div>
+<!-- Avatar -->
+<a href="linguist_ai_progress_profile.html">
+<img alt="User avatar" class="w-8 h-8 rounded-full border border-[#2A2A32] object-cover hover:border-primary/50 hover:shadow-[0_0_8px_rgba(110,91,255,0.4)] transition-all duration-200 cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAV5ByEFKVdjnv8F4NQRiNvpfpkfwGW5AoOADF6sg1NuI3TEEKMTpMRGurWxkqtI_oLbs0bFso6QhcJR8flD4u5R7vqJ7C_q_Qsf_AlR3eTZeAHFhM8GfuvdqE_G5CICHIw9ohRlN1lSowE47fl7U8hOXoTtZ07kkOekd1srA953bRSCysv9GeXR1KfAQZkVw2x5US5nIbuE28h2Zd0r-81urPJ9UpCTZLMr938jYJfrfC8FYLGMnt1QYnQDCbwbnjjNDC0lb8xWQ"/>
+</a>
+</div>
+</header>
 <!-- Canvas -->
-<main class="flex-1 md:ml-64 p-gutter md:p-xl max-w-[1000px] mx-auto w-full pb-24">
+<div class="flex-grow p-xl max-w-[1000px] w-full mx-auto pb-24">
 <!-- Hero Bento -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-md mb-md">
 <!-- Primary Action Card -->
-<div class="surface-card rounded-xl p-md col-span-1 md:col-span-2 relative overflow-hidden flex flex-col justify-between min-h-[240px] glow-accent">
+<div class="surface-card rounded-xl p-md col-span-1 md:col-span-2 relative overflow-hidden flex flex-col justify-between min-h-[240px] glow-accent hover:border-primary/30 transition-all duration-300 group">
 <!-- Decorative subtle gradient bg -->
-<div class="absolute inset-0 bg-gradient-to-br from-primary-container/10 to-transparent pointer-events-none"></div>
+<div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none"></div>
 <div class="relative z-10">
-<span class="inline-block px-xs py-base bg-[#1C1C24] text-on-surface-variant rounded text-code-sm font-code-sm mb-sm border border-[#2A2A32]">Continue Learning</span>
-<h1 class="text-display font-display text-on-surface mb-xs">Past Tense Mastery</h1>
-<p class="text-body-lg font-body-lg text-on-surface-variant mb-lg">Module 4: Irregular Verbs in Narrative</p>
+<span class="inline-block px-2.5 py-1 bg-surface-raised text-on-surface-variant rounded text-code-sm font-code-sm mb-sm border border-[#2A2A32]">Continue Learning</span>
+<h1 class="text-display font-display text-on-surface mb-xs tracking-tight text-balance">Past Tense Mastery</h1>
+<p class="text-body-lg font-body-lg text-on-surface-variant mb-lg text-pretty">Module 4: Irregular Verbs in Narrative</p>
 </div>
 <div class="relative z-10 mt-auto">
 <div class="flex justify-between items-end gap-md">
-<div class="flex-1 max-w-sm">
-<div class="flex justify-between text-label-md font-label-md text-on-surface-variant mb-xs">
+<div class="flex-1 max-w-sm pb-1">
+<div class="flex justify-between text-label-md font-label-md text-on-surface-variant mb-1.5 font-medium">
 <span>Progress</span>
-<span>65%</span>
+<span class="tabular-nums">65%</span>
 </div>
-<div class="h-1.5 w-full bg-[#1C1C24] rounded-full overflow-hidden">
-<div class="h-full bg-primary-container rounded-full" style="width: 65%;"></div>
+<div class="h-1.5 w-full bg-surface-raised rounded-full overflow-hidden border border-[#2A2A32]">
+<div class="h-full bg-gradient-to-r from-primary to-accent-glow rounded-full" style="width: 65%;"></div>
 </div>
 </div>
-<button class="bg-primary-container text-on-primary-container px-md py-sm rounded-lg font-label-md text-label-md hover:bg-inverse-primary transition-colors duration-200 shadow-[0_0_15px_rgba(110,91,255,0.3)] border border-[#8B7CFF]/50 hover:shadow-[0_0_20px_rgba(110,91,255,0.5)]">
-                                Continue
-                            </button>
+<button class="bg-primary hover:bg-primary/95 text-white px-md py-sm rounded-lg font-medium active:scale-[0.96] transition-[transform,background-color] duration-150 shadow-[0_0_12px_rgba(110,91,255,0.25)] border border-[#8B7CFF]/30 hover:border-[#8B7CFF]/60 flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+    <span>Continue</span>
+    <span class="material-symbols-outlined text-sm font-bold">arrow_forward</span>
+</button>
 </div>
 </div>
 </div>
 <!-- Secondary Review Card -->
-<div class="surface-card rounded-xl p-md col-span-1 flex flex-col hover:border-primary/50 transition-colors cursor-pointer group">
-<div class="flex justify-between items-start mb-auto">
-<div class="p-xs bg-[#1C1C24] rounded-lg border border-[#2A2A32] group-hover:border-primary/50 transition-colors">
-<span class="material-symbols-outlined text-primary">psychology</span>
+<div class="surface-card rounded-xl p-md col-span-1 flex flex-col justify-between hover:border-primary/50 hover:bg-surface-raised/30 active:scale-[0.98] transition-all duration-200 cursor-pointer group focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50">
+<div class="flex justify-between items-start">
+<div class="p-xs bg-surface-raised rounded-lg border border-[#2A2A32] text-on-surface-variant group-hover:border-primary/50 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">psychology</span>
 </div>
-<span class="flex h-2 w-2 rounded-full bg-[#E8B339]"></span>
+<span class="flex h-2.5 w-2.5 rounded-full bg-warning animate-pulse"></span>
 </div>
-<div class="mt-lg">
-<h3 class="text-headline-md font-headline-md text-on-surface mb-xs">Review Queue</h3>
+<div class="mt-8">
+<h3 class="text-headline-md font-headline-md text-on-surface mb-xs font-bold tracking-tight">Review Queue</h3>
 <p class="text-body-md font-body-md text-on-surface-variant flex items-center gap-xs">
-<span class="text-on-surface font-medium">52 items</span> ready for review
-                        </p>
+<span class="text-on-surface font-semibold tabular-nums">52 items</span> ready for review
+</p>
 </div>
 </div>
 </div>
 <!-- Quick Actions Scroll -->
 <div class="mb-lg">
-<h2 class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider mb-sm">Quick Actions</h2>
+<h2 class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider mb-sm font-semibold">Quick Actions</h2>
 <div class="flex gap-md overflow-x-auto hide-scroll pb-sm">
-<button class="flex-shrink-0 w-[200px] surface-card rounded-lg p-sm flex items-center gap-sm hover:bg-[#1C1C24] hover:border-primary/30 transition-all text-left">
-<div class="p-xs bg-[#1C1C24] rounded border border-[#2A2A32] text-on-surface-variant">
+<button class="flex-shrink-0 w-[200px] surface-card rounded-lg p-sm flex items-center gap-sm hover:bg-surface-raised/60 hover:border-primary/40 active:scale-[0.96] transition-all duration-150 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 group">
+<div class="p-xs bg-surface-raised rounded border border-[#2A2A32] text-on-surface-variant group-hover:border-primary/40 group-hover:text-primary transition-colors duration-150">
 <span class="material-symbols-outlined">smart_toy</span>
 </div>
-<span class="text-label-md font-label-md text-on-surface">AI Tutor</span>
+<span class="text-label-md font-label-md text-on-surface font-medium">AI Tutor</span>
 </button>
-<button class="flex-shrink-0 w-[200px] surface-card rounded-lg p-sm flex items-center gap-sm hover:bg-[#1C1C24] hover:border-primary/30 transition-all text-left">
-<div class="p-xs bg-[#1C1C24] rounded border border-[#2A2A32] text-on-surface-variant">
+<button class="flex-shrink-0 w-[200px] surface-card rounded-lg p-sm flex items-center gap-sm hover:bg-surface-raised/60 hover:border-primary/40 active:scale-[0.96] transition-all duration-150 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 group">
+<div class="p-xs bg-surface-raised rounded border border-[#2A2A32] text-on-surface-variant group-hover:border-primary/40 group-hover:text-primary transition-colors duration-150">
 <span class="material-symbols-outlined">explore</span>
 </div>
-<span class="text-label-md font-label-md text-on-surface">Real World Missions</span>
+<span class="text-label-md font-label-md text-on-surface font-medium">Real World Missions</span>
 </button>
-<button class="flex-shrink-0 w-[200px] surface-card rounded-lg p-sm flex items-center gap-sm hover:bg-[#1C1C24] hover:border-primary/30 transition-all text-left">
-<div class="p-xs bg-[#1C1C24] rounded border border-[#2A2A32] text-on-surface-variant">
+<button class="flex-shrink-0 w-[200px] surface-card rounded-lg p-sm flex items-center gap-sm hover:bg-surface-raised/60 hover:border-primary/40 active:scale-[0.96] transition-all duration-150 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 group">
+<div class="p-xs bg-surface-raised rounded border border-[#2A2A32] text-on-surface-variant group-hover:border-primary/40 group-hover:text-primary transition-colors duration-150">
 <span class="material-symbols-outlined">workspace_premium</span>
 </div>
-<span class="text-label-md font-label-md text-on-surface">Exams</span>
+<span class="text-label-md font-label-md text-on-surface font-medium">Exams</span>
 </button>
-<button class="flex-shrink-0 w-[200px] surface-card rounded-lg p-sm flex items-center gap-sm hover:bg-[#1C1C24] hover:border-primary/30 transition-all text-left">
-<div class="p-xs bg-[#1C1C24] rounded border border-[#2A2A32] text-on-surface-variant">
+<button class="flex-shrink-0 w-[200px] surface-card rounded-lg p-sm flex items-center gap-sm hover:bg-surface-raised/60 hover:border-primary/40 active:scale-[0.96] transition-all duration-150 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 group">
+<div class="p-xs bg-surface-raised rounded border border-[#2A2A32] text-on-surface-variant group-hover:border-primary/40 group-hover:text-primary transition-colors duration-150">
 <span class="material-symbols-outlined">translate</span>
 </div>
-<span class="text-label-md font-label-md text-on-surface">Vocabulary</span>
+<span class="text-label-md font-label-md text-on-surface font-medium">Vocabulary</span>
 </button>
 </div>
 </div>
 <!-- Recent Activity List (Bento integration) -->
-<div class="surface-card rounded-xl overflow-hidden">
-<div class="p-sm border-b border-[#2A2A32] bg-[#1C1C24]/50">
-<h3 class="text-label-md font-label-md text-on-surface">Recent Activity</h3>
+<div class="surface-card rounded-xl overflow-hidden shadow-lg border border-outline">
+<div class="p-sm border-b border-[#2A2A32] bg-surface-raised/30">
+<h3 class="text-label-md font-label-md text-on-surface font-semibold">Recent Activity</h3>
 </div>
 <div class="flex flex-col">
-<div class="flex items-center justify-between p-sm border-b border-[#2A2A32] hover:bg-[#1C1C24] transition-colors cursor-pointer">
+<div class="flex items-center justify-between p-sm border-b border-[#2A2A32] hover:bg-surface-raised/20 active:scale-[0.995] transition-all duration-150 cursor-pointer group">
 <div class="flex items-center gap-sm">
-<span class="material-symbols-outlined text-outline">chat_bubble</span>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">chat_bubble</span>
 <div>
-<p class="text-body-sm font-body-sm text-on-surface">Conversation Practice</p>
-<p class="text-code-sm font-code-sm text-on-surface-variant">Restaurant Scenario</p>
+<p class="text-body-sm font-body-sm text-on-surface font-medium">Conversation Practice</p>
+<p class="text-code-sm font-code-sm text-on-surface-variant mt-0.5">Restaurant Scenario</p>
 </div>
 </div>
-<span class="text-code-sm font-code-sm text-primary">+150 XP</span>
+<span class="text-code-sm font-code-sm text-primary tabular-nums font-semibold">+150 XP</span>
 </div>
-<div class="flex items-center justify-between p-sm border-b border-[#2A2A32] hover:bg-[#1C1C24] transition-colors cursor-pointer">
+<div class="flex items-center justify-between p-sm border-b border-[#2A2A32] hover:bg-surface-raised/20 active:scale-[0.995] transition-all duration-150 cursor-pointer group">
 <div class="flex items-center gap-sm">
-<span class="material-symbols-outlined text-outline">quiz</span>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">quiz</span>
 <div>
-<p class="text-body-sm font-body-sm text-on-surface">Vocabulary Quiz</p>
-<p class="text-code-sm font-code-sm text-on-surface-variant">Food &amp; Drink</p>
+<p class="text-body-sm font-body-sm text-on-surface font-medium">Vocabulary Quiz</p>
+<p class="text-code-sm font-code-sm text-on-surface-variant mt-0.5">Food &amp; Drink</p>
 </div>
 </div>
-<span class="text-code-sm font-code-sm text-primary">+80 XP</span>
+<span class="text-code-sm font-code-sm text-primary tabular-nums font-semibold">+80 XP</span>
 </div>
-<div class="flex items-center justify-between p-sm hover:bg-[#1C1C24] transition-colors cursor-pointer">
+<div class="flex items-center justify-between p-sm hover:bg-surface-raised/20 active:scale-[0.995] transition-all duration-150 cursor-pointer group">
 <div class="flex items-center gap-sm">
-<span class="material-symbols-outlined text-outline">hearing</span>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">hearing</span>
 <div>
-<p class="text-body-sm font-body-sm text-on-surface">Listening Comprehension</p>
-<p class="text-code-sm font-code-sm text-on-surface-variant">News Broadcast Excerpt</p>
+<p class="text-body-sm font-body-sm text-on-surface font-medium">Listening Comprehension</p>
+<p class="text-code-sm font-code-sm text-on-surface-variant mt-0.5">News Broadcast Excerpt</p>
 </div>
 </div>
-<span class="text-code-sm font-code-sm text-primary">+120 XP</span>
+<span class="text-code-sm font-code-sm text-primary tabular-nums font-semibold">+120 XP</span>
 </div>
 </div>
 </div>
 </main>
-</div>
 <!-- Bottom Progress Bar Footer (Global intent) -->
-<footer class="fixed bottom-0 w-full bg-[#15151A] border-t border-[#2A2A32] z-40 md:pl-64">
-<div class="max-w-[1000px] mx-auto px-gutter py-sm flex items-center gap-md">
-<span class="text-label-md font-label-md text-on-surface-variant whitespace-nowrap">Level 4</span>
-<div class="flex-1 h-1 bg-[#1C1C24] rounded-full overflow-hidden">
-<div class="h-full bg-primary-container rounded-full" style="width: 30%;"></div>
+<footer class="fixed bottom-0 left-64 right-0 bg-[#15151A] border-t border-[#2A2A32] z-40">
+<!-- Subtle Signature Accent line on top of footer -->
+<div class="absolute top-0 left-0 w-full h-[1.5px] bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
+<div class="max-w-[1000px] mx-auto px-gutter py-sm flex items-center gap-md relative">
+<span class="text-label-md font-label-md text-on-surface-variant whitespace-nowrap tabular-nums">Level 4</span>
+<div class="flex-1 h-1.5 bg-background rounded-full overflow-hidden border border-[#2A2A32]">
+<div class="h-full bg-gradient-to-r from-primary to-accent-glow rounded-full" style="width: 30%;"></div>
 </div>
-<span class="text-label-md font-label-md text-on-surface whitespace-nowrap">Level 5</span>
+<span class="text-label-md font-label-md text-on-surface whitespace-nowrap tabular-nums">Level 5</span>
 </div>
 </footer>
 </body></html>
