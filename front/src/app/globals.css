@@ -1,31 +1,196 @@
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: #3b82f6;
-  --color-primary-dark: #2563eb;
-  --color-secondary: #8b5cf6;
-  --color-success: #10b981;
-  --color-error: #ef4444;
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Colors */
+  --color-background: #13121c;
+  --color-on-background: #e5e0ee;
+  --color-surface: #13121c;
+  --color-on-surface: #e5e0ee;
+  --color-on-surface-variant: #c8c4d8;
+  --color-surface-dim: #13121c;
+  --color-surface-bright: #393842;
+  --color-surface-container-lowest: #0e0d16;
+  --color-surface-container-low: #1c1a24;
+  --color-surface-container: #201e28;
+  --color-surface-container-high: #2a2933;
+  --color-surface-container-highest: #35343e;
+  --color-surface-variant: #35343e;
+  --color-inverse-surface: #e5e0ee;
+  --color-inverse-on-surface: #312f39;
+  
+  --color-primary: #c6bfff;
+  --color-on-primary: #2700a0;
+  --color-primary-container: #6e5bff;
+  --color-on-primary-container: #fffeff;
+  --color-inverse-primary: #563fe6;
+  
+  --color-secondary: #c7bfff;
+  --color-on-secondary: #2a039d;
+  --color-secondary-container: #422db2;
+  --color-on-secondary-container: #b4abff;
+  
+  --color-tertiary: #ffb688;
+  --color-on-tertiary: #512400;
+  --color-tertiary-container: #bb5b00;
+  --color-on-tertiary-container: #ffffff;
+  
+  --color-error: #ffb4ab;
+  --color-on-error: #690005;
+  --color-error-container: #93000a;
+  --color-on-error-container: #ffdad6;
+  
+  --color-outline: #928ea1;
+  --color-outline-variant: #474555;
+  
+  /* Fonts */
+  --font-display: var(--font-hanken-grotesk), sans-serif;
+  --font-headline-lg: var(--font-hanken-grotesk), sans-serif;
+  --font-headline-md: var(--font-hanken-grotesk), sans-serif;
+  --font-body-lg: var(--font-inter), sans-serif;
+  --font-body-md: var(--font-inter), sans-serif;
+  --font-body-sm: var(--font-inter), sans-serif;
+  --font-label-md: var(--font-geist-sans), sans-serif;
+  --font-code-sm: var(--font-geist-mono), monospace;
+  
+  /* Text Sizes & Line Heights */
+  --text-display: 48px;
+  --text-display--line-height: 56px;
+  --text-display--letter-spacing: -0.02em;
+  
+  --text-headline-lg: 32px;
+  --text-headline-lg--line-height: 40px;
+  --text-headline-lg--letter-spacing: -0.01em;
+  
+  --text-headline-md: 24px;
+  --text-headline-md--line-height: 32px;
+  
+  --text-body-lg: 18px;
+  --text-body-lg--line-height: 28px;
+  
+  --text-body-md: 16px;
+  --text-body-md--line-height: 24px;
+  
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 20px;
+  
+  --text-label-md: 14px;
+  --text-label-md--line-height: 20px;
+  --text-label-md--letter-spacing: 0.02em;
+  
+  --text-code-sm: 13px;
+  --text-code-sm--line-height: 18px;
+  
+  /* Spacing */
+  --spacing-base: 4px;
+  --spacing-xs: 8px;
+  --spacing-sm: 16px;
+  --spacing-md: 24px;
+  --spacing-lg: 40px;
+  --spacing-xl: 64px;
+  --spacing-container-max: 1440px;
+  --spacing-gutter: 24px;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Border Radius */
+  --radius-input: 10px;
+  --radius-card: 14px;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-on-background);
 }
+
+/* Onboarding Bento Grid Layout from stitch_assets */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .bento-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.goal-card-span-2 {
+  grid-column: span 2;
+}
+
+@media (max-width: 768px) {
+  .goal-card-span-2 {
+    grid-column: span 1;
+  }
+  .bento-grid > :nth-child(1),
+  .bento-grid > :nth-child(2) {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 480px) {
+  .bento-grid > :nth-child(1),
+  .bento-grid > :nth-child(2) {
+    grid-column: span 1;
+  }
+}
+
+.glow-hover {
+  transition: all 200ms ease-out;
+}
+
+.glow-hover:hover {
+  box-shadow: 0 0 4px 0px rgba(139, 124, 255, 0.2);
+  border-color: #6E5BFF;
+}
+
+.glow-hover:focus-visible {
+  outline: none;
+  box-shadow: 0 0 4px 0px rgba(139, 124, 255, 0.2);
+  border-color: #6E5BFF;
+}
+
+.goal-card {
+  background-color: #15151A;
+  border: 1px solid #2A2A32;
+  border-radius: 14px;
+  transition: all 200ms ease-out;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  gap: 16px;
+  text-align: center;
+}
+
+.goal-card:hover {
+  border-color: #474555;
+}
+
+.goal-card.selected {
+  background-color: #1E1E24;
+  border-color: #6E5BFF;
+  box-shadow: 0 0 0 4px rgba(139, 124, 255, 0.2);
+}
+
+.goal-card .icon-container {
+  font-size: 32px;
+  color: #928ea1;
+  transition: color 200ms ease-out;
+}
+
+.goal-card.selected .icon-container {
+  color: #6E5BFF;
+}
+
+

@@ -1,5 +1,85 @@
 {
   "Index": {
     "title": "Welcome to Linguist AI"
+  },
+  "Auth": {
+    "Register": {
+      "title": "Create your account",
+      "subtitle": "Start your personalized AI learning path",
+      "signup_google": "Sign up with Google",
+      "or": "or",
+      "full_name": "Full Name",
+      "email": "Email Address",
+      "password": "Password",
+      "name_min_err": "Name must be at least 2 characters",
+      "email_err": "Invalid email address",
+      "password_min_err": "Password must be at least 8 characters",
+      "terms": "By creating an account, you agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>.",
+      "submit": "Create account",
+      "submitting": "Creating account...",
+      "already_have_account": "Already have an account? <login>Log in</login>"
+    }
+  },
+  "Onboarding": {
+    "LanguageSetup": {
+      "title": "Choose your language"
+    },
+    "PlacementSelection": {
+      "title": "Determine your level",
+      "description": "Take a quick placement test to get personalized content, or self-select your level.",
+      "take_test": "Take Placement Test (10 mins)",
+      "skip": "Self-select level",
+      "back": "Back"
+    },
+    "SelfLevelSelection": {
+      "title": "Select your level",
+      "description": "Choose the level that best describes your current English proficiency.",
+      "continue": "Continue",
+      "back": "Back",
+      "levels": {
+        "a1_title": "A1 - Beginner",
+        "a1_desc": "Can understand basic everyday phrases and simple sentences.",
+        "a2_title": "A2 - Elementary",
+        "a2_desc": "Can understand simple information and communicate in routine situations.",
+        "b1_title": "B1 - Intermediate",
+        "b1_desc": "Can understand standard input on familiar matters and describe experiences.",
+        "b2_title": "B2 - Upper Intermediate",
+        "b2_desc": "Can interact with a degree of fluency and produce clear, detailed text.",
+        "c1_title": "C1 - Advanced",
+        "c1_desc": "Can understand a wide range of demanding texts and express ideas fluently.",
+        "c2_title": "C2 - Proficient",
+        "c2_desc": "Can understand virtually everything heard or read and express details precisely."
+      }
+    },
+    "DiagnosticTest": {
+      "skip": "Skip for now",
+      "loading": "Loading question...",
+      "check": "Check",
+      "next": "Next"
+    },
+    "PlacementResult": {
+      "description": "Your English is solid. You can express complex ideas fluently and you're ready to master professional nuances.",
+      "time": "Time:",
+      "accuracy": "Accuracy:",
+      "continue": "Set your goals"
+    },
+    "GoalSelection": {
+      "title": "What are you learning English for?",
+      "subtitle": "Choose up to 3",
+      "continue": "Continue",
+      "saving": "Saving...",
+      "back": "Back",
+      "goals": {
+        "travel": "Travel",
+        "work": "Work",
+        "programming": "Programming",
+        "business": "Business",
+        "ielts": "IELTS",
+        "toefl": "TOEFL",
+        "school": "School",
+        "university": "University",
+        "daily_communication": "Daily Communication"
+      }
+    }
   }
 }
