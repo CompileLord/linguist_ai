@@ -1,4 +1,4 @@
-# Stage 2: Onboarding & Assessment
+# Stage 2: On boarding & Assessment
 
 ## PRD Coverage (Sections 3.2, 3.3)
 

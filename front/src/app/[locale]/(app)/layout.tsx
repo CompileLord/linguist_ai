@@ -1,11 +1,13 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
+import { useGetGamificationStatsQuery } from "@/services/dashboardApi";
+import CountUp from "react-countup";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { data: gamification, isLoading } = useGetGamificationStatsQuery();
 
   const isOnboarding = pathname.startsWith("/onboarding");
 
@@ -64,17 +66,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col font-body-md text-body-md antialiased selection:bg-primary-container selection:text-on-primary-container bg-background text-on-background">
+    <div className="min-h-screen flex flex-col font-body-md text-body-md antialiased selection:bg-primary-container selection:text-on-primary-container bg-background text-on-background pb-16 md:pb-0">
       {/* TopNavBar */}
       <nav className="fixed top-0 w-full z-50 bg-[#15151A]/80 backdrop-blur-md border-b border-[#2A2A32] flex justify-between items-center h-16 px-gutter max-w-container-max mx-auto">
         <div className="flex items-center gap-sm">
-          {/* Mobile hamburger menu */}
-          <button
-            onClick={() => setIsMobileMenuOpen(true)}
-            className="md:hidden p-xs text-on-surface-variant hover:text-on-surface focus:outline-none cursor-pointer"
-          >
-            <span className="material-symbols-outlined">menu</span>
-          </button>
           <span className="text-headline-md font-headline-lg text-primary tracking-tight">
             Linguist AI
           </span>
@@ -85,13 +80,42 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             >
               local_fire_department
             </span>
-            <span className="font-label-md text-label-md">7 Day Streak</span>
+            <span className="font-label-md text-label-md">
+              {isLoading ? "-" : gamification?.current_streak || 0} Day Streak
+            </span>
           </div>
         </div>
         <div className="flex items-center gap-md">
-          <div className="hidden md:flex items-center gap-xs text-on-surface-variant">
+          {/* Global AI Tutor quick-access button */}
+          <Link
+            href="/tutor"
+            className="hidden sm:flex items-center gap-xs bg-primary-container/20 text-primary hover:bg-primary-container/40 px-3 py-1.5 rounded-full transition-colors border border-primary/30"
+          >
+            <span
+              className="material-symbols-outlined text-sm"
+              style={{ fontSize: "18px" }}
+            >
+              smart_toy
+            </span>
+            <span className="font-label-sm text-label-sm font-semibold">
+              Tutor
+            </span>
+          </Link>
+
+          <div className="flex items-center gap-xs text-on-surface-variant">
             <span className="material-symbols-outlined">military_tech</span>
-            <span className="font-label-md text-label-md">1,250 XP</span>
+            <span className="font-label-md text-label-md">
+              {isLoading ? (
+                <span className="inline-block w-8 h-4 bg-surface-container-high animate-pulse rounded"></span>
+              ) : (
+                <CountUp
+                  end={gamification?.total_xp || 0}
+                  duration={1.5}
+                  separator=","
+                />
+              )}{" "}
+              XP
+            </span>
           </div>
           <div className="w-8 h-8 rounded-full border border-[#2A2A32] bg-surface-container-high flex items-center justify-center overflow-hidden">
             <span className="material-symbols-outlined text-on-surface-variant">
@@ -100,6 +124,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           </div>
         </div>
       </nav>
+
       {/* Main Layout */}
       <div className="flex flex-1 pt-16">
         {/* SideNavBar (Desktop) */}
@@ -109,7 +134,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               Linguist AI
             </h2>
             <p className="text-label-md font-label-md text-on-surface-variant mt-base">
-              Mastery Level 4
+              Mastery Level{" "}
+              {isLoading ? "-" : gamification?.current_game_level || 1}
             </p>
           </div>
           <nav className="flex flex-col gap-base flex-1">
@@ -138,65 +164,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           </button>
         </aside>
 
-        {/* Mobile Drawer (Sidebar) */}
-        {isMobileMenuOpen && (
-          <div className="fixed inset-0 z-50 md:hidden">
-            {/* Dark Backdrop */}
-            <div
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-              onClick={() => setIsMobileMenuOpen(false)}
-            />
-            {/* Sidebar Panel */}
-            <aside className="fixed top-0 left-0 h-full w-64 bg-[#15151A] border-r border-[#2A2A32] p-sm flex flex-col gap-md z-50">
-              <div className="flex justify-between items-center px-xs pt-xs">
-                <div>
-                  <h2 className="text-headline-sm font-headline-sm text-primary">
-                    Linguist AI
-                  </h2>
-                  <p className="text-label-md font-label-md text-on-surface-variant mt-base">
-                    Mastery Level 4
-                  </p>
-                </div>
-                <button
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-xs text-on-surface-variant hover:text-on-surface focus:outline-none cursor-pointer"
-                >
-                  <span className="material-symbols-outlined">close</span>
-                </button>
-              </div>
-
-              <nav className="flex flex-col gap-base flex-1">
-                {navItems.map((item) => {
-                  const isActive = pathname === item.href;
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className={`flex items-center gap-sm px-sm py-xs rounded-lg transition-all duration-200 ${
-                        isActive
-                          ? "bg-surface-container-high text-primary font-bold border-l-2 border-primary"
-                          : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
-                      }`}
-                    >
-                      <span className="material-symbols-outlined">
-                        {item.icon}
-                      </span>
-                      <span className="text-label-md font-label-md">
-                        {item.label}
-                      </span>
-                    </Link>
-                  );
-                })}
-              </nav>
-
-              <button className="w-full py-xs px-sm bg-primary-container text-on-primary-container rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity cursor-pointer">
-                Start Lesson
-              </button>
-            </aside>
-          </div>
-        )}
-
         {/* Canvas wrapper that pushes content past the fixed sidebar on desktop */}
         <div className="flex-1 md:pl-64 w-full">
           <main className="max-w-[1000px] mx-auto w-full pb-16">
@@ -204,11 +171,40 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           </main>
         </div>
       </div>
-      {/* Bottom Progress Bar Footer */}
-      <footer className="fixed left-[256px] bottom-0 w-[calc(100%-256px)] bg-[#15151A] border-t border-[#2A2A32] z-40 md:pl-64">
-        <div className="max-w-[1000px] mx-auto px-gutter py-sm flex items-center gap-md">
+
+      {/* Mobile Bottom Tab Bar */}
+      <nav className="md:hidden fixed bottom-0 w-full z-50 bg-[#15151A]/90 backdrop-blur-md border-t border-[#2A2A32] flex justify-around items-center h-16 pb-safe">
+        {navItems.map((item) => {
+          const isActive = pathname === item.href;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${
+                isActive
+                  ? "text-primary"
+                  : "text-on-surface-variant hover:text-on-surface"
+              }`}
+            >
+              <span
+                className="material-symbols-outlined"
+                style={{
+                  fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0",
+                }}
+              >
+                {item.icon}
+              </span>
+              <span className="text-[10px] font-medium">{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Bottom Progress Bar Footer (Desktop Only) */}
+      <footer className="hidden md:flex fixed left-[256px] bottom-0 w-[calc(100%-256px)] bg-[#15151A] border-t border-[#2A2A32] z-40 md:pl-64">
+        <div className="max-w-[1000px] w-full mx-auto px-gutter py-sm flex items-center gap-md">
           <span className="text-label-md font-label-md text-on-surface-variant whitespace-nowrap">
-            Level 4
+            Level {gamification?.current_game_level || 1}
           </span>
           <div className="flex-1 h-1 bg-[#1C1C24] rounded-full overflow-hidden">
             <div
@@ -217,7 +213,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             ></div>
           </div>
           <span className="text-label-md font-label-md text-on-surface whitespace-nowrap">
-            Level 5
+            Level {(gamification?.current_game_level || 1) + 1}
           </span>
         </div>
       </footer>

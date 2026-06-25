@@ -28,7 +28,7 @@ export const onboardingApi = api.injectEndpoints({
         };
       },
     }),
-    answerPlacementQuestion: builder.mutation<any, any>({
+    answerPlacementQuestion: builder.mutation<unknown, { sessionId: string; questionId: string; answer: string }>({
       // TODO: MOCK - Replace with actual backend integration
       queryFn: async ({ sessionId, questionId, answer }) => {
         console.log('Mock answer placement:', { sessionId, questionId, answer });

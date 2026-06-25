@@ -26,10 +26,30 @@
     },
     "PlacementSelection": {
       "title": "Determine your level",
-      "description": "Take a quick placement test to get personalized content, or skip and choose later.",
+      "description": "Take a quick placement test to get personalized content, or self-select your level.",
       "take_test": "Take Placement Test (10 mins)",
-      "skip": "Skip for now",
+      "skip": "Self-select level",
       "back": "Back"
+    },
+    "SelfLevelSelection": {
+      "title": "Select your level",
+      "description": "Choose the level that best describes your current English proficiency.",
+      "continue": "Continue",
+      "back": "Back",
+      "levels": {
+        "a1_title": "A1 - Beginner",
+        "a1_desc": "Can understand basic everyday phrases and simple sentences.",
+        "a2_title": "A2 - Elementary",
+        "a2_desc": "Can understand simple information and communicate in routine situations.",
+        "b1_title": "B1 - Intermediate",
+        "b1_desc": "Can understand standard input on familiar matters and describe experiences.",
+        "b2_title": "B2 - Upper Intermediate",
+        "b2_desc": "Can interact with a degree of fluency and produce clear, detailed text.",
+        "c1_title": "C1 - Advanced",
+        "c1_desc": "Can understand a wide range of demanding texts and express ideas fluently.",
+        "c2_title": "C2 - Proficient",
+        "c2_desc": "Can understand virtually everything heard or read and express details precisely."
+      }
     },
     "DiagnosticTest": {
       "skip": "Skip for now",

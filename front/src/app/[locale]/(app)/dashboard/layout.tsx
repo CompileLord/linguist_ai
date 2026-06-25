@@ -17,40 +17,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col font-body-md text-body-md antialiased selection:bg-primary-container selection:text-on-primary-container bg-background text-on-background">
       {/* TopNavBar */}
-      {/* here */}
-      {/* <nav className="fixed top-0 w-full z-50 bg-[#15151A]/80 backdrop-blur-md border-b border-[#2A2A32] flex justify-between items-center h-16 px-gutter max-w-container-max mx-auto">
-        <div className="flex items-center gap-sm">
-          <button
-            onClick={() => setIsMobileMenuOpen(true)}
-            className="md:hidden p-xs text-on-surface-variant hover:text-on-surface focus:outline-none cursor-pointer"
-          >
-            <span className="material-symbols-outlined">menu</span>
-          </button>
-          <span className="text-headline-md font-headline-lg text-primary tracking-tight">
-            Linguist AI
-          </span>
-          <div className="hidden md:flex items-center gap-xs text-on-surface-variant ml-md">
-            <span
-              className="material-symbols-outlined text-[#E8B339]"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              local_fire_department
-            </span>
-            <span className="font-label-md text-label-md">7 Day Streak</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-md">
-          <div className="hidden md:flex items-center gap-xs text-on-surface-variant">
-            <span className="material-symbols-outlined">military_tech</span>
-            <span className="font-label-md text-label-md">1,250 XP</span>
-          </div>
-          <div className="w-8 h-8 rounded-full border border-[#2A2A32] bg-surface-container-high flex items-center justify-center overflow-hidden">
-            <span className="material-symbols-outlined text-on-surface-variant">
-              person
-            </span>
-          </div>
-        </div>
-      </nav> */}
       {/* Main Layout */}
       <div className="flex flex-1 pt-4">
         {/* SideNavBar (Desktop) */}

@@ -8,6 +8,7 @@ import { LanguageSetupStep } from "@/features/onboarding/LanguageSetupStep";
 import { PlacementSelectionStep } from "@/features/onboarding/PlacementSelectionStep";
 import { DiagnosticTestStep } from "@/features/onboarding/DiagnosticTestStep";
 import { PlacementResultStep } from "@/features/onboarding/PlacementResultStep";
+import { SelfLevelSelectionStep } from "@/features/onboarding/SelfLevelSelectionStep";
 import { GoalSelectionStep } from "@/features/onboarding/GoalSelectionStep";
 
 export type OnboardingStep =
@@ -15,6 +16,7 @@ export type OnboardingStep =
   | "selection"
   | "diagnostic"
   | "result"
+  | "self-select"
   | "goals";
 
 function OnboardingContent() {
@@ -57,22 +59,42 @@ function OnboardingContent() {
         return (
           <PlacementSelectionStep
             onNext={() => goToStep("diagnostic", 1)}
-            onSkip={() => goToStep("goals", 1)}
+            onSkip={() => goToStep("self-select", 1)}
             onBack={() => goToStep("language", -1)}
           />
         );
-      // here
       case "diagnostic":
         return (
           <DiagnosticTestStep
             onComplete={() => goToStep("result", 1)}
-            onSkip={() => goToStep("goals", 1)}
+            onSkip={() => goToStep("self-select", 1)}
           />
         );
       case "result":
         return <PlacementResultStep onNext={() => goToStep("goals", 1)} />;
+      case "self-select":
+        return (
+          <SelfLevelSelectionStep
+            onComplete={(level) => {
+              if (typeof window !== "undefined") {
+                sessionStorage.setItem("user_selected_level", level);
+              }
+              goToStep("goals", 1);
+            }}
+            onBack={() => goToStep("selection", -1)}
+          />
+        );
       case "goals":
-        return <GoalSelectionStep onBack={() => goToStep("result", -1)} />;
+        return (
+          <GoalSelectionStep
+            onBack={() => {
+              const hasSelfSelected =
+                typeof window !== "undefined" &&
+                sessionStorage.getItem("user_selected_level");
+              goToStep(hasSelfSelected ? "self-select" : "result", -1);
+            }}
+          />
+        );
       default:
         return null;
     }

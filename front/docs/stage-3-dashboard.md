@@ -21,23 +21,23 @@ The main application shell, persistent layout, daily learning queue, gamificatio
 ### 3. Spaced Repetition Queue (PRD 3.6)
 
 - **Flow**: Display a highly visible card: "Review: N items due today". Clicking it navigates to `/review`.
-<!-- here -->
 
 ### 4. Next Lesson Generator
 
 - **Flow**: If the user has a pending lesson, show "Continue Lesson". If none, show "Generate Next Lesson". Clicking "Generate" triggers the backend `AI Lesson Generator` (PRD 3.4) and transitions to a loading state.
+<!-- here -->
 
 ## Tasks (Todo List)
 
-- [ ] Create persistent Layout (`src/app/(protected)/layout.tsx`).
-- [ ] Implement responsive Sidebar (Desktop) and Bottom Tab Bar (Mobile).
-- [ ] Build Topbar component with global AI Tutor quick-access button.
-- [ ] Build the Dashboard Page (`/dashboard/page.tsx`).
-- [ ] Component: Gamification Header (XP Bar, Level Badge, Streak Fire icon).
-- [ ] Component: "Review Queue" Card (calls backend to get count of items due).
-- [ ] Component: "Next Lesson" Action Card.
-- [ ] Component: Recent Achievements mini-feed (PRD 3.13).
-- [ ] Setup SWR/React Query for dashboard data fetching to allow automatic polling/refetching when window regains focus.
+- [x] Create persistent Layout (implemented localized layout at `src/app/[locale]/(app)/layout.tsx`).
+- [x] Implement responsive Sidebar (Desktop) and Bottom Tab Bar (Mobile).
+- [x] Build Topbar component with global AI Tutor quick-access button.
+- [x] Build the Dashboard Page (`/dashboard/page.tsx`).
+- [x] Component: Gamification Header (XP Bar, Level Badge, Streak Fire icon, uses `react-countup`).
+- [x] Component: "Review Queue" Card (calls backend/RTK Query to get count of items due).
+- [x] Component: "Next Lesson" Action Card.
+- [x] Component: Recent Achievements mini-feed (PRD 3.13).
+- [x] Setup RTK Query for dashboard data fetching to allow caching, automatic refetching, and window focus refetching.
 
 ## Best Practices (How to make it better)
 
