@@ -1,69 +1,92 @@
 import { api } from './api';
 
+export interface ProfileResponse {
+  user_id: string;
+  target_language_code: string;
+  native_language_code: string;
+  current_level: string | null;
+  placement_score: number | null;
+  daily_goal_minutes: number;
+  streak_count: number;
+  total_xp: number;
+  onboarding_completed: boolean;
+}
+
+export interface PlacementQuestion {
+  question_text: string;
+  options: string[];
+  correct_answer_index: number;
+  difficulty_level: string;
+  explanation: string;
+}
+
+export interface PlacementStepResult {
+  is_correct: boolean;
+  explanation: string;
+  next_question: PlacementQuestion | null;
+  current_estimate: string;
+}
+
+export interface PlacementResult {
+  final_level: string;
+  score: number;
+  questions_answered: number;
+  correct_count: number;
+  accuracy: number;
+  level_description: string;
+  recommended_starting_topics: string[];
+}
+
 export const onboardingApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    updateGoals: builder.mutation({
-      // TODO: MOCK - Replace with actual backend integration
-      queryFn: async (goals: string[]) => {
-        console.log('Mock update goals:', goals);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        return { data: { status: 'success', goals } };
-      },
+    setupProfile: builder.mutation<ProfileResponse, { target_language_code: string; native_language_code: string; daily_goal_minutes?: number; goals: string[] }>({
+      query: (body) => ({
+        url: '/profile/setup',
+        method: 'POST',
+        body,
+      }),
       invalidatesTags: ['Profile'],
     }),
-    startPlacementTest: builder.mutation({
-      // TODO: MOCK - Replace with actual backend integration
-      queryFn: async () => {
-        console.log('Mock start placement test');
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        return {
-          data: {
-            session_id: 'mock-session-123',
-            first_question: {
-              id: 'q1',
-              text: 'I _____ to the store yesterday.',
-              options: ['go', 'went', 'gone', 'going'],
-            },
-          },
-        };
-      },
+    updateGoals: builder.mutation<any, string[]>({
+      query: (goals) => ({
+        url: '/profile/goals',
+        method: 'PUT',
+        body: { goals },
+      }),
+      invalidatesTags: ['Profile'],
     }),
-    answerPlacementQuestion: builder.mutation<unknown, { sessionId: string; questionId: string; answer: string }>({
-      // TODO: MOCK - Replace with actual backend integration
-      queryFn: async ({ sessionId, questionId, answer }) => {
-        console.log('Mock answer placement:', { sessionId, questionId, answer });
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        // Simulate next question or completion
-        if (questionId === 'q1') {
-          return {
-            data: {
-              status: 'in_progress',
-              next_question: {
-                id: 'q2',
-                text: 'She _____ English for five years.',
-                options: ['has studying', 'has been studying', 'studies', 'study'],
-              },
-            },
-          };
-        } else {
-          return {
-            data: {
-              status: 'completed',
-              result: {
-                cefr_level: 'B2',
-                time_taken: '14:20',
-                accuracy: 88,
-              },
-            },
-          };
-        }
-      },
+    startPlacementTest: builder.mutation<PlacementQuestion, void>({
+      query: () => ({
+        url: '/profile/placement/start',
+        method: 'POST',
+      }),
+    }),
+    answerPlacementQuestion: builder.mutation<PlacementStepResult, { answer_index: number }>({
+      query: (body) => ({
+        url: '/profile/placement/answer',
+        method: 'POST',
+        body,
+      }),
+    }),
+    getPlacementResult: builder.query<PlacementResult, void>({
+      query: () => '/profile/placement/result',
+    }),
+    updateLevelManually: builder.mutation<ProfileResponse, string>({
+      query: (level) => ({
+        url: `/profile/level?level=${level}`,
+        method: 'PUT',
+      }),
+      invalidatesTags: ['Profile'],
     }),
   }),
 });
 
 export const {
+  useSetupProfileMutation,
   useUpdateGoalsMutation,
   useStartPlacementTestMutation,
   useAnswerPlacementQuestionMutation,
+  useGetPlacementResultQuery,
+  useUpdateLevelManuallyMutation,
 } = onboardingApi;
+

@@ -1,4 +1,5 @@
 import { useTranslations } from "next-intl";
+import { useGetPlacementResultQuery } from "@/services/onboardingApi";
 
 interface Props {
   onNext: () => void;
@@ -6,6 +7,15 @@ interface Props {
 
 export function PlacementResultStep({ onNext }: Props) {
   const t = useTranslations("Onboarding.PlacementResult");
+  const { data: result, isLoading } = useGetPlacementResultQuery();
+
+  if (isLoading || !result) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[300px]">
+        <div className="text-lg animate-pulse">Loading result...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center text-center w-full mx-auto space-y-lg animate-[fadeIn_1s_ease-out_forwards]">
@@ -15,13 +25,13 @@ export function PlacementResultStep({ onNext }: Props) {
           className="font-display text-display font-bold text-on-surface relative z-10 tracking-tighter"
           style={{ fontSize: "8rem", lineHeight: "1" }}
         >
-          B2
+          {result.final_level}
         </h1>
       </div>
 
-      <div className="space-y-sm px-sm z-10">
+      <div className="space-y-sm px-sm z-10 max-w-[500px]">
         <p className="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
-          {t("description")}
+          {result.level_description}
         </p>
       </div>
 
@@ -34,9 +44,9 @@ export function PlacementResultStep({ onNext }: Props) {
                 "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",
             }}
           >
-            timer
+            check_circle
           </span>
-          <span>{t("time")} 14:20</span>
+          <span>Correct: {result.correct_count} / {result.questions_answered}</span>
         </div>
         <div className="w-1 h-1 bg-outline-variant rounded-full"></div>
         <div className="flex items-center gap-xs">
@@ -47,9 +57,9 @@ export function PlacementResultStep({ onNext }: Props) {
                 "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",
             }}
           >
-            check_circle
+            done_all
           </span>
-          <span>{t("accuracy")} 88%</span>
+          <span>{t("accuracy")} {(result.accuracy * 100).toFixed(0)}%</span>
         </div>
       </div>
 
@@ -64,3 +74,4 @@ export function PlacementResultStep({ onNext }: Props) {
     </div>
   );
 }
+

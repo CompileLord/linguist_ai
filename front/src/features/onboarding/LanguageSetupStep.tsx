@@ -2,6 +2,7 @@ import { useTranslations } from "next-intl";
 import { useDispatch } from "react-redux";
 import { setUiLanguage } from "@/store/authSlice";
 import { useRouter } from "@/i18n/navigation";
+import { useSetupProfileMutation } from "@/services/onboardingApi";
 
 interface Props {
   onNext: () => void;
@@ -11,6 +12,7 @@ interface Props {
 export function LanguageSetupStep({ onNext, onBack }: Props) {
   const t = useTranslations("Onboarding.LanguageSetup");
   const t2 = useTranslations("Onboarding.PlacementSelection");
+  const [setupProfile, { isLoading }] = useSetupProfileMutation();
 
   const dispatch = useDispatch();
   const router = useRouter();
@@ -21,9 +23,18 @@ export function LanguageSetupStep({ onNext, onBack }: Props) {
     { code: "en", name: "English" },
   ] as const;
 
-  const handleLanguageSelect = (code: "tg" | "ru" | "en") => {
-    dispatch(setUiLanguage(code));
-    router.replace("/onboarding?step=selection", { locale: code });
+  const handleLanguageSelect = async (code: "tg" | "ru" | "en") => {
+    try {
+      await setupProfile({
+        target_language_code: "en",
+        native_language_code: code,
+        goals: [],
+      }).unwrap();
+      dispatch(setUiLanguage(code));
+      router.replace("/onboarding?step=selection", { locale: code });
+    } catch (err) {
+      console.error("Profile setup failed:", err);
+    }
   };
 
   return (
@@ -38,7 +49,8 @@ export function LanguageSetupStep({ onNext, onBack }: Props) {
           <button
             key={lang.code}
             onClick={() => handleLanguageSelect(lang.code)}
-            className="group flex items-center justify-center py-xl px-lg bg-[#15151A] border border-[#2A2A32] rounded-[14px] transition-all duration-200 ease-out hover:scale-[1.02] hover:border-primary-container hover:shadow-[0_0_4px_0_rgba(139,124,255,0.2)] focus:outline-none"
+            disabled={isLoading}
+            className="group flex items-center justify-center py-xl px-lg bg-[#15151A] border border-[#2A2A32] rounded-[14px] transition-all duration-200 ease-out hover:scale-[1.02] hover:border-primary-container hover:shadow-[0_0_4px_0_rgba(139,124,255,0.2)] focus:outline-none disabled:opacity-50"
           >
             <span className="font-headline-lg text-headline-lg text-[#F5F5F7]">
               {lang.name}
@@ -58,3 +70,4 @@ export function LanguageSetupStep({ onNext, onBack }: Props) {
     </div>
   );
 }
+

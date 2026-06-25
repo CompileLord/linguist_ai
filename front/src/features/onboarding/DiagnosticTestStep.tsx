@@ -1,116 +1,76 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "framer-motion";
+import { useStartPlacementTestMutation, useAnswerPlacementQuestionMutation } from "@/services/onboardingApi";
 
 interface Props {
   onComplete: () => void;
   onSkip: () => void;
 }
 
-const QUESTIONS = [
-  {
-    id: "q1",
-    text: "I _____ to the store yesterday.",
-    options: ["go", "went", "gone", "going"],
-    correctIndex: 1,
-    reasoning: '"Yesterday" indicates a completed action in the past, which requires the Past Simple tense ("went").'
-  },
-  {
-    id: "q2",
-    text: "She _____ English for five years before she moved to London.",
-    options: ["studies", "is studying", "had been studying", "has studied"],
-    correctIndex: 2,
-    reasoning: 'The Past Perfect Continuous ("had been studying") is used to emphasize the duration of an action that was completed before another action in the past.'
-  },
-  {
-    id: "q3",
-    text: "If it _____ tomorrow, we will cancel the picnic.",
-    options: ["rains", "will rain", "rained", "is raining"],
-    correctIndex: 0,
-    reasoning: 'In a first conditional sentence, the "if" clause uses the Present Simple tense ("rains") to refer to a future possibility.'
-  },
-  {
-    id: "q4",
-    text: "By this time next year, I _____ my degree.",
-    options: ["will finish", "will have finished", "am finishing", "have finished"],
-    correctIndex: 1,
-    reasoning: 'The Future Perfect tense ("will have finished") is used to describe an action that will be completed by a specific time in the future.'
-  },
-  {
-    id: "q5",
-    text: "I wish I _____ harder when I was at university.",
-    options: ["study", "studied", "have studied", "had studied"],
-    correctIndex: 3,
-    reasoning: 'To express regret about a past situation, "wish" is followed by the Past Perfect tense ("had studied").'
-  },
-  {
-    id: "q6",
-    text: "The meeting _____ by the time he arrived.",
-    options: ["already started", "had already started", "has already started", "starts"],
-    correctIndex: 1,
-    reasoning: 'When two past actions are related, the earlier action uses the Past Perfect tense ("had already started").'
-  },
-  {
-    id: "q7",
-    text: "Neither the teacher nor the students _____ present at the meeting.",
-    options: ["was", "were", "is", "are"],
-    correctIndex: 1,
-    reasoning: 'When two subjects are joined by "neither/nor", the verb agrees with the subject closer to it ("students" is plural, so we use "were").'
-  },
-  {
-    id: "q8",
-    text: "He suggested _____ to the museum instead of the zoo.",
-    options: ["to go", "go", "going", "for going"],
-    correctIndex: 2,
-    reasoning: 'The verb "suggest" is followed by a gerund ("going") when it does not have a direct noun/pronoun object.'
-  },
-  {
-    id: "q9",
-    text: "I look forward to _____ from you soon.",
-    options: ["hearing", "hear", "to hear", "heard"],
-    correctIndex: 0,
-    reasoning: 'The phrase "look forward to" requires a gerund ("hearing") because "to" acts as a preposition in this idiom.'
-  },
-  {
-    id: "q10",
-    text: "This is the house _____ Jack built.",
-    options: ["who", "whom", "whose", "that"],
-    correctIndex: 3,
-    reasoning: 'The relative pronoun "that" is used to refer to a thing ("the house") that is the object of the relative clause.'
-  }
-];
-
 export function DiagnosticTestStep({ onComplete, onSkip }: Props) {
   const t = useTranslations("Onboarding.DiagnosticTest");
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  
+  const [startPlacement, { isLoading: isStarting }] = useStartPlacementTestMutation();
+  const [answerQuestion, { isLoading: isAnswering }] = useAnswerPlacementQuestionMutation();
+
+  const [currentQuestion, setCurrentQuestion] = useState<any>(null);
+  const [questionCount, setQuestionCount] = useState(1);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isChecked, setIsChecked] = useState(false);
+  const [stepResult, setStepResult] = useState<any>(null);
 
-  const currentQuestion = QUESTIONS[currentQuestionIndex];
-  const isCorrect = selectedOption === currentQuestion.correctIndex;
+  useEffect(() => {
+    startPlacement()
+      .unwrap()
+      .then((q) => {
+        setCurrentQuestion(q);
+      })
+      .catch((err) => {
+        console.error("Failed to start placement test:", err);
+      });
+  }, [startPlacement]);
 
   const handleSelect = (index: number) => {
     if (isChecked) return; // Prevent changing answer after check
     setSelectedOption(index);
   };
 
-  const handleCheck = () => {
-    if (selectedOption === null) return;
-    setIsChecked(true);
+  const handleCheck = async () => {
+    if (selectedOption === null || currentQuestion === null) return;
+    try {
+      const res = await answerQuestion({ answer_index: selectedOption }).unwrap();
+      setStepResult(res);
+      setIsChecked(true);
+    } catch (err) {
+      console.error("Failed to answer question:", err);
+    }
   };
 
   const handleNext = () => {
-    if (currentQuestionIndex < QUESTIONS.length - 1) {
+    if (stepResult && stepResult.next_question) {
+      setCurrentQuestion(stepResult.next_question);
       setSelectedOption(null);
       setIsChecked(false);
-      setCurrentQuestionIndex((prev) => prev + 1);
+      setStepResult(null);
+      setQuestionCount((prev) => prev + 1);
     } else {
       onComplete();
     }
   };
 
+  if (isStarting || !currentQuestion) {
+    return (
+      <div className="flex-grow flex items-center justify-center min-h-[400px]">
+        <div className="text-lg animate-pulse">{t("loading")}</div>
+      </div>
+    );
+  }
+
+  const isCorrect = stepResult?.is_correct;
+
   // Format question text with the blank
-  const textParts = currentQuestion.text.split("_____");
+  const textParts = currentQuestion.question_text.split("_____");
   const formattedText =
     textParts.length > 1 ? (
       <>
@@ -119,7 +79,7 @@ export function DiagnosticTestStep({ onComplete, onSkip }: Props) {
         {textParts[1]}
       </>
     ) : (
-      currentQuestion.text
+      currentQuestion.question_text
     );
 
   const letters = ["A", "B", "C", "D"];
@@ -128,10 +88,10 @@ export function DiagnosticTestStep({ onComplete, onSkip }: Props) {
     <div className="flex-grow flex flex-col items-center justify-start pt-lg pb-xl px-md sm:px-lg max-w-[800px] w-full overflow-hidden">
       {/* Progress Indicator */}
       <div className="w-full flex justify-between items-center mb-xl max-w-[480px]">
-        {QUESTIONS.map((_, i) => (
+        {Array.from({ length: 10 }).map((_, i) => (
           <div
             key={i}
-            className={`h-1 rounded-sm flex-1 mx-[2px] ${i <= currentQuestionIndex ? "bg-primary-container" : "bg-[#2A2A32]"}`}
+            className={`h-1 rounded-sm flex-1 mx-[2px] ${i < questionCount ? "bg-primary-container" : "bg-[#2A2A32]"}`}
           ></div>
         ))}
       </div>
@@ -139,7 +99,7 @@ export function DiagnosticTestStep({ onComplete, onSkip }: Props) {
       <div className="w-full flex-grow flex flex-col items-center justify-start max-w-[480px] relative">
         <AnimatePresence mode="wait">
           <motion.div
-            key={currentQuestionIndex}
+            key={questionCount}
             initial={{ x: 100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -100, opacity: 0 }}
@@ -156,7 +116,7 @@ export function DiagnosticTestStep({ onComplete, onSkip }: Props) {
             <div className="w-full flex flex-col gap-sm">
               {currentQuestion.options.map((opt: string, idx: number) => {
                 const isSelected = selectedOption === idx;
-                const isCorrectOption = idx === currentQuestion.correctIndex;
+                const isCorrectOption = idx === currentQuestion.correct_answer_index;
                 
                 let cardStyle = "border-[#2A2A32] hover:border-primary-container hover:bg-[#1E1E24]";
                 let circleStyle = "border-outline-variant text-on-surface-variant group-hover:border-primary-container group-hover:text-primary-container";
@@ -181,7 +141,7 @@ export function DiagnosticTestStep({ onComplete, onSkip }: Props) {
                   <button
                     key={idx}
                     onClick={() => handleSelect(idx)}
-                    disabled={isChecked}
+                    disabled={isChecked || isAnswering}
                     className={`p-sm text-left flex items-center gap-sm group bg-[#15151A] border rounded-[10px] transition-all duration-200 ${cardStyle}`}
                   >
                     <div
@@ -213,7 +173,7 @@ export function DiagnosticTestStep({ onComplete, onSkip }: Props) {
                   {isCorrect ? "Correct!" : "Incorrect"}
                 </h4>
                 <p className="font-body-sm text-body-sm opacity-90 leading-relaxed">
-                  {currentQuestion.reasoning}
+                  {stepResult.explanation}
                 </p>
               </div>
             )}
@@ -225,14 +185,14 @@ export function DiagnosticTestStep({ onComplete, onSkip }: Props) {
           {!isChecked ? (
             <button
               onClick={handleCheck}
-              disabled={selectedOption === null}
+              disabled={selectedOption === null || isAnswering}
               className={`font-label-md text-label-md px-xl py-sm rounded-lg border transition-colors duration-200 w-full
-                ${selectedOption !== null
+                ${selectedOption !== null && !isAnswering
                   ? 'bg-primary-container text-white border-transparent hover:opacity-90 cursor-pointer'
                   : 'bg-surface-container-highest text-on-surface-variant border-[#2A2A32] cursor-not-allowed opacity-55'
                 }`}
             >
-              {t("check")}
+              {isAnswering ? t("loading") : t("check")}
             </button>
           ) : (
             <button
@@ -246,7 +206,8 @@ export function DiagnosticTestStep({ onComplete, onSkip }: Props) {
           {!isChecked && (
             <button
               onClick={onSkip}
-              className="font-label-md text-label-md text-[#62626C] hover:text-on-surface transition-colors duration-200 px-md py-sm cursor-pointer"
+              disabled={isAnswering}
+              className="font-label-md text-label-md text-[#62626C] hover:text-on-surface transition-colors duration-200 px-md py-sm cursor-pointer disabled:opacity-50"
             >
               {t("skip")}
             </button>
@@ -256,3 +217,4 @@ export function DiagnosticTestStep({ onComplete, onSkip }: Props) {
     </div>
   );
 }
+

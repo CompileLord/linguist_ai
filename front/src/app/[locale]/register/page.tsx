@@ -62,7 +62,7 @@ export default function RegisterPage() {
         full_name: data.name,
         voice_name: data.voice_name,
       }).unwrap();
-      
+
       const currentLocale = (params?.locale as "en" | "ru" | "tg") || "ru";
 
       dispatch(
@@ -72,8 +72,13 @@ export default function RegisterPage() {
         }),
       );
       router.push("/onboarding");
+<<<<<<< HEAD
     } catch (err) {
       console.error("Registration failed", err);
+=======
+    } catch (err: any) {
+      console.error("Registration failed:", err?.data?.detail || err?.data || err?.error || err?.message || err);
+>>>>>>> d631dcf48b943e777d6747fcd9827aa98e9b5157
     }
   };
 
@@ -284,4 +289,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-
