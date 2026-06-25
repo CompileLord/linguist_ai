@@ -21,6 +21,12 @@ class User(Base, IDMixin, TimestampMixin):
         String(255),
         nullable=True
     )
+    voice_name: Mapped[str] = mapped_column(
+        String(50),
+        default="hfc_female",
+        server_default="hfc_female",
+        nullable=False
+    )
     is_active: Mapped[bool] = mapped_column(
         Boolean(),
         default=True,

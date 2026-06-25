@@ -7,6 +7,7 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=6)
     full_name: Optional[str] = None
+    voice_name: str = "hfc_female"
 
 class LoginRequest(BaseModel):
     email: EmailStr
@@ -19,6 +20,7 @@ class UserResponse(BaseModel):
     id: uuid.UUID
     email: EmailStr
     full_name: Optional[str]
+    voice_name: str
     is_active: bool
     is_superuser: bool
     created_at: datetime

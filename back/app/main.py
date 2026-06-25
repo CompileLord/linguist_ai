@@ -11,7 +11,7 @@ from app.core.exceptions import register_exception_handlers
 from app.core.middleware import RateLimitMiddleware
 from app.core.logging import LoggerFactory
 from app.api.dependencies.auth import get_current_active_user
-from app.api.routers import auth, onboarding, lessons, vocabulary, review, errors, tutor, missions, writing_exam, listening_exam, gamification, achievement, coach, quota
+from app.api.routers import auth, onboarding, lessons, vocabulary, review, errors, tutor, missions, writing_exam, listening_exam, gamification, achievement, coach, quota, speaking
 
 
 logger = LoggerFactory.get_logger("LinguistAI")
@@ -118,6 +118,8 @@ app.include_router(achievement.router)
 app.include_router(coach.router)
 app.include_router(coach.admin_router)
 app.include_router(quota.router)
+app.include_router(speaking.router)
+app.include_router(speaking.ws_router)
 
 # Prefix support for all routes to prevent collision with tunnel (e.g. instatunnel) auth paths
 app.include_router(auth.router, prefix="/api")
@@ -135,6 +137,7 @@ app.include_router(achievement.router, prefix="/api")
 app.include_router(coach.router, prefix="/api")
 app.include_router(coach.admin_router, prefix="/api")
 app.include_router(quota.router, prefix="/api")
+app.include_router(speaking.router, prefix="/api")
 
 
 

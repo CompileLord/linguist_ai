@@ -3,6 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db_session
 from app.services.ai.factory import get_ai_provider
 from app.services.ai.prompts import get_prompt_manager
+from app.services.media.stt_service import SpeechToTextService
+from app.services.speaking_session_service import SpeakingSessionService
 from app.repositories.language_repository import LanguageRepository
 from app.repositories.profile_repository import ProfileRepository
 from app.repositories.goals_repository import GoalsRepository
@@ -390,6 +392,21 @@ async def get_listening_exam_service(
         achievement_service,
         gamification_repo
     )
+
+
+_stt_service = None
+
+def get_stt_service() -> SpeechToTextService:
+    global _stt_service
+    if _stt_service is None:
+        _stt_service = SpeechToTextService()
+    return _stt_service
+
+async def get_speaking_session_service(
+    quota_service = Depends(get_quota_tracking_service)
+) -> SpeakingSessionService:
+    return SpeakingSessionService(quota_service)
+
 
 
 

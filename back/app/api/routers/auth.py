@@ -44,3 +44,11 @@ async def me(
     current_user: User = Depends(get_current_active_user)
 ) -> UserResponse:
     return UserResponse.from_orm(current_user)
+
+@router.get("/voices", response_model=list, status_code=status.HTTP_200_OK)
+async def list_voices() -> list:
+    return [
+        {"id": "hfc_female", "name": "Female Voice (Medium)"},
+        {"id": "hfc_male", "name": "Male Voice (Medium)"}
+    ]
+

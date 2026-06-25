@@ -1,0 +1,139 @@
+{
+  "project": "LinguistAI Backend & Frontend",
+  "file": "tasks_fixing.json",
+  "description": "Roadmap of tasks for implementing and improving the real AI Speaking voice feature, including chosen voice configurations, Google Cloud STT, and local Piper TTS integration.",
+  "phases": [
+    {
+      "id": "phase-fixing",
+      "name": "Fix and Implement Real AI Speaking Voice",
+      "description": "Establish the end-to-end voice speaking framework using Google Cloud Speech-to-Text and local Piper Text-to-Speech, integrating it seamlessly with database migrations, quotas, gamification, and front-end interfaces.",
+      "modules": [
+        {
+          "id": "mod-fixing.1",
+          "name": "Backend Voice Architecture & Speaking Session",
+          "description": "Implement DB schema changes, register voice configurations, REST/WebSocket API endpoints, and media transcription/synthesis engines.",
+          "tasks": [
+            {
+              "id": "task-fixing.1.1",
+              "title": "Add voice_name to users table and generate Alembic migration",
+              "description": "Add voice_name column with default value hfc_female to User SQLAlchemy model and create a clean, SQLite-compatible Alembic migration applying the schema update.",
+              "acceptance_criteria": [
+                "User model has voice_name Mapped column with default 'hfc_female'",
+                "Alembic migration is generated and successfully upgrades the local SQLite database without errors"
+              ],
+              "depends_on": [],
+              "priority": "critical",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-fixing.1.2",
+              "title": "Implement GET /auth/voices endpoint in auth router",
+              "description": "Create a public API endpoint in auth router to return a list of available local Piper voices for registration setup.",
+              "acceptance_criteria": [
+                "GET /auth/voices returns a JSON array of dict objects containing voice id and descriptive names"
+              ],
+              "depends_on": [],
+              "priority": "high",
+              "estimated_hours": 1
+            },
+            {
+              "id": "task-fixing.1.3",
+              "title": "Update register request schema and AuthService user instantiation",
+              "description": "Add voice_name field to RegisterRequest and UserResponse schemas. Update register method in AuthService to store user selected voice.",
+              "acceptance_criteria": [
+                "RegisterRequest supports optional or defaulted voice_name string",
+                "UserResponse contains voice_name string",
+                "User record is created with the select voice_name in registration"
+              ],
+              "depends_on": ["task-fixing.1.1"],
+              "priority": "critical",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-fixing.1.4",
+              "title": "Create REST start/end endpoints in speaking router",
+              "description": "Create speaking REST router with start and end routes. start verifies daily speaking quota and returns a session ID. end calculates time spent, awards 30 XP, updates streak, checks level progress, and triggers achievement evaluations.",
+              "acceptance_criteria": [
+                "POST /speaking/start returns a unique session ID",
+                "POST /speaking/end increments daily usage quota, records activity in gamification, and awards XP"
+              ],
+              "depends_on": ["task-fixing.1.3"],
+              "priority": "high",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-fixing.1.5",
+              "title": "Implement real-time WebSocket speaking endpoint",
+              "description": "Create ws/speaking/{session_id} WebSocket handler. Handler authenticates user via token, transcribes user input audio bytes using Google Cloud STT, calls Vertex AI to stream response, synthesizes final text response to WAV bytes using local Piper TTS, and plays audio on client side.",
+              "acceptance_criteria": [
+                "WebSocket accepts connection with valid JWT token",
+                "Audio frames are transcribed by SpeechToTextService",
+                "Gemini generates response streamed to client",
+                "Full response text is synthesized using TextToSpeechService and user voice settings"
+              ],
+              "depends_on": ["task-fixing.1.4"],
+              "priority": "critical",
+              "estimated_hours": 5
+            }
+          ]
+        },
+        {
+          "id": "mod-fixing.2",
+          "name": "Frontend Speaking User Experience",
+          "description": "Build UI fields for voice configuration and the immersive Speaking session screen.",
+          "tasks": [
+            {
+              "id": "task-fixing.2.1",
+              "title": "Add voice selection dropdown in user registration page",
+              "description": "Fetch available voices from GET /auth/voices and display as a styled dropdown in the registration form. Validate input via Zod schema and include in registration payload.",
+              "acceptance_criteria": [
+                "Registration page has a functional voice selection dropdown",
+                "Form submission fails if no voice is selected",
+                "Selected voice is passed to register mutation call"
+              ],
+              "depends_on": ["task-fixing.1.2"],
+              "priority": "high",
+              "estimated_hours": 2
+            },
+            {
+              "id": "task-fixing.2.2",
+              "title": "Transition auth RTK Query endpoints to real integration",
+              "description": "Change RTK Query mock queryFn handlers in authApi.ts to real HTTP queries matching backend POST /auth/register and POST /auth/login routes.",
+              "acceptance_criteria": [
+                "Authentication requests communicate with actual backend database"
+              ],
+              "depends_on": [],
+              "priority": "high",
+              "estimated_hours": 1
+            },
+            {
+              "id": "task-fixing.2.3",
+              "title": "Create Speaking session page with visual pulse and mic recorder",
+              "description": "Create front-end speaking page. Capture microphone input using Web Audio API, encode to 16kHz mono WAV chunks, connect to WebSocket, stream text chunks, play returned audio, and display session controls.",
+              "acceptance_criteria": [
+                "Web Audio recording converts Float32Array to 16kHz Int16 mono WAV",
+                "WebSocket client establishes connection and handles chunk/audio events",
+                "Page displays glowing visual pulse reflecting audio state",
+                "End session calls end REST endpoint and redirects to dashboard"
+              ],
+              "depends_on": ["task-fixing.1.5"],
+              "priority": "critical",
+              "estimated_hours": 5
+            },
+            {
+              "id": "task-fixing.2.4",
+              "title": "Integrate AI Speaking in navigation and Quick Actions",
+              "description": "Add AI Speaking links to app layout side navigation, mobile bottom tab bar, and dashboard Quick Actions bento grid.",
+              "acceptance_criteria": [
+                "User can navigate to /speaking from any app screen"
+              ],
+              "depends_on": ["task-fixing.2.3"],
+              "priority": "medium",
+              "estimated_hours": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
