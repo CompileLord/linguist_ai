@@ -1,5 +1,7 @@
 import uuid
 import base64
+import asyncio
+import time
 from typing import Optional, List, Dict, Any
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -159,42 +161,93 @@ async def ws_speaking(
             if text_to_process:
                 conversation_history.append({"role": "user", "parts": [{"text": text_to_process}]})
 
-                client = getattr(ai_provider, "client", None)
-                model = getattr(ai_provider, "model", "gemini-2.5-flash")
                 accumulated_text = ""
+                sentence_buffer = ""
+                playback_finish_time = time.time()
 
-                if client:
-                    try:
-                        response = client.models.generate_content_stream(model=model, contents=conversation_history)
-                        for chunk in response:
-                            chunk_text = chunk.text or ""
-                            accumulated_text += chunk_text
-                            await websocket.send_json({"type": "chunk", "content": chunk_text})
-                    except Exception as e:
-                        await websocket.send_json({"type": "error", "content": f"AI model error: {str(e)}"})
-                        continue
-                else:
-                    try:
-                        prompt_str = "\n".join([c["parts"][0]["text"] for c in conversation_history])
-                        async for chunk in ai_provider.generate_content_stream(prompt_str):
-                            accumulated_text += chunk
-                            await websocket.send_json({"type": "chunk", "content": chunk})
-                    except Exception as e:
-                        await websocket.send_json({"type": "error", "content": f"AI model error: {str(e)}"})
-                        continue
+                try:
+                    async for chunk in ai_provider.generate_content_stream(conversation_history):
+                        accumulated_text += chunk
+                        sentence_buffer += chunk
+                        await websocket.send_json({"type": "chunk", "content": chunk})
+
+                        while True:
+                            boundary_idx = -1
+                            for i, char in enumerate(sentence_buffer):
+                                if char in (".", "?", "!"):
+                                    if i + 1 < len(sentence_buffer) and sentence_buffer[i+1] in (".", "?", "!"):
+                                        continue
+                                    boundary_idx = i
+                                    break
+                            
+                            if boundary_idx == -1:
+                                break
+                            
+                            sentence = sentence_buffer[:boundary_idx + 1].strip()
+                            sentence_buffer = sentence_buffer[boundary_idx + 1:]
+                            
+                            if sentence:
+                                audio_bytes = await tts_service.synthesize(
+                                    text=sentence,
+                                    language_code=target_lang.code if target_lang else "en",
+                                    voice_name=user.voice_name
+                                )
+                                if audio_bytes and len(audio_bytes) > 44:
+                                    import io
+                                    import wave
+                                    try:
+                                        with wave.open(io.BytesIO(audio_bytes), "rb") as wav:
+                                            frames = wav.getnframes()
+                                            rate = wav.getframerate()
+                                            duration = frames / float(rate)
+                                    except Exception:
+                                        duration = 2.0
+                                    
+                                    now = time.time()
+                                    if now < playback_finish_time:
+                                        await asyncio.sleep(playback_finish_time - now)
+                                        playback_finish_time += duration
+                                    else:
+                                        playback_finish_time = now + duration
+                                    
+                                    audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
+                                    await websocket.send_json({"type": "audio", "data": audio_base64})
+                except Exception as e:
+                    await websocket.send_json({"type": "error", "content": f"AI model error: {str(e)}"})
+                    continue
 
                 conversation_history.append({"role": "model", "parts": [{"text": accumulated_text}]})
 
-                try:
-                    audio_bytes = await tts_service.synthesize(
-                        text=accumulated_text,
-                        language_code=target_lang.code if target_lang else "en",
-                        voice_name=user.voice_name
-                    )
-                    audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
-                    await websocket.send_json({"type": "audio", "data": audio_base64})
-                except Exception as e:
-                    await websocket.send_json({"type": "error", "content": f"TTS synthesis failed: {str(e)}"})
+                remaining_sentence = sentence_buffer.strip()
+                if remaining_sentence:
+                    try:
+                        audio_bytes = await tts_service.synthesize(
+                            text=remaining_sentence,
+                            language_code=target_lang.code if target_lang else "en",
+                            voice_name=user.voice_name
+                        )
+                        if audio_bytes and len(audio_bytes) > 44:
+                            import io
+                            import wave
+                            try:
+                                with wave.open(io.BytesIO(audio_bytes), "rb") as wav:
+                                    frames = wav.getnframes()
+                                    rate = wav.getframerate()
+                                    duration = frames / float(rate)
+                            except Exception:
+                                duration = 2.0
+                            
+                            now = time.time()
+                            if now < playback_finish_time:
+                                await asyncio.sleep(playback_finish_time - now)
+                                playback_finish_time += duration
+                            else:
+                                playback_finish_time = now + duration
+                            
+                            audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
+                            await websocket.send_json({"type": "audio", "data": audio_base64})
+                    except Exception as e:
+                        await websocket.send_json({"type": "error", "content": f"TTS synthesis failed: {str(e)}"})
 
                 await websocket.send_json({"type": "done"})
 

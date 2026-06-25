@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Achievements - Linguist AI</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Hanken+Grotesk:wght@500;600;700&family=Geist:wght@400;500&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        background: "#0A0A0C",
+                        surface: "#15151A",
+                        "surface-raised": "#1E1E24",
+                        outline: "#2A2A32",
+                        "outline-variant": "#2A2A32",
+                        primary: "#6E5BFF",
+                        "primary-container": "#6E5BFF",
+                        "on-primary-container": "#F5F5F7",
+                        "on-surface": "#F5F5F7",
+                        "on-surface-variant": "#9A9AA5",
+                        "text-tertiary": "#62626C",
+                        accent: "#6E5BFF",
+                        "accent-glow": "#8B7CFF",
+                        success: "#3DD68C",
+                        warning: "#E8B339",
+                        error: "#FF5C6C",
+                        "surface-container-lowest": "#0A0A0C",
+                        "surface-container-low": "#15151A",
+                        "surface-container": "#15151A",
+                        "surface-container-high": "#1E1E24",
+                        "surface-container-highest": "#2A2A32",
+                    },
+                    borderRadius: {
+                        "DEFAULT": "8px",
+                        "md": "8px",
+                        "lg": "12px",
+                        "xl": "16px",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "xs": "8px",
+                        "xl": "64px",
+                        "md": "24px",
+                        "base": "4px",
+                        "sm": "16px",
+                        "lg": "40px",
+                        "container-max": "1440px",
+                        "gutter": "24px"
+                    },
+                    fontFamily: {
+                        "label-md": ["Geist", "sans-serif"],
+                        "headline-md": ["Hanken Grotesk", "sans-serif"],
+                        "body-sm": ["Inter", "sans-serif"],
+                        "body-md": ["Inter", "sans-serif"],
+                        "code-sm": ["Geist", "monospace"],
+                        "headline-lg": ["Hanken Grotesk", "sans-serif"],
+                        "display": ["Hanken Grotesk", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"]
+                    },
+                    fontSize: {
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "code-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0A0A0C;
+            color: #F5F5F7;
+        }
+    </style>
+</head>
+<body class="flex min-h-screen bg-background font-body-md text-body-md antialiased selection:bg-primary/20 selection:text-primary">
+    <!-- SideNavBar -->
+    <nav class="h-screen w-64 fixed left-0 top-0 bg-background border-r border-outline flex flex-col justify-between py-md px-sm z-20">
+        <div class="flex flex-col gap-lg">
+            <div class="mb-sm px-sm mt-sm">
+                <h1 class="font-display text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent-glow tracking-tight leading-tight mb-1">Linguist AI</h1>
+                <p class="text-on-surface-variant font-body-sm text-xs font-semibold">Premium Tier</p>
+            </div>
+            <nav class="flex flex-col gap-1.5">
+                <a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_dashboard.html">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <span class="text-label-md font-label-md">Dashboard</span>
+                </a>
+                <a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="real_world_missions.html">
+                    <span class="material-symbols-outlined">explore</span>
+                    <span class="text-label-md font-label-md">Missions</span>
+                </a>
+                <a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="ai_tutor_panel.html">
+                    <span class="material-symbols-outlined">smart_toy</span>
+                    <span class="text-label-md font-label-md">Tutor</span>
+                </a>
+                <a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="vocabulary_list.html">
+                    <span class="material-symbols-outlined">translate</span>
+                    <span class="text-label-md font-label-md">Vocabulary</span>
+                </a>
+                <a class="flex items-center gap-sm px-4 py-2.5 rounded-lg bg-surface-raised text-primary font-semibold border-l-2 border-primary active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_progress_profile.html">
+                    <span class="material-symbols-outlined">analytics</span>
+                    <span class="text-label-md font-label-md">Progress</span>
+                </a>
+                <a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_settings.html">
+                    <span class="material-symbols-outlined">settings</span>
+                    <span class="text-label-md font-label-md">Settings</span>
+                </a>
+            </nav>
+        </div>
+        <div class="px-xs pb-4">
+            <a href="ai_voice_conversation_premium_interface.html" class="block w-full text-center bg-primary hover:bg-primary/90 text-white font-medium py-2.5 px-4 rounded-lg active:scale-[0.96] transition-[transform,background-color] duration-150 shadow-[0_0_12px_rgba(110,91,255,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+                New Session
+            </a>
+        </div>
+    </nav>
+    <!-- Main Content Area -->
+    <main class="flex-grow ml-64 flex flex-col h-screen overflow-y-auto custom-scrollbar">
+        <!-- TopAppBar -->
+        <header class="bg-surface/85 backdrop-blur-md border-b border-outline flex justify-between items-center w-full h-16 px-xl sticky top-0 z-10 shrink-0">
+            <div class="font-headline-lg text-2xl font-bold text-on-surface tracking-tight flex items-center gap-sm">
+                <a href="linguist_ai_progress_profile.html" class="flex items-center text-on-surface-variant hover:text-on-surface transition-colors p-1 rounded-md">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                </a>
+                <span>Achievements &amp; Badges</span>
+            </div>
+            <div class="flex items-center gap-md">
+                <!-- Streak -->
+                <div class="flex items-center gap-xs bg-surface-raised border border-[#2A2A32] rounded-full py-1 px-3">
+                    <span class="material-symbols-outlined text-warning text-lg" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+                    <span class="font-label-md text-label-md text-on-surface tabular-nums">7 Day Streak</span>
+                </div>
+                <!-- XP -->
+                <div class="flex items-center gap-xs bg-surface-raised border border-[#2A2A32] rounded-full py-1 px-3">
+                    <span class="material-symbols-outlined text-primary text-lg">military_tech</span>
+                    <span class="font-label-md text-label-md text-on-surface tabular-nums">1,250 XP</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-grow p-xl max-w-[1000px] w-full mx-auto pb-24">
+            <!-- Filter Tabs -->
+            <div class="flex items-center gap-2 mb-lg border-b border-outline-variant pb-3">
+                <button class="bg-primary/10 border border-primary/30 text-primary font-medium text-xs font-label-md px-3.5 py-1.5 rounded-full">All</button>
+                <button class="bg-surface border border-outline hover:border-primary/30 text-on-surface-variant hover:text-on-surface font-medium text-xs font-label-md px-3.5 py-1.5 rounded-full transition-colors">Unlocked</button>
+                <button class="bg-surface border border-outline hover:border-primary/30 text-on-surface-variant hover:text-on-surface font-medium text-xs font-label-md px-3.5 py-1.5 rounded-full transition-colors">Locked</button>
+            </div>
+
+            <!-- Bento Grid of Badges -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-md">
+                <!-- Unlocked Badge 1 -->
+                <div class="bg-surface rounded-xl p-5 border border-outline flex flex-col items-center text-center shadow-md hover:border-primary/30 hover:shadow-[0_0_15px_rgba(110,91,255,0.05)] transition-all duration-300 group cursor-pointer">
+                    <div class="w-16 h-16 rounded-full bg-surface-raised flex items-center justify-center border border-outline mb-sm relative group-hover:scale-105 transition-transform duration-300">
+                        <span class="material-symbols-outlined text-[32px] text-primary" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+                        <div class="absolute inset-0 rounded-full bg-primary/5 blur-sm opacity-50"></div>
+                    </div>
+                    <p class="font-label-md text-sm font-semibold text-on-surface group-hover:text-primary transition-colors">Polyglot Initiate</p>
+                    <p class="font-body-sm text-xs text-on-surface-variant mt-1 mb-3">Completed 50 lessons</p>
+                    <span class="text-[10px] uppercase font-bold tracking-widest text-success bg-success/10 border border-success/20 px-2.5 py-0.5 rounded-full">Unlocked</span>
+                </div>
+
+                <!-- Unlocked Badge 2 -->
+                <div class="bg-surface rounded-xl p-5 border border-outline flex flex-col items-center text-center shadow-md hover:border-primary/30 hover:shadow-[0_0_15px_rgba(110,91,255,0.05)] transition-all duration-300 group cursor-pointer">
+                    <div class="w-16 h-16 rounded-full bg-surface-raised flex items-center justify-center border border-outline mb-sm relative group-hover:scale-105 transition-transform duration-300">
+                        <span class="material-symbols-outlined text-[32px] text-warning" style="font-variation-settings: 'FILL' 1;">speed</span>
+                        <div class="absolute inset-0 rounded-full bg-warning/5 blur-sm opacity-50"></div>
+                    </div>
+                    <p class="font-label-md text-sm font-semibold text-on-surface group-hover:text-primary transition-colors">Speed Demon</p>
+                    <p class="font-body-sm text-xs text-on-surface-variant mt-1 mb-3">Finished listening exam in under 5 mins</p>
+                    <span class="text-[10px] uppercase font-bold tracking-widest text-success bg-success/10 border border-success/20 px-2.5 py-0.5 rounded-full">Unlocked</span>
+                </div>
+
+                <!-- Unlocked Badge 3 -->
+                <div class="bg-surface rounded-xl p-5 border border-outline flex flex-col items-center text-center shadow-md hover:border-primary/30 hover:shadow-[0_0_15px_rgba(110,91,255,0.05)] transition-all duration-300 group cursor-pointer">
+                    <div class="w-16 h-16 rounded-full bg-surface-raised flex items-center justify-center border border-outline mb-sm relative group-hover:scale-105 transition-transform duration-300">
+                        <span class="material-symbols-outlined text-[32px] text-success" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+                        <div class="absolute inset-0 rounded-full bg-success/5 blur-sm opacity-50"></div>
+                    </div>
+                    <p class="font-label-md text-sm font-semibold text-on-surface group-hover:text-primary transition-colors">Streak Master</p>
+                    <p class="font-body-sm text-xs text-on-surface-variant mt-1 mb-3">Maintained a 30-day streak</p>
+                    <span class="text-[10px] uppercase font-bold tracking-widest text-success bg-success/10 border border-success/20 px-2.5 py-0.5 rounded-full">Unlocked</span>
+                </div>
+
+                <!-- Locked Badge 1 (with Progress) -->
+                <div class="bg-surface/50 opacity-70 rounded-xl p-5 border border-outline flex flex-col items-center text-center transition-all duration-300 group">
+                    <div class="w-16 h-16 rounded-full bg-surface-raised/40 flex items-center justify-center border border-outline-variant mb-sm relative">
+                        <span class="material-symbols-outlined text-[32px] text-on-surface-variant/40" style="font-variation-settings: 'FILL' 0;">stars</span>
+                    </div>
+                    <p class="font-label-md text-sm font-semibold text-on-surface-variant">Linguistic Master</p>
+                    <p class="font-body-sm text-xs text-on-surface-variant/70 mt-1 mb-3">Learn 10,000 unique vocabulary words</p>
+                    <!-- Progress Bar -->
+                    <div class="w-full max-w-[120px] mb-3">
+                        <div class="h-1 w-full bg-surface-raised rounded-full overflow-hidden border border-outline-variant">
+                            <div class="h-full bg-primary w-[18%]"></div>
+                        </div>
+                        <p class="text-[10px] text-on-surface-variant mt-1 font-mono">1,840 / 10,000</p>
+                    </div>
+                    <span class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant/40 bg-surface-raised/20 border border-outline-variant/30 px-2.5 py-0.5 rounded-full">Locked</span>
+                </div>
+
+                <!-- Locked Badge 2 (with Progress) -->
+                <div class="bg-surface/50 opacity-70 rounded-xl p-5 border border-outline flex flex-col items-center text-center transition-all duration-300 group">
+                    <div class="w-16 h-16 rounded-full bg-surface-raised/40 flex items-center justify-center border border-outline-variant mb-sm relative">
+                        <span class="material-symbols-outlined text-[32px] text-on-surface-variant/40" style="font-variation-settings: 'FILL' 0;">forum</span>
+                    </div>
+                    <p class="font-label-md text-sm font-semibold text-on-surface-variant">Diplomatic Orator</p>
+                    <p class="font-body-sm text-xs text-on-surface-variant/70 mt-1 mb-3">Complete 25 Real World speaking missions</p>
+                    <!-- Progress Bar -->
+                    <div class="w-full max-w-[120px] mb-3">
+                        <div class="h-1 w-full bg-surface-raised rounded-full overflow-hidden border border-outline-variant">
+                            <div class="h-full bg-primary w-[48%]"></div>
+                        </div>
+                        <p class="text-[10px] text-on-surface-variant mt-1 font-mono">12 / 25</p>
+                    </div>
+                    <span class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant/40 bg-surface-raised/20 border border-outline-variant/30 px-2.5 py-0.5 rounded-full">Locked</span>
+                </div>
+
+                <!-- Locked Badge 3 (with Progress) -->
+                <div class="bg-surface/50 opacity-70 rounded-xl p-5 border border-outline flex flex-col items-center text-center transition-all duration-300 group">
+                    <div class="w-16 h-16 rounded-full bg-surface-raised/40 flex items-center justify-center border border-outline-variant mb-sm relative">
+                        <span class="material-symbols-outlined text-[32px] text-on-surface-variant/40" style="font-variation-settings: 'FILL' 0;">emoji_events</span>
+                    </div>
+                    <p class="font-label-md text-sm font-semibold text-on-surface-variant">Absolute Legend</p>
+                    <p class="font-body-sm text-xs text-on-surface-variant/70 mt-1 mb-3">Maintain a 100-day streak</p>
+                    <!-- Progress Bar -->
+                    <div class="w-full max-w-[120px] mb-3">
+                        <div class="h-1 w-full bg-surface-raised rounded-full overflow-hidden border border-outline-variant">
+                            <div class="h-full bg-primary w-[42%]"></div>
+                        </div>
+                        <p class="text-[10px] text-on-surface-variant mt-1 font-mono">42 / 100</p>
+                    </div>
+                    <span class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant/40 bg-surface-raised/20 border border-outline-variant/30 px-2.5 py-0.5 rounded-full">Locked</span>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

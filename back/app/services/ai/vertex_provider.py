@@ -1,4 +1,4 @@
-from typing import AsyncIterator, Optional, Type
+from typing import AsyncIterator, Optional, Type, Any
 from google import genai
 from google.genai import types
 from google.genai.errors import APIError
@@ -42,14 +42,14 @@ class VertexAIProvider(AbstractAIProvider):
 
     async def generate_content(
         self,
-        prompt: str,
+        prompt: Any,
         system_instruction: Optional[str] = None,
         config: Optional[GenerationConfig] = None
     ) -> str:
         try:
             sdk_config = self._build_sdk_config(system_instruction, config)
             model_name = config.model if (config and config.model) else self.model
-            response = self.client.models.generate_content(
+            response = await self.client.aio.models.generate_content(
                 model=model_name,
                 contents=prompt,
                 config=sdk_config
@@ -62,19 +62,19 @@ class VertexAIProvider(AbstractAIProvider):
 
     async def generate_content_stream(
         self,
-        prompt: str,
+        prompt: Any,
         system_instruction: Optional[str] = None,
         config: Optional[GenerationConfig] = None
     ) -> AsyncIterator[str]:
         try:
             sdk_config = self._build_sdk_config(system_instruction, config)
             model_name = config.model if (config and config.model) else self.model
-            response = self.client.models.generate_content_stream(
+            response = await self.client.aio.models.generate_content_stream(
                 model=model_name,
                 contents=prompt,
                 config=sdk_config
             )
-            for chunk in response:
+            async for chunk in response:
                 yield chunk.text or ""
         except APIError as e:
             raise ExternalServiceException(detail=f"Vertex AI streaming error: {str(e)}", error_code="AI_API_ERROR")
@@ -83,7 +83,7 @@ class VertexAIProvider(AbstractAIProvider):
 
     async def generate_structured(
         self,
-        prompt: str,
+        prompt: Any,
         response_schema: Type[T],
         system_instruction: Optional[str] = None,
         config: Optional[GenerationConfig] = None
@@ -91,7 +91,7 @@ class VertexAIProvider(AbstractAIProvider):
         try:
             sdk_config = self._build_sdk_config(system_instruction, config, response_schema)
             model_name = config.model if (config and config.model) else self.model
-            response = self.client.models.generate_content(
+            response = await self.client.aio.models.generate_content(
                 model=model_name,
                 contents=prompt,
                 config=sdk_config

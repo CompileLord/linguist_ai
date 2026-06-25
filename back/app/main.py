@@ -26,6 +26,23 @@ async def lifespan(app: FastAPI):
     else:
         logger.error("Database connection check failed during startup.")
 
+    logger.info("Verifying local Speech-to-Text and Text-to-Speech models...")
+    try:
+        import asyncio
+        from app.services.media.storage_service import StorageService
+        from app.services.media.tts_service import TextToSpeechService
+        from app.services.media.stt_service import get_whisper_pipeline
+        
+        storage_s = StorageService()
+        tts_s = TextToSpeechService(storage_s)
+        await tts_s._ensure_voice_files("hfc_female")
+        await tts_s._ensure_voice_files("hfc_male")
+        
+        await asyncio.to_thread(get_whisper_pipeline)
+        logger.info("Local models verified and loaded successfully.")
+    except Exception as e:
+        logger.error(f"Failed to verify or download local speech models: {str(e)}")
+
     from apscheduler.schedulers.asyncio import AsyncIOScheduler
     from apscheduler.triggers.cron import CronTrigger
     import os
@@ -102,23 +119,23 @@ register_exception_handlers(app)
 
 app.mount("/static", StaticFiles(directory="media"), name="static")
 
-app.include_router(auth.router)
-app.include_router(onboarding.router)
-app.include_router(lessons.router)
-app.include_router(vocabulary.router)
-app.include_router(review.router)
-app.include_router(errors.router)
-app.include_router(tutor.router)
+app.include_router(auth.router, include_in_schema=False)
+app.include_router(onboarding.router, include_in_schema=False)
+app.include_router(lessons.router, include_in_schema=False)
+app.include_router(vocabulary.router, include_in_schema=False)
+app.include_router(review.router, include_in_schema=False)
+app.include_router(errors.router, include_in_schema=False)
+app.include_router(tutor.router, include_in_schema=False)
 app.include_router(tutor.ws_router)
-app.include_router(missions.router)
-app.include_router(writing_exam.router)
-app.include_router(listening_exam.router)
-app.include_router(gamification.router)
-app.include_router(achievement.router)
-app.include_router(coach.router)
-app.include_router(coach.admin_router)
-app.include_router(quota.router)
-app.include_router(speaking.router)
+app.include_router(missions.router, include_in_schema=False)
+app.include_router(writing_exam.router, include_in_schema=False)
+app.include_router(listening_exam.router, include_in_schema=False)
+app.include_router(gamification.router, include_in_schema=False)
+app.include_router(achievement.router, include_in_schema=False)
+app.include_router(coach.router, include_in_schema=False)
+app.include_router(coach.admin_router, include_in_schema=False)
+app.include_router(quota.router, include_in_schema=False)
+app.include_router(speaking.router, include_in_schema=False)
 app.include_router(speaking.ws_router)
 
 # Prefix support for all routes to prevent collision with tunnel (e.g. instatunnel) auth paths
