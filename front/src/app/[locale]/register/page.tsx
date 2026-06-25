@@ -51,7 +51,7 @@ export default function RegisterPage() {
         password: data.password,
         full_name: data.name,
       }).unwrap();
-      
+
       const currentLocale = (params?.locale as "en" | "ru" | "tg") || "ru";
 
       dispatch(
@@ -61,8 +61,8 @@ export default function RegisterPage() {
         }),
       );
       router.push("/onboarding");
-    } catch (err) {
-      console.error("Registration failed:", err);
+    } catch (err: any) {
+      console.error("Registration failed:", err?.data?.detail || err?.data || err?.error || err?.message || err);
     }
   };
 
@@ -247,4 +247,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-

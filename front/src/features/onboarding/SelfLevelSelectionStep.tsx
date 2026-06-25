@@ -20,6 +20,11 @@ export function SelfLevelSelectionStep({ onComplete, onBack }: Props) {
     { id: "C2", title: t("levels.c2_title"), desc: t("levels.c2_desc") },
   ];
 
+  const handleComplete = () => {
+    if (!selectedLevel) return;
+    onComplete(selectedLevel);
+  };
+
   return (
     <div className="w-full max-w-[640px] flex flex-col gap-lg text-center px-md">
       <div>
@@ -80,7 +85,7 @@ export function SelfLevelSelectionStep({ onComplete, onBack }: Props) {
       <div className="flex flex-col gap-sm items-center mt-md w-full max-w-[320px] mx-auto">
         <Button
           variant="primary"
-          onClick={() => selectedLevel && onComplete(selectedLevel)}
+          onClick={handleComplete}
           disabled={!selectedLevel}
           className="w-full"
         >
@@ -96,3 +101,5 @@ export function SelfLevelSelectionStep({ onComplete, onBack }: Props) {
     </div>
   );
 }
+
+
