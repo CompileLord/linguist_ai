@@ -1,10 +1,17 @@
 .venv
 *.env
 linguist_ai.db
+*.db
+*.sqlite3
+*.db-shm
+*.db-wal
 media
 *.log
 *.onnx
+__pycache__/
 *.pyc
+*.pyo
+*.pyd
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
