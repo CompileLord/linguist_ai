@@ -9,12 +9,15 @@ from app.api.dependencies.services import (
     get_mission_repository,
     get_mission_attempt_repository,
     get_mission_service,
-    get_profile_service
+    get_profile_service,
+    get_quota_tracking_service
 )
 from app.repositories.mission_repository import MissionRepository, MissionAttemptRepository
 from app.services.mission_service import MissionService
 from app.services.profile_service import ProfileService
+from app.services.quota_tracking_service import QuotaTrackingService
 from app.core.exceptions import MissionNotFoundError, ConflictException
+
 
 router = APIRouter(prefix="/missions", tags=["Missions"])
 
@@ -70,17 +73,20 @@ async def start_mission(
     id: uuid.UUID,
     current_user: User = Depends(get_current_active_user),
     mission_service: MissionService = Depends(get_mission_service),
-    attempt_repo: MissionAttemptRepository = Depends(get_mission_attempt_repository)
+    attempt_repo: MissionAttemptRepository = Depends(get_mission_attempt_repository),
+    quota_service: QuotaTrackingService = Depends(get_quota_tracking_service)
 ):
     active_attempts = await attempt_repo.list_by_user(current_user.id, mission_id=id, status="in_progress")
     if active_attempts:
         raise ConflictException(detail="An attempt is already in progress for this mission")
         
+    await quota_service.increment_usage(current_user.id, "mission_attempts", 1)
     session_id, attempt_id = await mission_service.start_mission(current_user.id, id)
     return {
         "attempt_id": attempt_id,
         "session_id": session_id
     }
+
 
 @router.post("/{id}/complete", response_model=UserMissionAttemptResponse)
 async def complete_mission(

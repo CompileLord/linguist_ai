@@ -10,14 +10,17 @@ from app.api.dependencies.services import (
     get_lesson_generator_service,
     get_lesson_scoring_service,
     get_lesson_repository,
-    get_user_lesson_repository
+    get_user_lesson_repository,
+    get_quota_tracking_service
 )
 from app.services.profile_service import ProfileService
 from app.services.language_service import LanguageService
 from app.services.lesson_generator_service import LessonGeneratorService
 from app.services.lesson_scoring_service import LessonScoringService
+from app.services.quota_tracking_service import QuotaTrackingService
 from app.repositories.lesson_repository import LessonRepository, UserLessonRepository
 from app.schemas.lesson import LessonResponse, LessonCompletionRequest, LessonCompletionResponse, LessonSummaryResponse
+
 from app.core.exceptions import NotFoundException
 from app.models.user_lesson import UserLesson
 from datetime import datetime
@@ -39,7 +42,8 @@ async def get_next_lesson(
     profile_service: ProfileService = Depends(get_profile_service),
     language_service: LanguageService = Depends(get_language_service),
     lesson_generator_service: LessonGeneratorService = Depends(get_lesson_generator_service),
-    user_lesson_repository: UserLessonRepository = Depends(get_user_lesson_repository)
+    user_lesson_repository: UserLessonRepository = Depends(get_user_lesson_repository),
+    quota_service: QuotaTrackingService = Depends(get_quota_tracking_service)
 ):
     profile = await profile_service.get_profile(current_user.id)
     level = profile.current_level or CEFRLevel.A1
@@ -66,6 +70,11 @@ async def get_next_lesson(
         if not next_topic:
             next_topic = topics_curriculum[-1]
 
+    norm_topic = lesson_generator_service._normalize_topic(next_topic)
+    cached = await lesson_generator_service._repository.find_cached(lang.id, level, norm_topic)
+    if not cached:
+        await quota_service.increment_usage(current_user.id, "lesson_generations", 1)
+
     lesson = await lesson_generator_service.generate_lesson(
         language=lang,
         level=level,
@@ -85,6 +94,7 @@ async def get_next_lesson(
         await user_lesson_repository.create(user_lesson)
 
     return lesson
+
 
 @router.get("/history", response_model=List[LessonSummaryResponse], status_code=status.HTTP_200_OK)
 async def get_history(

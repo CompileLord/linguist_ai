@@ -72,7 +72,12 @@ class MissionNotFoundError(NotFoundException):
     def __init__(self, detail: str = "Mission Not Found", error_code: str = "MISSION_NOT_FOUND", details: Any = None) -> None:
         super().__init__(detail=detail, error_code=error_code, details=details)
 
+class QuotaExceededException(AppException):
+    def __init__(self, detail: str = "Quota Exceeded", error_code: str = "QUOTA_EXCEEDED", details: Any = None) -> None:
+        super().__init__(status_code=429, detail=detail, error_code=error_code, details=details)
+
 async def app_exception_handler(request: Request, exc: AppException) -> JSONResponse:
+
     return JSONResponse(
         status_code=exc.status_code,
         content={

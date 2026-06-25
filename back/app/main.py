@@ -10,7 +10,9 @@ from app.core.database import db_manager
 from app.core.exceptions import register_exception_handlers
 from app.core.middleware import RateLimitMiddleware
 from app.core.logging import LoggerFactory
-from app.api.routers import auth, onboarding, lessons, vocabulary, review, errors, tutor, missions, writing_exam, listening_exam
+from app.api.dependencies.auth import get_current_active_user
+from app.api.routers import auth, onboarding, lessons, vocabulary, review, errors, tutor, missions, writing_exam, listening_exam, gamification, achievement, coach, quota
+
 
 logger = LoggerFactory.get_logger("LinguistAI")
 
@@ -23,10 +25,50 @@ async def lifespan(app: FastAPI):
         logger.info("Database connection verified successfully.")
     else:
         logger.error("Database connection check failed during startup.")
+
+    from apscheduler.schedulers.asyncio import AsyncIOScheduler
+    from apscheduler.triggers.cron import CronTrigger
+    import os
+
+    app.state.scheduler = AsyncIOScheduler()
+
+    weekly_schedule = os.getenv("WEEKLY_REPORT_SCHEDULE", "0 6 * * 1")
+    from app.services.weekly_report_scheduler import run_weekly_reports_job
+    app.state.scheduler.add_job(
+        run_weekly_reports_job,
+        CronTrigger.from_crontab(weekly_schedule, timezone="UTC"),
+        id="weekly_reports_job"
+    )
+
+    from app.services.quota_tracking_service import QuotaTrackingService
+    from app.repositories.user_quota_repository import UserQuotaRepository
+    from app.repositories.profile_repository import ProfileRepository
+
+    async def run_quota_cleanup():
+        async with db_manager.get_session() as session:
+            service = QuotaTrackingService(
+                UserQuotaRepository(session),
+                ProfileRepository(session)
+            )
+            await service.run_daily_cleanup_job()
+
+    app.state.scheduler.add_job(
+        run_quota_cleanup,
+        CronTrigger.from_crontab("5 0 * * *", timezone="UTC"),
+        id="quota_cleanup_job"
+    )
+
+    app.state.scheduler.start()
+
     yield
+
     logger.info(f"Shutting down {settings.APP_NAME}")
+    if hasattr(app.state, "scheduler"):
+        app.state.scheduler.shutdown()
+        logger.info("Scheduler shutdown.")
     await db_manager.close()
     logger.info("Database connections closed.")
+
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -71,6 +113,30 @@ app.include_router(tutor.ws_router)
 app.include_router(missions.router)
 app.include_router(writing_exam.router)
 app.include_router(listening_exam.router)
+app.include_router(gamification.router)
+app.include_router(achievement.router)
+app.include_router(coach.router)
+app.include_router(coach.admin_router)
+app.include_router(quota.router)
+
+# Prefix support for all routes to prevent collision with tunnel (e.g. instatunnel) auth paths
+app.include_router(auth.router, prefix="/api")
+app.include_router(onboarding.router, prefix="/api")
+app.include_router(lessons.router, prefix="/api")
+app.include_router(vocabulary.router, prefix="/api")
+app.include_router(review.router, prefix="/api")
+app.include_router(errors.router, prefix="/api")
+app.include_router(tutor.router, prefix="/api")
+app.include_router(missions.router, prefix="/api")
+app.include_router(writing_exam.router, prefix="/api")
+app.include_router(listening_exam.router, prefix="/api")
+app.include_router(gamification.router, prefix="/api")
+app.include_router(achievement.router, prefix="/api")
+app.include_router(coach.router, prefix="/api")
+app.include_router(coach.admin_router, prefix="/api")
+app.include_router(quota.router, prefix="/api")
+
+
 
 
 @app.get("/")

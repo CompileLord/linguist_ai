@@ -48,8 +48,9 @@ class VertexAIProvider(AbstractAIProvider):
     ) -> str:
         try:
             sdk_config = self._build_sdk_config(system_instruction, config)
+            model_name = config.model if (config and config.model) else self.model
             response = self.client.models.generate_content(
-                model=self.model,
+                model=model_name,
                 contents=prompt,
                 config=sdk_config
             )
@@ -67,8 +68,9 @@ class VertexAIProvider(AbstractAIProvider):
     ) -> AsyncIterator[str]:
         try:
             sdk_config = self._build_sdk_config(system_instruction, config)
+            model_name = config.model if (config and config.model) else self.model
             response = self.client.models.generate_content_stream(
-                model=self.model,
+                model=model_name,
                 contents=prompt,
                 config=sdk_config
             )
@@ -88,8 +90,9 @@ class VertexAIProvider(AbstractAIProvider):
     ) -> T:
         try:
             sdk_config = self._build_sdk_config(system_instruction, config, response_schema)
+            model_name = config.model if (config and config.model) else self.model
             response = self.client.models.generate_content(
-                model=self.model,
+                model=model_name,
                 contents=prompt,
                 config=sdk_config
             )
@@ -99,3 +102,4 @@ class VertexAIProvider(AbstractAIProvider):
             raise ExternalServiceException(detail=f"Vertex AI structured output error: {str(e)}", error_code="AI_API_ERROR")
         except Exception as e:
             raise ExternalServiceException(detail=f"Unexpected structured error: {str(e)}", error_code="AI_UNEXPECTED_ERROR")
+

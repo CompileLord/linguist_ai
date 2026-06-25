@@ -17,6 +17,11 @@ from app.repositories.listening_exam_repository import ListeningExamRepository
 from app.services.ai.base import AbstractAIProvider
 from app.services.ai.prompts import PromptManager
 from app.core.exceptions import NotFoundException, ConflictException, ForbiddenException, ExternalServiceException
+from app.services.xp_calculation_service import ActionType, XPCalculationService
+from app.services.streak_tracking_service import StreakTrackingService
+from app.services.game_level_progression_service import GameLevelProgressionService
+from app.services.achievement_service import AchievementService
+from app.repositories.gamification_repository import GamificationRepository
 
 class ListeningExamScriptGenerationService:
     def __init__(self, ai_provider: AbstractAIProvider, prompt_manager: PromptManager):
@@ -112,11 +117,21 @@ class ListeningExamService:
         self,
         repository: ListeningExamRepository,
         script_service: ListeningExamScriptGenerationService,
-        audio_service: ListeningAudioService
+        audio_service: ListeningAudioService,
+        xp_calc_service: Optional[XPCalculationService] = None,
+        streak_service: Optional[StreakTrackingService] = None,
+        level_progression_service: Optional[GameLevelProgressionService] = None,
+        achievement_service: Optional[AchievementService] = None,
+        gamification_repo: Optional[GamificationRepository] = None
     ):
         self._repository = repository
         self._script_service = script_service
         self._audio_service = audio_service
+        self._xp_calc_service = xp_calc_service
+        self._streak_service = streak_service
+        self._level_progression_service = level_progression_service
+        self._achievement_service = achievement_service
+        self._gamification_repo = gamification_repo
 
     async def get_exam_for_user(self, user_id: uuid.UUID, exam_id: uuid.UUID) -> ListeningExamDetailsResponse:
         exam = await self._repository.get_by_id(exam_id)
@@ -187,6 +202,21 @@ class ListeningExamService:
             score=score
         )
         await self._repository.create_attempt(attempt)
+
+        if score >= 60.0:
+            if self._xp_calc_service and self._gamification_repo:
+                xp_earned = self._xp_calc_service.calculate_xp(ActionType.LISTENING_EXAM_PASS, score=score)
+                await self._gamification_repo.add_xp(user_id, xp_earned)
+            if self._streak_service:
+                await self._streak_service.record_activity(user_id)
+            if self._level_progression_service:
+                await self._level_progression_service.check_and_apply_level_up(user_id)
+            if self._achievement_service:
+                await self._achievement_service.evaluate_and_award(
+                    user_id,
+                    "exam_completion",
+                    {"exam_type": "listening", "score": score}
+                )
 
         return ListeningSubmitResponse(
             score=score,

@@ -18,13 +18,15 @@ from app.api.dependencies.services import (
     get_writing_exam_repository,
     get_writing_prompt_generation_service,
     get_writing_evaluation_service,
-    get_profile_service
+    get_profile_service,
+    get_quota_tracking_service
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db_session
 from app.repositories.profile_repository import ProfileRepository
 from app.repositories.writing_exam_repository import WritingExamRepository
 from app.services.writing_exam_service import WritingPromptGenerationService, WritingEvaluationService
+from app.services.quota_tracking_service import QuotaTrackingService
 from app.core.exceptions import NotFoundException, ForbiddenException, ConflictException, ValidationException
 
 router = APIRouter(prefix="/exams/writing", tags=["Writing Exams"])
@@ -34,26 +36,27 @@ async def generate_writing_prompt(
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db_session),
     repo: WritingExamRepository = Depends(get_writing_exam_repository),
-    prompt_service: WritingPromptGenerationService = Depends(get_writing_prompt_generation_service)
+    prompt_service: WritingPromptGenerationService = Depends(get_writing_prompt_generation_service),
+    quota_service: QuotaTrackingService = Depends(get_quota_tracking_service)
 ):
-    limit = int(os.getenv("WRITING_EXAM_DAILY_LIMIT", 3))
-    now = datetime.now(timezone.utc)
-    current_date = now.date()
-    
-    count = await repo.count_daily_attempts(current_user.id, current_date)
-    if count >= limit:
-        midnight = datetime.combine(current_date + timedelta(days=1), time.min, tzinfo=timezone.utc)
-        seconds_until_midnight = int((midnight - now).total_seconds())
+    status_item = await quota_service.check_quota(current_user.id, "writing_exam_attempts")
+    if status_item.remaining <= 0:
+        reset_dt = datetime.fromisoformat(status_item.reset_at)
+        now = datetime.now(timezone.utc)
+        seconds_until_midnight = int((reset_dt - now).total_seconds())
         return JSONResponse(
             status_code=429,
             content={
                 "detail": "Daily writing exam limit reached",
-                "daily_limit": limit,
-                "attempts_used": count,
-                "reset_at": midnight.isoformat()
+                "daily_limit": status_item.daily_limit,
+                "attempts_used": status_item.current_usage,
+                "reset_at": status_item.reset_at
             },
             headers={"Retry-After": str(seconds_until_midnight)}
         )
+
+    await quota_service.increment_usage(current_user.id, "writing_exam_attempts", 1)
+
 
     profile_repo = ProfileRepository(db)
     profile = await profile_repo.get_by_user_id(current_user.id)

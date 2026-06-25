@@ -42,6 +42,82 @@ from app.repositories.writing_exam_repository import WritingExamRepository
 from app.repositories.listening_exam_repository import ListeningExamRepository
 from app.services.writing_exam_service import WritingPromptGenerationService, WritingEvaluationService
 from app.services.listening_exam_service import ListeningExamScriptGenerationService, ListeningAudioService, ListeningExamService
+from app.repositories.gamification_repository import GamificationRepository
+from app.repositories.achievement_repository import AchievementRepository
+from app.repositories.weekly_report_repository import WeeklyReportRepository
+from app.repositories.user_quota_repository import UserQuotaRepository
+from app.services.xp_calculation_service import XPCalculationService
+from app.services.streak_tracking_service import StreakTrackingService
+from app.services.game_level_progression_service import GameLevelProgressionService
+from app.services.achievement_evaluation_engine import AchievementEvaluationEngine
+from app.services.achievement_service import AchievementService
+from app.services.ai_coach_report_generation_service import AICoachReportGenerationService
+from app.services.quota_tracking_service import QuotaTrackingService
+
+
+async def get_gamification_repository(db: AsyncSession = Depends(get_db_session)) -> GamificationRepository:
+    return GamificationRepository(db)
+
+async def get_achievement_repository(db: AsyncSession = Depends(get_db_session)) -> AchievementRepository:
+    return AchievementRepository(db)
+
+async def get_weekly_report_repository(db: AsyncSession = Depends(get_db_session)) -> WeeklyReportRepository:
+    return WeeklyReportRepository(db)
+
+async def get_user_quota_repository(db: AsyncSession = Depends(get_db_session)) -> UserQuotaRepository:
+    return UserQuotaRepository(db)
+
+_xp_calc_service = None
+
+def get_xp_calculation_service() -> XPCalculationService:
+    global _xp_calc_service
+    if _xp_calc_service is None:
+        _xp_calc_service = XPCalculationService()
+    return _xp_calc_service
+
+async def get_streak_tracking_service(
+    db: AsyncSession = Depends(get_db_session),
+    gamification_repo = Depends(get_gamification_repository)
+) -> StreakTrackingService:
+    profile_repo = ProfileRepository(db)
+    return StreakTrackingService(gamification_repo, profile_repo)
+
+async def get_game_level_progression_service(
+    gamification_repo = Depends(get_gamification_repository)
+) -> GameLevelProgressionService:
+    return GameLevelProgressionService(gamification_repo)
+
+async def get_achievement_evaluation_engine(
+    db: AsyncSession = Depends(get_db_session),
+    gamification_repo = Depends(get_gamification_repository),
+    achievement_repo = Depends(get_achievement_repository)
+) -> AchievementEvaluationEngine:
+    return AchievementEvaluationEngine(db, gamification_repo, achievement_repo)
+
+async def get_achievement_service(
+    achievement_repo = Depends(get_achievement_repository),
+    evaluation_engine = Depends(get_achievement_evaluation_engine)
+) -> AchievementService:
+    return AchievementService(achievement_repo, evaluation_engine)
+
+async def get_ai_coach_report_generation_service(
+    db: AsyncSession = Depends(get_db_session),
+    ai_provider = Depends(get_ai_provider),
+    prompt_manager = Depends(get_prompt_manager),
+    gamification_repo = Depends(get_gamification_repository),
+    weekly_report_repo = Depends(get_weekly_report_repository)
+) -> AICoachReportGenerationService:
+    return AICoachReportGenerationService(
+        db, ai_provider, prompt_manager, gamification_repo, weekly_report_repo
+    )
+
+async def get_quota_tracking_service(
+    db: AsyncSession = Depends(get_db_session),
+    quota_repo = Depends(get_user_quota_repository)
+) -> QuotaTrackingService:
+    profile_repo = ProfileRepository(db)
+    return QuotaTrackingService(quota_repo, profile_repo)
+
 
 _tts_service = None
 
@@ -161,7 +237,12 @@ async def get_lesson_scoring_service(
     vocab_extract = Depends(get_vocabulary_extraction_service),
     error_detect = Depends(get_error_detection_service),
     error_aggregate = Depends(get_error_aggregation_service),
-    error_signal = Depends(get_error_signal_service)
+    error_signal = Depends(get_error_signal_service),
+    xp_calc_service = Depends(get_xp_calculation_service),
+    streak_service = Depends(get_streak_tracking_service),
+    level_progression_service = Depends(get_game_level_progression_service),
+    achievement_service = Depends(get_achievement_service),
+    gamification_repo = Depends(get_gamification_repository)
 ) -> LessonScoringService:
     repo = await get_user_lesson_repository(db)
     return LessonScoringService(
@@ -170,7 +251,12 @@ async def get_lesson_scoring_service(
         vocab_extract,
         error_detect,
         error_aggregate,
-        error_signal
+        error_signal,
+        xp_calc_service,
+        streak_service,
+        level_progression_service,
+        achievement_service,
+        gamification_repo
     )
 
 _websocket_manager = None
@@ -257,9 +343,23 @@ async def get_writing_prompt_generation_service(
 async def get_writing_evaluation_service(
     ai_provider = Depends(get_ai_provider),
     prompt_manager = Depends(get_prompt_manager),
-    repo = Depends(get_writing_exam_repository)
+    repo = Depends(get_writing_exam_repository),
+    xp_calc_service = Depends(get_xp_calculation_service),
+    streak_service = Depends(get_streak_tracking_service),
+    level_progression_service = Depends(get_game_level_progression_service),
+    achievement_service = Depends(get_achievement_service),
+    gamification_repo = Depends(get_gamification_repository)
 ) -> WritingEvaluationService:
-    return WritingEvaluationService(ai_provider, prompt_manager, repo)
+    return WritingEvaluationService(
+        ai_provider,
+        prompt_manager,
+        repo,
+        xp_calc_service,
+        streak_service,
+        level_progression_service,
+        achievement_service,
+        gamification_repo
+    )
 
 async def get_listening_exam_script_generation_service(
     ai_provider = Depends(get_ai_provider),
@@ -273,9 +373,26 @@ def get_listening_audio_service() -> ListeningAudioService:
 async def get_listening_exam_service(
     repo = Depends(get_listening_exam_repository),
     script_service = Depends(get_listening_exam_script_generation_service),
-    audio_service = Depends(get_listening_audio_service)
+    audio_service = Depends(get_listening_audio_service),
+    xp_calc_service = Depends(get_xp_calculation_service),
+    streak_service = Depends(get_streak_tracking_service),
+    level_progression_service = Depends(get_game_level_progression_service),
+    achievement_service = Depends(get_achievement_service),
+    gamification_repo = Depends(get_gamification_repository)
 ) -> ListeningExamService:
-    return ListeningExamService(repo, script_service, audio_service)
+    return ListeningExamService(
+        repo,
+        script_service,
+        audio_service,
+        xp_calc_service,
+        streak_service,
+        level_progression_service,
+        achievement_service,
+        gamification_repo
+    )
+
+
+
 
 
 

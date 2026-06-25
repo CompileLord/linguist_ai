@@ -43,3 +43,12 @@ class ErrorCategory(str, Enum):
     GRAMMAR = "grammar"
     VOCABULARY = "vocabulary"
 
+class ConditionType(str, Enum):
+    LESSONS_COMPLETED = "lessons_completed"
+    STREAK_DAYS = "streak_days"
+    WORDS_LEARNED = "words_learned"
+    EXAMS_PASSED = "exams_passed"
+    SPEAKING_MINUTES = "speaking_minutes"
+    SPECIFIC_ACTION = "specific_action"
+
+

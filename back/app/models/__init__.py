@@ -18,6 +18,11 @@ from app.models.user_daily_usage import UserDailyUsage
 from app.models.writing_exam import WritingExam
 from app.models.listening_exam import ListeningExam
 from app.models.user_listening_attempt import UserListeningAttempt
+from app.models.user_gamification import UserGamification
+from app.models.achievement import Achievement
+from app.models.user_achievement import UserAchievement
+from app.models.weekly_report import WeeklyReport
+from app.models.user_quota import UserQuota
 
 __all__ = [
     "Base",
@@ -41,6 +46,12 @@ __all__ = [
     "UserDailyUsage",
     "WritingExam",
     "ListeningExam",
-    "UserListeningAttempt"
+    "UserListeningAttempt",
+    "UserGamification",
+    "Achievement",
+    "UserAchievement",
+    "WeeklyReport",
+    "UserQuota"
 ]
+
 

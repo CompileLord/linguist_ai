@@ -13,6 +13,11 @@ from app.services.error_detection_service import ErrorDetectionService
 from app.services.error_aggregation_service import ErrorAggregationService
 from app.services.error_signal_service import ErrorSignalService
 from app.models.user_profile import UserProfile
+from app.services.xp_calculation_service import ActionType, XPCalculationService
+from app.services.streak_tracking_service import StreakTrackingService
+from app.services.game_level_progression_service import GameLevelProgressionService
+from app.services.achievement_service import AchievementService
+from app.repositories.gamification_repository import GamificationRepository
 
 THRESHOLD_MAP = {
     CEFRLevel.A1: 0,
@@ -31,7 +36,12 @@ class LessonScoringService:
         vocab_extraction_service: Optional[VocabularyExtractionService] = None,
         error_detection_service: Optional[ErrorDetectionService] = None,
         error_aggregation_service: Optional[ErrorAggregationService] = None,
-        error_signal_service: Optional[ErrorSignalService] = None
+        error_signal_service: Optional[ErrorSignalService] = None,
+        xp_calc_service: Optional[XPCalculationService] = None,
+        streak_service: Optional[StreakTrackingService] = None,
+        level_progression_service: Optional[GameLevelProgressionService] = None,
+        achievement_service: Optional[AchievementService] = None,
+        gamification_repo: Optional[GamificationRepository] = None
     ) -> None:
         self._user_lesson_repository = user_lesson_repository
         self._profile_service = profile_service
@@ -39,6 +49,11 @@ class LessonScoringService:
         self._error_detection_service = error_detection_service
         self._error_aggregation_service = error_aggregation_service
         self._error_signal_service = error_signal_service
+        self._xp_calc_service = xp_calc_service
+        self._streak_service = streak_service
+        self._level_progression_service = level_progression_service
+        self._achievement_service = achievement_service
+        self._gamification_repo = gamification_repo
 
 
     async def calculate_score(
@@ -77,16 +92,17 @@ class LessonScoringService:
         score = (earned_points / total_points) if total_points > 0 else 0.0
         accuracy = score
 
-        # Fetch profile for streak and XP calculation
         profile = await self._profile_service.get_profile(user_id)
         streak_count = profile.streak_count
 
-        base_xp = 50
-        score_bonus = int(score * 100)
-        streak_bonus = min(50, streak_count * 5)
-        xp_earned = base_xp + score_bonus + streak_bonus
+        if self._xp_calc_service:
+            xp_earned = self._xp_calc_service.calculate_xp(ActionType.LESSON_COMPLETION)
+        else:
+            base_xp = 50
+            score_bonus = int(score * 100)
+            streak_bonus = min(50, streak_count * 5)
+            xp_earned = base_xp + score_bonus + streak_bonus
 
-        # Check level up
         level_up = False
         current_level = profile.current_level or CEFRLevel.A1
         if current_level != CEFRLevel.C2:
@@ -97,11 +113,9 @@ class LessonScoringService:
                 level_up = True
                 await self._profile_service.complete_placement(user_id, next_level, profile.placement_score or 0.0)
 
-        # Update streak: increment by 1
         await self._profile_service.add_xp(user_id, xp_earned)
         await self._profile_service.complete_placement(user_id, profile.current_level or CEFRLevel.A1, profile.placement_score or 0.0)
         
-        # Check if user lesson record exists, create or update it
         user_lesson = await self._user_lesson_repository.get_user_lesson(user_id, lesson.id)
         updates = {
             "status": "completed",
@@ -130,6 +144,15 @@ class LessonScoringService:
                 xp_earned=xp_earned
             )
             await self._user_lesson_repository.create(new_ul)
+
+        if self._gamification_repo:
+            await self._gamification_repo.add_xp(user_id, xp_earned)
+        if self._streak_service:
+            await self._streak_service.record_activity(user_id)
+        if self._level_progression_service:
+            await self._level_progression_service.check_and_apply_level_up(user_id)
+        if self._achievement_service:
+            await self._achievement_service.evaluate_and_award(user_id, "lesson_completion")
 
         if hasattr(self._user_lesson_repository, "_session"):
             await self._user_lesson_repository._session.commit()

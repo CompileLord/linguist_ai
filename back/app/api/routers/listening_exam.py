@@ -18,11 +18,14 @@ from app.api.dependencies.auth import get_current_active_user
 from app.api.dependencies.services import (
     get_listening_exam_repository,
     get_listening_exam_service,
-    get_profile_service
+    get_profile_service,
+    get_quota_tracking_service
 )
 from app.repositories.listening_exam_repository import ListeningExamRepository
 from app.services.listening_exam_service import ListeningExamService
+from app.services.quota_tracking_service import QuotaTrackingService
 from app.core.exceptions import NotFoundException, ForbiddenException, ConflictException, ValidationException
+
 
 router = APIRouter(prefix="/exams/listening", tags=["Listening Exams"])
 
@@ -92,32 +95,33 @@ async def submit_listening_exam(
     request_data: ListeningSubmitRequest,
     current_user: User = Depends(get_current_active_user),
     repo: ListeningExamRepository = Depends(get_listening_exam_repository),
-    service: ListeningExamService = Depends(get_listening_exam_service)
+    service: ListeningExamService = Depends(get_listening_exam_service),
+    quota_service: QuotaTrackingService = Depends(get_quota_tracking_service)
 ):
-    limit = int(os.getenv("LISTENING_EXAM_DAILY_LIMIT", 5))
-    now = datetime.now(timezone.utc)
-    current_date = now.date()
-    
-    count = await repo.count_daily_attempts(current_user.id, current_date)
-    if count >= limit:
-        midnight = datetime.combine(current_date + timedelta(days=1), time.min, tzinfo=timezone.utc)
-        seconds_until_midnight = int((midnight - now).total_seconds())
+    status_item = await quota_service.check_quota(current_user.id, "listening_exam_attempts")
+    if status_item.remaining <= 0:
+        reset_dt = datetime.fromisoformat(status_item.reset_at)
+        now = datetime.now(timezone.utc)
+        seconds_until_midnight = int((reset_dt - now).total_seconds())
         return JSONResponse(
             status_code=429,
             content={
                 "detail": "Daily listening exam limit reached",
-                "daily_limit": limit,
-                "attempts_used": count,
-                "reset_at": midnight.isoformat()
+                "daily_limit": status_item.daily_limit,
+                "attempts_used": status_item.current_usage,
+                "reset_at": status_item.reset_at
             },
             headers={"Retry-After": str(seconds_until_midnight)}
         )
-        
-    return await service.submit_answers(
+
+    res = await service.submit_answers(
         user_id=current_user.id,
         exam_id=id,
         answers=request_data.answers
     )
+    await quota_service.increment_usage(current_user.id, "listening_exam_attempts", 1)
+    return res
+
 
 @router.get("/{id}/transcript", response_model=ListeningTranscriptResponse, status_code=status.HTTP_200_OK)
 async def get_listening_exam_transcript(

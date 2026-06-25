@@ -50,6 +50,13 @@ class UserProfile(Base, IDMixin, TimestampMixin):
         default=False,
         server_default="false"
     )
+    timezone: Mapped[str] = mapped_column(
+        String(50),
+        default="UTC",
+        server_default="UTC",
+        nullable=False
+    )
+
 
     user: Mapped["User"] = relationship("User", back_populates="profile")
     target_language: Mapped["Language"] = relationship("Language")

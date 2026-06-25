@@ -47,4 +47,11 @@ class User(Base, IDMixin, TimestampMixin):
         back_populates="user",
         cascade="all, delete-orphan"
     )
+    gamification: Mapped[Optional["UserGamification"]] = relationship(
+        "UserGamification",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        uselist=False
+    )
+
 

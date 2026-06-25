@@ -8,6 +8,8 @@ class GenerationConfig(BaseModel):
     top_k: int = Field(default=40, ge=1)
     max_output_tokens: int = Field(default=2048, ge=1)
     response_mime_type: str = Field(default="text/plain")
+    model: Optional[str] = None
+
 
 T = TypeVar("T", bound=BaseModel)
 

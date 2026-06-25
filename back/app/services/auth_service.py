@@ -24,6 +24,7 @@ class AuthService(AbstractAuthService):
             raise ConflictException(detail="Email already registered", error_code="EMAIL_EXISTS")
         
         hashed = self.password_service.hash_password(schema.password)
+        from app.models.user_gamification import UserGamification
         new_user = User(
             email=schema.email,
             hashed_password=hashed,
@@ -31,7 +32,16 @@ class AuthService(AbstractAuthService):
             is_active=True,
             is_superuser=False
         )
+        new_user.gamification = UserGamification(
+            total_xp=0,
+            current_game_level=1,
+            current_streak=0,
+            longest_streak=0,
+            last_activity_date=None,
+            has_unread_report=False
+        )
         saved_user = await self._repository.create(new_user)
+
         
         access_token = self.token_service.create_access_token(str(saved_user.id))
         refresh_token = self.token_service.create_refresh_token(str(saved_user.id))

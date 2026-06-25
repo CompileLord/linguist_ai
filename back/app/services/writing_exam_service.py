@@ -7,6 +7,11 @@ from app.repositories.writing_exam_repository import WritingExamRepository
 from app.services.ai.base import AbstractAIProvider
 from app.services.ai.prompts import PromptManager
 from app.core.exceptions import NotFoundException, ValidationException
+from app.services.xp_calculation_service import ActionType, XPCalculationService
+from app.services.streak_tracking_service import StreakTrackingService
+from app.services.game_level_progression_service import GameLevelProgressionService
+from app.services.achievement_service import AchievementService
+from app.repositories.gamification_repository import GamificationRepository
 
 class WritingPromptGenerationService:
     def __init__(self, ai_provider: AbstractAIProvider, prompt_manager: PromptManager):
@@ -27,10 +32,25 @@ class WritingPromptGenerationService:
         )
 
 class WritingEvaluationService:
-    def __init__(self, ai_provider: AbstractAIProvider, prompt_manager: PromptManager, repository: WritingExamRepository):
+    def __init__(
+        self,
+        ai_provider: AbstractAIProvider,
+        prompt_manager: PromptManager,
+        repository: WritingExamRepository,
+        xp_calc_service: Optional[XPCalculationService] = None,
+        streak_service: Optional[StreakTrackingService] = None,
+        level_progression_service: Optional[GameLevelProgressionService] = None,
+        achievement_service: Optional[AchievementService] = None,
+        gamification_repo: Optional[GamificationRepository] = None
+    ):
         self._ai_provider = ai_provider
         self._prompt_manager = prompt_manager
         self._repository = repository
+        self._xp_calc_service = xp_calc_service
+        self._streak_service = streak_service
+        self._level_progression_service = level_progression_service
+        self._achievement_service = achievement_service
+        self._gamification_repo = gamification_repo
 
     async def evaluate_submission(self, exam_id: uuid.UUID, submitted_text: str) -> WritingExam:
         exam = await self._repository.get_by_id(exam_id)
@@ -91,4 +111,20 @@ class WritingEvaluationService:
             overall_score=overall_score,
             feedback_text=feedback_text
         )
+
+        if overall_score >= 50:
+            if self._xp_calc_service and self._gamification_repo:
+                xp_earned = self._xp_calc_service.calculate_xp(ActionType.WRITING_EXAM_PASS, score=overall_score)
+                await self._gamification_repo.add_xp(exam.user_id, xp_earned)
+            if self._streak_service:
+                await self._streak_service.record_activity(exam.user_id)
+            if self._level_progression_service:
+                await self._level_progression_service.check_and_apply_level_up(exam.user_id)
+            if self._achievement_service:
+                await self._achievement_service.evaluate_and_award(
+                    exam.user_id,
+                    "exam_completion",
+                    {"exam_type": "writing", "score": overall_score}
+                )
+
         return updated_exam
