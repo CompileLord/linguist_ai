@@ -1,6 +1,6 @@
 .venv
 *.env
-*.db
+linguist_ai.db
 media
 *.log
 *.onnx
