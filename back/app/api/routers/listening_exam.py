@@ -48,20 +48,7 @@ async def list_available_listening_exams(
         limit=per_page
     )
     
-    from sqlalchemy import select, func, and_
-    from app.core.database import db_manager
-    from app.models.user_listening_attempt import UserListeningAttempt
-    async with db_manager.get_session() as session:
-        subquery = select(UserListeningAttempt.exam_id).filter(UserListeningAttempt.user_id == current_user.id)
-        query = select(func.count(ListeningExam.id)).filter(
-            and_(
-                ListeningExam.language_id == language_id,
-                ListeningExam.level == level,
-                ListeningExam.id.not_in(subquery)
-            )
-        )
-        result = await session.execute(query)
-        total = result.scalar() or 0
+    total = await repo.count_available_exams(current_user.id, language_id, level)
 
     items = []
     for exam in exams:

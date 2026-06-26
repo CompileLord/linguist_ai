@@ -85,3 +85,9 @@ class WritingExamRepository(AbstractWritingExamRepository):
         )
         result = await self._session.execute(query)
         return result.scalar() or 0
+
+    async def count_by_user(self, user_id: uuid.UUID) -> int:
+        from sqlalchemy import select, func
+        query = select(func.count(WritingExam.id)).filter(WritingExam.user_id == user_id)
+        result = await self._session.execute(query)
+        return result.scalar() or 0

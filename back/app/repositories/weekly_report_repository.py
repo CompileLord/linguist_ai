@@ -72,6 +72,13 @@ class WeeklyReportRepository(AbstractWeeklyReportRepository):
         )
         return list(result.scalars().all())
 
+    async def count_by_user(self, user_id: uuid.UUID) -> int:
+        from sqlalchemy import select, func
+        result = await self._session.execute(
+            select(func.count(WeeklyReport.id)).filter_by(user_id=user_id)
+        )
+        return result.scalar() or 0
+
     async def exists_for_period(self, user_id: uuid.UUID, period_start: date) -> bool:
         result = await self._session.execute(
             select(WeeklyReport).filter_by(user_id=user_id, period_start=period_start)

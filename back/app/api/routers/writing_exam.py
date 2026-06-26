@@ -125,12 +125,7 @@ async def list_writing_exam_history(
         offset=offset
     )
     
-    from sqlalchemy import select, func
-    from app.core.database import db_manager
-    async with db_manager.get_session() as session:
-        query = select(func.count(WritingExam.id)).filter(WritingExam.user_id == current_user.id)
-        result = await session.execute(query)
-        total = result.scalar() or 0
+    total = await repo.count_by_user(current_user.id)
         
     items = []
     for exam in history:

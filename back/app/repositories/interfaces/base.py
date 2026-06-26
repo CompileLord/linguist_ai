@@ -28,3 +28,11 @@ class AbstractRepository(ABC, Generic[ModelType, PKType]):
     @abstractmethod
     async def delete(self, id: PKType) -> bool:
         pass
+
+    async def save_changes(self) -> None:
+        """Safely commits changes tracked by the current session."""
+        try:
+            await self._session.commit()
+        except Exception:
+            await self._session.rollback()
+            raise

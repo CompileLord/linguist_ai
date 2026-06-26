@@ -252,8 +252,11 @@ async def ws_speaking(
                 await websocket.send_json({"type": "done"})
 
     except WebSocketDisconnect:
-        pass
+        import logging
+        logging.getLogger("speaking").info(f"WebSocket disconnected for user {user_id}")
     except Exception as e:
+        import logging
+        logging.getLogger("speaking").error(f"WebSocket error for user {user_id}: {str(e)}", exc_info=True)
         try:
             await websocket.send_json({"type": "error", "content": str(e)})
         except Exception:

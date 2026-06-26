@@ -17,3 +17,7 @@ class AbstractWeeklyReportRepository(AbstractRepository[WeeklyReport, uuid.UUID]
     @abstractmethod
     async def exists_for_period(self, user_id: uuid.UUID, period_start: date) -> bool:
         pass
+
+    @abstractmethod
+    async def count_by_user(self, user_id: uuid.UUID) -> int:
+        pass

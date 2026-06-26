@@ -50,3 +50,12 @@ class AbstractListeningExamRepository(AbstractRepository[ListeningExam, uuid.UUI
         limit: int = 100
     ) -> List[UserListeningAttempt]:
         pass
+
+    @abstractmethod
+    async def count_available_exams(
+        self,
+        user_id: uuid.UUID,
+        language_id: uuid.UUID,
+        level: str
+    ) -> int:
+        pass

@@ -49,27 +49,10 @@ async def list_vocabulary(
         total = len(items)
     elif cefr_level:
         items = await vocab_repo.list_by_cefr_level(language_id, cefr_level, skip=skip, limit=per_page)
-        from sqlalchemy import select, func
-        from app.models.vocabulary import Vocabulary
-        from app.core.database import db_manager
-        async with db_manager.get_session() as session:
-            result = await session.execute(
-                select(func.count(Vocabulary.id)).filter(
-                    Vocabulary.language_id == language_id,
-                    Vocabulary.cefr_level == cefr_level
-                )
-            )
-            total = result.scalar() or 0
+        total = await vocab_repo.count_by_language_and_level(language_id, cefr_level)
     else:
         items = await vocab_repo.list_by_language(language_id, skip=skip, limit=per_page)
-        from sqlalchemy import select, func
-        from app.models.vocabulary import Vocabulary
-        from app.core.database import db_manager
-        async with db_manager.get_session() as session:
-            result = await session.execute(
-                select(func.count(Vocabulary.id)).filter(Vocabulary.language_id == language_id)
-            )
-            total = result.scalar() or 0
+        total = await vocab_repo.count_by_language(language_id)
 
     return PaginatedVocabularyResponse(
         items=[VocabularyResponse.model_validate(item) for item in items],

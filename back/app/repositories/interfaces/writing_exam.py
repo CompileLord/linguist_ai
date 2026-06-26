@@ -35,3 +35,7 @@ class AbstractWritingExamRepository(AbstractRepository[WritingExam, uuid.UUID]):
         activity_date: date
     ) -> int:
         pass
+
+    @abstractmethod
+    async def count_by_user(self, user_id: uuid.UUID) -> int:
+        pass

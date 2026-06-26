@@ -25,3 +25,11 @@ class AbstractVocabularyRepository(AbstractRepository[Vocabulary, uuid.UUID]):
     @abstractmethod
     async def search_by_prefix(self, language_id: uuid.UUID, prefix: str, limit: int = 10) -> List[Vocabulary]:
         pass
+
+    @abstractmethod
+    async def count_by_language(self, language_id: uuid.UUID) -> int:
+        pass
+
+    @abstractmethod
+    async def count_by_language_and_level(self, language_id: uuid.UUID, cefr_level: CEFRLevel) -> int:
+        pass

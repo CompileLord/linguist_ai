@@ -154,8 +154,8 @@ class LessonScoringService:
         if self._achievement_service:
             await self._achievement_service.evaluate_and_award(user_id, "lesson_completion")
 
-        if hasattr(self._user_lesson_repository, "_session"):
-            await self._user_lesson_repository._session.commit()
+        if hasattr(self._user_lesson_repository, "save_changes"):
+            await self._user_lesson_repository.save_changes()
 
         print("SCORING SERVICE STATUS - VOCAB EXTRACT:", self._vocab_extraction_service is not None, "ERROR DETECT:", self._error_detection_service is not None)
         if self._vocab_extraction_service or self._error_detection_service:

@@ -193,8 +193,10 @@ async def ws_tutor(
                     except Exception as err:
                         await websocket.send_json({"type": "error", "content": str(err)})
     except WebSocketDisconnect:
-        pass
-    except Exception:
-        pass
+        import logging
+        logging.getLogger("tutor").info(f"WebSocket disconnected for user {user_id}")
+    except Exception as e:
+        import logging
+        logging.getLogger("tutor").error(f"WebSocket error for user {user_id}: {str(e)}", exc_info=True)
     finally:
         await ws_manager.disconnect(user_id, session_id)

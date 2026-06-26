@@ -122,7 +122,8 @@ class QuotaTrackingService:
                 r.daily_limit = limit
                 self.quota_repo._session.add(r)
                 
-            await self.quota_repo._session.commit()
+            if hasattr(self.quota_repo, "save_changes"):
+                await self.quota_repo.save_changes()
             total_reset += len(records)
             
         return {

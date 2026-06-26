@@ -114,3 +114,20 @@ class VocabularyRepository(AbstractVocabularyRepository):
             ).limit(limit)
         )
         return list(result.scalars().all())
+
+    async def count_by_language(self, language_id: uuid.UUID) -> int:
+        from sqlalchemy import func
+        result = await self._session.execute(
+            select(func.count(Vocabulary.id)).filter(Vocabulary.language_id == language_id)
+        )
+        return result.scalar() or 0
+
+    async def count_by_language_and_level(self, language_id: uuid.UUID, cefr_level: CEFRLevel) -> int:
+        from sqlalchemy import func
+        result = await self._session.execute(
+            select(func.count(Vocabulary.id)).filter(
+                Vocabulary.language_id == language_id,
+                Vocabulary.cefr_level == cefr_level
+            )
+        )
+        return result.scalar() or 0

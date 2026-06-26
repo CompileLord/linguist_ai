@@ -17,19 +17,28 @@ class WritingPromptGenerationService:
     def __init__(self, ai_provider: AbstractAIProvider, prompt_manager: PromptManager):
         self._ai_provider = ai_provider
         self._prompt_manager = prompt_manager
+        self._cache = {}
 
     async def generate_prompt(self, target_language: str, level: CEFRLevel, learning_goals: List[str]) -> WritingExamPromptGenerateAI:
         goal = learning_goals[0] if learning_goals else "general"
+        cache_key = f"{target_language}-{level.value}-{goal}"
+
+        if cache_key in self._cache:
+            return self._cache[cache_key]
+
         prompt = self._prompt_manager.render(
             "exams/writing_prompt",
             target_language=target_language,
             level=level.value,
             learning_goal=goal
         )
-        return await self._ai_provider.generate_structured(
+        result = await self._ai_provider.generate_structured(
             prompt=prompt,
             response_schema=WritingExamPromptGenerateAI
         )
+
+        self._cache[cache_key] = result
+        return result
 
 class WritingEvaluationService:
     def __init__(

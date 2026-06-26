@@ -26,11 +26,7 @@ async def list_weekly_reports(
     offset = (page - 1) * per_page
     reports = await repo.list_by_user(current_user.id, limit=per_page, offset=offset)
     
-    async with db_manager.get_session() as session:
-        res = await session.execute(
-            select(func.count(WeeklyReport.id)).filter(WeeklyReport.user_id == current_user.id)
-        )
-        total = res.scalar() or 0
+    total = await repo.count_by_user(current_user.id)
         
     items = [
         WeeklyReportHistoryItem(

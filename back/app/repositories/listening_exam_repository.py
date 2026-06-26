@@ -45,14 +45,19 @@ class ListeningExamRepository(AbstractListeningExamRepository):
         skip: int = 0,
         limit: int = 100
     ) -> List[ListeningExam]:
-        subquery = select(UserListeningAttempt.exam_id).filter(UserListeningAttempt.user_id == user_id)
-        query = select(ListeningExam).filter(
-            and_(
+        query = (
+            select(ListeningExam)
+            .outerjoin(
+                UserListeningAttempt,
+                (ListeningExam.id == UserListeningAttempt.exam_id) & (UserListeningAttempt.user_id == user_id)
+            )
+            .filter(
                 ListeningExam.language_id == language_id,
                 ListeningExam.level == level,
-                ListeningExam.id.not_in(subquery)
+                UserListeningAttempt.id.is_(None)
             )
-        ).offset(skip).limit(limit)
+            .offset(skip).limit(limit)
+        )
         result = await self._session.execute(query)
         return list(result.scalars().all())
 
@@ -115,3 +120,21 @@ class ListeningExamRepository(AbstractListeningExamRepository):
         )
         result = await self._session.execute(query)
         return list(result.scalars().all())
+
+    async def count_available_exams(self, user_id: uuid.UUID, language_id: uuid.UUID, level: str) -> int:
+        from sqlalchemy import select, func
+
+        query = (
+            select(func.count(ListeningExam.id))
+            .outerjoin(
+                UserListeningAttempt,
+                (ListeningExam.id == UserListeningAttempt.exam_id) & (UserListeningAttempt.user_id == user_id)
+            )
+            .filter(
+                ListeningExam.language_id == language_id,
+                ListeningExam.level == level,
+                UserListeningAttempt.id.is_(None)
+            )
+        )
+        result = await self._session.execute(query)
+        return result.scalar() or 0
