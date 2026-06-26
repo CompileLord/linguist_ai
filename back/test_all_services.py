@@ -2,6 +2,14 @@ import asyncio
 import os
 import sys
 import time
+import logging
+
+# Configure real-time logging output to stdout
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s",
+    stream=sys.stdout
+)
 
 # Ensure dependencies can be imported
 try:
@@ -26,12 +34,19 @@ async def test_vertex_ai():
     
     start = time.time()
     try:
-        response = await provider.generate_content(prompt)
+        print("Streaming response from Gemini: ", end="", flush=True)
+        response_chunks = []
+        async for chunk in provider.generate_content_stream(prompt):
+            print(chunk, end="", flush=True)
+            response_chunks.append(chunk)
+        print() # New line after stream ends
+        
+        response = "".join(response_chunks).strip()
         duration = time.time() - start
-        print(f"Success! Response from Gemini: \"{response.strip()}\" (took {duration:.2f}s)")
-        return response.strip()
+        print(f"Success! Response completed in {duration:.2f}s")
+        return response
     except Exception as e:
-        print(f"FAILED: Vertex AI Connection error: {e}")
+        print(f"\nFAILED: Vertex AI Connection error: {e}")
         print("\nEnsure that:")
         print("1. Your environment variables (GCLOUD_PROJECT_ID) are correct.")
         print("2. 'gcloud auth application-default login' was run successfully.")
