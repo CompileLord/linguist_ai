@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import AsyncIterator, Optional, Type, TypeVar
+from typing import AsyncIterator, Optional, Type, TypeVar, Any
 from pydantic import BaseModel, Field
 
 class GenerationConfig(BaseModel):
@@ -17,7 +17,7 @@ class AbstractAIProvider(ABC):
     @abstractmethod
     async def generate_content(
         self,
-        prompt: str,
+        prompt: Any,
         system_instruction: Optional[str] = None,
         config: Optional[GenerationConfig] = None
     ) -> str:
@@ -26,7 +26,7 @@ class AbstractAIProvider(ABC):
     @abstractmethod
     async def generate_content_stream(
         self,
-        prompt: str,
+        prompt: Any,
         system_instruction: Optional[str] = None,
         config: Optional[GenerationConfig] = None
     ) -> AsyncIterator[str]:
@@ -35,7 +35,7 @@ class AbstractAIProvider(ABC):
     @abstractmethod
     async def generate_structured(
         self,
-        prompt: str,
+        prompt: Any,
         response_schema: Type[T],
         system_instruction: Optional[str] = None,
         config: Optional[GenerationConfig] = None

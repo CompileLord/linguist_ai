@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -18,6 +18,7 @@ const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
+  voice_name: z.string().min(1, "Please select an AI voice"),
 });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
@@ -28,6 +29,14 @@ export default function RegisterPage() {
   const dispatch = useDispatch();
   const t = useTranslations("Auth.Register");
   const [registerApi, { isLoading }] = useRegisterMutation();
+  const [voices, setVoices] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/auth/voices`)
+      .then((res) => res.json())
+      .then((data) => setVoices(data))
+      .catch((err) => console.error("Failed to load voices", err));
+  }, []);
 
   const isAuthenticated = useSelector(
     (state: RootState) => state.auth.isAuthenticated,
@@ -72,6 +81,7 @@ export default function RegisterPage() {
         email: data.email,
         password: data.password,
         full_name: data.name,
+        voice_name: data.voice_name,
       }).unwrap();
 
       const currentLocale = (params?.locale as "en" | "ru" | "tg") || "ru";
@@ -89,7 +99,7 @@ export default function RegisterPage() {
         }),
       );
       router.push("/onboarding");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Registration failed:", err);
       const apiError = err as {
         data?: { detail?: { msg?: string }[] | string };
@@ -102,7 +112,7 @@ export default function RegisterPage() {
             : detail,
         );
       } else {
-        setRegisterError("Registration failed. Please try again.");
+        setRegisterError(err?.data?.detail || err?.data || err?.error || err?.message || "Registration failed. Please try again.");
       }
     }
   };
@@ -275,6 +285,32 @@ export default function RegisterPage() {
                   }}
                 />
               </div>
+            </div>
+
+            <div className="flex flex-col gap-base">
+              <label
+                htmlFor="voice_name"
+                className="font-label-md text-label-md text-on-surface-variant sr-only"
+              >
+                AI Voice
+              </label>
+              <select
+                id="voice_name"
+                className="w-full bg-[#1C1C24] border border-[#2A2A32] rounded-lg p-3 text-[#9A9AA5] focus:outline-none focus:border-[#6E5BFF] transition-colors"
+                {...register("voice_name")}
+              >
+                <option value="">Select AI Speaking Voice...</option>
+                {voices.map((voice) => (
+                  <option key={voice.id} value={voice.id} className="bg-[#1C1C24]">
+                    {voice.name}
+                  </option>
+                ))}
+              </select>
+              {errors.voice_name && (
+                <span className="text-error text-sm">
+                  {errors.voice_name.message}
+                </span>
+              )}
             </div>
 
             <p className="text-[12px] leading-[16px] text-[#62626C] mt-2">

@@ -3,10 +3,10 @@
 <html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Writing Exam</title>
+<title>Writing Exam - Linguist AI</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Hanken+Grotesk:wght@500;600&amp;family=Geist:wght@400;500&amp;family=Lora:ital,wght@0,400;0,500;0,600;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Hanken+Grotesk:wght@500;600;700&amp;family=Geist:wght@400;500&amp;family=Lora:ital,wght@0,400;0,500;0,600;1,400&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
         tailwind.config = {
@@ -14,58 +14,33 @@
             theme: {
                 extend: {
                     colors: {
-                        "inverse-on-surface": "#312f39",
-                        "tertiary-fixed": "#ffdbc7",
-                        "secondary-fixed": "#e4dfff",
-                        "on-surface": "#e5e0ee",
-                        "surface-variant": "#35343e",
-                        "surface": "#13121c",
-                        "primary-fixed": "#e4dfff",
-                        "tertiary-fixed-dim": "#ffb688",
-                        "surface-bright": "#393842",
-                        "on-secondary-fixed-variant": "#422db2",
-                        "on-secondary": "#2a039d",
-                        "secondary-container": "#422db2",
-                        "on-secondary-fixed": "#170065",
-                        "on-tertiary-container": "#ffffff",
-                        "error": "#ffb4ab",
-                        "secondary": "#c7bfff",
-                        "outline": "#928ea1",
-                        "on-tertiary-fixed": "#311300",
-                        "on-primary": "#2700a0",
-                        "on-tertiary-fixed-variant": "#733500",
-                        "on-surface-variant": "#c8c4d8",
-                        "surface-container": "#201e28",
-                        "background": "#13121c",
-                        "surface-container-lowest": "#0e0d16",
-                        "on-error-container": "#ffdad6",
-                        "on-error": "#690005",
-                        "tertiary": "#ffb688",
-                        "surface-container-low": "#1c1a24",
-                        "surface-container-high": "#2a2933",
-                        "primary-container": "#6e5bff",
-                        "tertiary-container": "#bb5b00",
-                        "inverse-primary": "#563fe6",
-                        "secondary-fixed-dim": "#c7bfff",
-                        "surface-tint": "#c6bfff",
-                        "surface-container-highest": "#35343e",
-                        "error-container": "#93000a",
-                        "primary-fixed-dim": "#c6bfff",
-                        "on-primary-fixed-variant": "#3d1acf",
-                        "inverse-surface": "#e5e0ee",
-                        "on-primary-fixed": "#160066",
-                        "outline-variant": "#474555",
-                        "on-primary-container": "#fffeff",
-                        "primary": "#c6bfff",
-                        "on-background": "#e5e0ee",
-                        "surface-dim": "#13121c",
-                        "on-tertiary": "#512400",
-                        "on-secondary-container": "#b4abff"
+                        background: "#0A0A0C",
+                        surface: "#15151A",
+                        "surface-raised": "#1E1E24",
+                        outline: "#2A2A32",
+                        "outline-variant": "#2A2A32",
+                        primary: "#6E5BFF",
+                        "primary-container": "#6E5BFF",
+                        "on-primary-container": "#F5F5F7",
+                        "on-surface": "#F5F5F7",
+                        "on-surface-variant": "#9A9AA5",
+                        "text-tertiary": "#62626C",
+                        accent: "#6E5BFF",
+                        "accent-glow": "#8B7CFF",
+                        success: "#3DD68C",
+                        warning: "#E8B339",
+                        error: "#FF5C6C",
+                        // Keep compatibility with existing container levels
+                        "surface-container-lowest": "#0A0A0C",
+                        "surface-container-low": "#15151A",
+                        "surface-container": "#15151A",
+                        "surface-container-high": "#1E1E24",
+                        "surface-container-highest": "#2A2A32",
                     },
                     borderRadius: {
-                        DEFAULT: "0.25rem",
-                        lg: "0.5rem",
-                        xl: "0.75rem",
+                        DEFAULT: "8px",
+                        lg: "12px",
+                        xl: "16px",
                         full: "9999px"
                     },
                     spacing: {
@@ -79,14 +54,14 @@
                         "container-max": "1440px"
                     },
                     fontFamily: {
-                        "label-md": ["Geist"],
-                        "code-sm": ["Geist"],
-                        "body-md": ["Inter"],
-                        "display": ["Hanken Grotesk"],
-                        "headline-md": ["Hanken Grotesk"],
-                        "body-sm": ["Inter"],
-                        "headline-lg": ["Hanken Grotesk"],
-                        "body-lg": ["Inter"],
+                        "label-md": ["Geist", "sans-serif"],
+                        "code-sm": ["Geist", "monospace"],
+                        "body-md": ["Inter", "sans-serif"],
+                        "display": ["Hanken Grotesk", "sans-serif"],
+                        "headline-md": ["Hanken Grotesk", "sans-serif"],
+                        "body-sm": ["Inter", "sans-serif"],
+                        "headline-lg": ["Hanken Grotesk", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"],
                         "serif": ["Lora", "serif"]
                     },
                     fontSize: {
@@ -129,41 +104,99 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col font-body-md antialiased hide-scrollbar selection:bg-primary-container selection:text-white">
-<!-- TopAppBar equivalent from JSON (Simplified for exam intent) -->
-<header class="w-full flex justify-between items-center px-md h-16 transition-all duration-200 ease-out border-b border-outline-variant bg-surface sticky top-0 z-40">
-<div class="flex items-center gap-sm">
-<h1 class="text-on-surface font-headline-md font-semibold text-headline-md">Writing Exam</h1>
+<body class="flex min-h-screen bg-background font-body-md text-body-md antialiased selection:bg-primary/20 selection:text-primary overflow-hidden">
+<!-- SideNavBar -->
+<nav class="h-screen w-64 fixed left-0 top-0 bg-background border-r border-outline flex flex-col justify-between py-md px-sm z-20">
+<div class="flex flex-col gap-lg">
+<div class="mb-sm px-sm mt-sm">
+<h1 class="font-display text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent-glow tracking-tight leading-tight mb-1">Linguist AI</h1>
+<p class="text-on-surface-variant font-body-sm text-xs font-semibold">Premium Tier</p>
+</div>
+<nav class="flex flex-col gap-1.5">
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_dashboard.html">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-label-md font-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="real_world_missions.html">
+<span class="material-symbols-outlined">explore</span>
+<span class="text-label-md font-label-md">Missions</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="ai_tutor_panel.html">
+<span class="material-symbols-outlined">smart_toy</span>
+<span class="text-label-md font-label-md">Tutor</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="vocabulary_list.html">
+<span class="material-symbols-outlined">translate</span>
+<span class="text-label-md font-label-md">Vocabulary</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_progress_profile.html">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-label-md font-label-md">Progress</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_settings.html">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-label-md font-label-md">Settings</span>
+</a>
+</nav>
+</div>
+<div class="px-xs pb-4">
+<a href="ai_voice_conversation_premium_interface.html" class="block w-full text-center bg-primary hover:bg-primary/90 text-white font-medium py-2.5 px-4 rounded-lg active:scale-[0.96] transition-[transform,background-color] duration-150 shadow-[0_0_12px_rgba(110,91,255,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+    New Session
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 ml-64 flex flex-col h-screen overflow-y-auto custom-scrollbar">
+<!-- TopAppBar -->
+<header class="bg-surface/85 backdrop-blur-md border-b border-outline flex justify-between items-center w-full h-16 px-xl sticky top-0 z-10 shrink-0">
+<div class="font-headline-lg text-2xl font-bold text-on-surface tracking-tight">
+    Writing Exam
 </div>
 <div class="flex items-center gap-md">
-<div class="flex items-center gap-xs text-on-surface-variant font-label-md text-label-md bg-surface-container px-sm py-base rounded-full border border-outline-variant">
-<span class="material-symbols-outlined text-[18px]">timer</span>
+<!-- Timer Indicator -->
+<div class="flex items-center gap-xs px-3.5 py-1.5 rounded-full border border-outline bg-surface-raised text-on-surface-variant font-label-md text-label-md font-semibold tabular-nums">
+<span class="material-symbols-outlined text-[18px] text-primary">timer</span>
 <span id="timer-display">45:00</span>
 </div>
+<!-- Streak -->
+<div class="flex items-center gap-xs bg-surface-raised border border-[#2A2A32] rounded-full py-1 px-3">
+<span class="material-symbols-outlined text-warning text-lg" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+<span class="font-label-md text-label-md text-on-surface tabular-nums">7 Day Streak</span>
+</div>
+<!-- XP -->
+<div class="flex items-center gap-xs bg-surface-raised border border-[#2A2A32] rounded-full py-1 px-3">
+<span class="material-symbols-outlined text-primary text-lg">military_tech</span>
+<span class="font-label-md text-label-md text-on-surface tabular-nums">1,250 XP</span>
+</div>
+<!-- Avatar -->
+<a href="linguist_ai_progress_profile.html">
+<img alt="User avatar" class="w-8 h-8 rounded-full border border-[#2A2A32] object-cover hover:border-primary/50 hover:shadow-[0_0_8px_rgba(110,91,255,0.4)] transition-all duration-200 cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAV5ByEFKVdjnv8F4NQRiNvpfpkfwGW5AoOADF6sg1NuI3TEEKMTpMRGurWxkqtI_oLbs0bFso6QhcJR8flD4u5R7vqJ7C_q_Qsf_AlR3eTZeAHFhM8GfuvdqE_G5CICHIw9ohRlN1lSowE47fl7U8hOXoTtZ07kkOekd1srA953bRSCysv9GeXR1KfAQZkVw2x5US5nIbuE28h2Zd0r-81urPJ9UpCTZLMr938jYJfrfC8FYLGMnt1QYnQDCbwbnjjNDC0lb8xWQ"/>
+</a>
 </div>
 </header>
-<!-- Main Workspace -->
-<main class="flex-grow w-full max-w-[800px] mx-auto px-md py-xl flex flex-col relative z-10">
+<!-- Canvas -->
+<div class="flex-grow w-full max-w-[800px] mx-auto px-md py-xl flex flex-col relative z-10 pb-32">
 <!-- Prompt Section -->
 <section class="mb-xl">
-<h2 class="font-headline-lg text-headline-lg text-on-surface mb-md">The Future of Automation</h2>
-<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
-                Discuss the ethical implications of fully autonomous systems in critical infrastructure. Consider both the potential benefits in efficiency and the risks associated with removing human oversight. Your response should be well-structured and provide specific examples.
-            </p>
+<h2 class="font-headline-lg text-2xl font-bold text-on-surface mb-3 tracking-tight text-balance">The Future of Automation</h2>
+<p class="font-body-lg text-base text-on-surface-variant leading-relaxed text-pretty">
+    Discuss the ethical implications of fully autonomous systems in critical infrastructure. Consider both the potential benefits in efficiency and the risks associated with removing human oversight. Your response should be well-structured and provide specific examples.
+</p>
 </section>
 <!-- Writing Area -->
 <section class="flex-grow relative group w-full">
-<div class="absolute -left-md top-0 bottom-0 w-[1px] bg-outline-variant opacity-0 group-focus-within:opacity-100 transition-opacity duration-300"></div>
-<textarea class="w-full h-full pb-xl placeholder:text-on-surface-variant/50" id="exam-textarea" placeholder="Begin your response here..." spellcheck="false"></textarea>
+<div class="absolute -left-4 top-0 bottom-0 w-0.5 bg-primary opacity-0 group-focus-within:opacity-100 transition-opacity duration-300"></div>
+<textarea class="w-full h-full pb-xl placeholder:text-on-surface-variant/40" id="exam-textarea" placeholder="Begin your response here..." spellcheck="false"></textarea>
 </section>
+</div>
 <!-- Bottom Controls -->
-<div class="flex justify-between items-center py-md border-t border-outline-variant mt-lg sticky bottom-0 bg-[#0A0A0C]/95 backdrop-blur-sm z-20">
-<div class="text-[#62626C] font-label-md text-label-md flex items-center gap-xs">
-<span id="word-count">0</span> words
-            </div>
-<button class="bg-primary-container text-white hover:opacity-90 transition-all duration-200 ease-out active:scale-95 px-xl py-sm rounded-lg font-label-md text-label-md flex items-center gap-sm shadow-[0_0_0_1px_#2A2A32]">
-                Submit for evaluation
-                <span class="material-symbols-outlined text-[18px]">send</span>
+<div class="flex justify-between items-center py-md border-t border-outline fixed bottom-0 left-64 right-0 bg-[#0A0A0C]/95 backdrop-blur-sm z-20 px-xl">
+<div class="text-on-surface-variant font-label-md text-sm flex items-center gap-xs font-medium">
+<span id="word-count" class="tabular-nums font-bold text-on-surface">0</span> words
+</div>
+<button id="submit-essay-btn" class="bg-primary hover:bg-primary/95 text-white font-medium py-2.5 px-6 rounded-lg active:scale-[0.96] transition-all duration-150 flex items-center gap-1.5 shadow-[0_0_12px_rgba(110,91,255,0.25)] border border-[#8B7CFF]/30 hover:border-[#8B7CFF]/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 text-sm">
+    <span>Submit for evaluation</span>
+    <span class="material-symbols-outlined text-[18px]">send</span>
 </button>
 </div>
 </main>
@@ -194,5 +227,9 @@
                 timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             }
         }, 1000);
+
+        document.getElementById('submit-essay-btn').addEventListener('click', () => {
+            window.location.href = 'writing_exam_results_ai_feedback.html';
+        });
     </script>
 </body></html>

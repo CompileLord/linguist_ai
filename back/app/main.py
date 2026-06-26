@@ -11,7 +11,7 @@ from app.core.exceptions import register_exception_handlers
 from app.core.middleware import RateLimitMiddleware
 from app.core.logging import LoggerFactory
 from app.api.dependencies.auth import get_current_active_user
-from app.api.routers import auth, onboarding, lessons, vocabulary, review, errors, tutor, missions, writing_exam, listening_exam, gamification, achievement, coach, quota
+from app.api.routers import auth, onboarding, lessons, vocabulary, review, errors, tutor, missions, writing_exam, listening_exam, gamification, achievement, coach, quota, speaking
 
 
 logger = LoggerFactory.get_logger("LinguistAI")
@@ -25,6 +25,23 @@ async def lifespan(app: FastAPI):
         logger.info("Database connection verified successfully.")
     else:
         logger.error("Database connection check failed during startup.")
+
+    logger.info("Verifying local Speech-to-Text and Text-to-Speech models...")
+    try:
+        import asyncio
+        from app.services.media.storage_service import StorageService
+        from app.services.media.tts_service import TextToSpeechService
+        from app.services.media.stt_service import get_whisper_pipeline
+        
+        storage_s = StorageService()
+        tts_s = TextToSpeechService(storage_s)
+        await tts_s._ensure_voice_files("hfc_female")
+        await tts_s._ensure_voice_files("hfc_male")
+        
+        await asyncio.to_thread(get_whisper_pipeline)
+        logger.info("Local models verified and loaded successfully.")
+    except Exception as e:
+        logger.error(f"Failed to verify or download local speech models: {str(e)}")
 
     from apscheduler.schedulers.asyncio import AsyncIOScheduler
     from apscheduler.triggers.cron import CronTrigger
@@ -102,24 +119,10 @@ register_exception_handlers(app)
 
 app.mount("/static", StaticFiles(directory="media"), name="static")
 
-app.include_router(auth.router)
-app.include_router(onboarding.router)
-app.include_router(lessons.router)
-app.include_router(vocabulary.router)
-app.include_router(review.router)
-app.include_router(errors.router)
-app.include_router(tutor.router)
 app.include_router(tutor.ws_router)
-app.include_router(missions.router)
-app.include_router(writing_exam.router)
-app.include_router(listening_exam.router)
-app.include_router(gamification.router)
-app.include_router(achievement.router)
-app.include_router(coach.router)
-app.include_router(coach.admin_router)
-app.include_router(quota.router)
+app.include_router(speaking.ws_router)
 
-# Prefix support for all routes to prevent collision with tunnel (e.g. instatunnel) auth paths
+# Register all API routers exactly once under the /api prefix
 app.include_router(auth.router, prefix="/api")
 app.include_router(onboarding.router, prefix="/api")
 app.include_router(lessons.router, prefix="/api")
@@ -135,6 +138,20 @@ app.include_router(achievement.router, prefix="/api")
 app.include_router(coach.router, prefix="/api")
 app.include_router(coach.admin_router, prefix="/api")
 app.include_router(quota.router, prefix="/api")
+app.include_router(speaking.router, prefix="/api")
+
+# Middleware to dynamically rewrite legacy non-prefixed paths (used by tests) to the new /api prefix
+@app.middleware("http")
+async def rewrite_legacy_paths(request, call_next):
+    path = request.scope.get("path", "")
+    legacy_prefixes = (
+        "/auth", "/onboarding", "/lessons", "/vocabulary", "/review", 
+        "/errors", "/tutor", "/missions", "/exams", "/gamification", 
+        "/achievements", "/coach", "/admin", "/quota", "/speaking"
+    )
+    if path.startswith(legacy_prefixes):
+        request.scope["path"] = f"/api{path}"
+    return await call_next(request)
 
 
 

@@ -5,70 +5,47 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Settings - Linguist AI</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Hanken+Grotesk:wght@100..900&family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
-<script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Hanken+Grotesk:wght@500;600;700&amp;family=Geist:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
-                    "colors": {
-                        "inverse-primary": "#563fe6",
-                        "error-container": "#93000a",
-                        "on-secondary-fixed-variant": "#422db2",
-                        "surface-container-highest": "#35343e",
-                        "tertiary": "#ffb688",
-                        "outline-variant": "#474555",
-                        "primary": "#c6bfff",
-                        "on-tertiary-fixed-variant": "#733500",
-                        "primary-fixed": "#e4dfff",
-                        "inverse-on-surface": "#312f39",
-                        "surface-container-low": "#1c1a24",
-                        "surface": "#13121c",
-                        "on-error": "#690005",
-                        "on-tertiary-fixed": "#311300",
-                        "primary-container": "#6e5bff",
-                        "tertiary-fixed": "#ffdbc7",
-                        "on-secondary": "#2a039d",
-                        "on-surface-variant": "#c8c4d8",
-                        "secondary-fixed-dim": "#c7bfff",
-                        "surface-container-high": "#2a2933",
-                        "on-surface": "#e5e0ee",
-                        "background": "#13121c",
-                        "primary-fixed-dim": "#c6bfff",
-                        "surface-dim": "#13121c",
-                        "outline": "#928ea1",
-                        "surface-bright": "#393842",
-                        "on-secondary-fixed": "#170065",
-                        "on-tertiary": "#512400",
-                        "on-error-container": "#ffdad6",
-                        "surface-container-lowest": "#0e0d16",
-                        "secondary-container": "#422db2",
-                        "error": "#ffb4ab",
-                        "on-tertiary-container": "#ffffff",
-                        "on-primary-container": "#fffeff",
-                        "secondary-fixed": "#e4dfff",
-                        "on-secondary-container": "#b4abff",
-                        "surface-container": "#201e28",
-                        "on-primary-fixed-variant": "#3d1acf",
-                        "surface-variant": "#35343e",
-                        "tertiary-fixed-dim": "#ffb688",
-                        "tertiary-container": "#bb5b00",
-                        "on-background": "#e5e0ee",
-                        "inverse-surface": "#e5e0ee",
-                        "on-primary-fixed": "#160066",
-                        "surface-tint": "#c6bfff",
-                        "secondary": "#c7bfff",
-                        "on-primary": "#2700a0"
+                    colors: {
+                        background: "#0A0A0C",
+                        surface: "#15151A",
+                        "surface-raised": "#1E1E24",
+                        outline: "#2A2A32",
+                        "outline-variant": "#2A2A32",
+                        primary: "#6E5BFF",
+                        "primary-container": "#6E5BFF",
+                        "on-primary-container": "#F5F5F7",
+                        "on-surface": "#F5F5F7",
+                        "on-surface-variant": "#9A9AA5",
+                        "text-tertiary": "#62626C",
+                        accent: "#6E5BFF",
+                        "accent-glow": "#8B7CFF",
+                        success: "#3DD68C",
+                        warning: "#E8B339",
+                        error: "#FF5C6C",
+                        // Keep compatibility with existing container levels
+                        "surface-container-lowest": "#0A0A0C",
+                        "surface-container-low": "#15151A",
+                        "surface-container": "#15151A",
+                        "surface-container-high": "#1E1E24",
+                        "surface-container-highest": "#2A2A32",
+                        "surface-dim": "#0A0A0C",
                     },
-                    "borderRadius": {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
+                    borderRadius: {
+                        "DEFAULT": "8px",
+                        "md": "8px",
+                        "lg": "12px",
+                        "xl": "16px",
                         "full": "9999px"
                     },
-                    "spacing": {
+                    spacing: {
                         "xs": "8px",
                         "xl": "64px",
                         "md": "24px",
@@ -78,17 +55,17 @@
                         "container-max": "1440px",
                         "gutter": "24px"
                     },
-                    "fontFamily": {
-                        "headline-md": ["Hanken Grotesk"],
-                        "display": ["Hanken Grotesk"],
-                        "body-lg": ["Inter"],
-                        "headline-lg": ["Hanken Grotesk"],
-                        "code-sm": ["Geist"],
-                        "body-md": ["Inter"],
-                        "label-md": ["Geist"],
-                        "body-sm": ["Inter"]
+                    fontFamily: {
+                        "headline-md": ["Hanken Grotesk", "sans-serif"],
+                        "display": ["Hanken Grotesk", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"],
+                        "headline-lg": ["Hanken Grotesk", "sans-serif"],
+                        "code-sm": ["Geist", "monospace"],
+                        "body-md": ["Inter", "sans-serif"],
+                        "label-md": ["Geist", "sans-serif"],
+                        "body-sm": ["Inter", "sans-serif"]
                     },
-                    "fontSize": {
+                    fontSize: {
                         "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
                         "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
                         "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
@@ -126,183 +103,443 @@
         .section-header {
             color: #9A9AA5;
             text-transform: uppercase;
-            font-size: 12px;
-            letter-spacing: 0.05em;
-            margin-bottom: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            margin-bottom: 10px;
             padding-left: 16px;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #2A2A32;
+            border-radius: 4px;
         }
     </style>
 </head>
-<body class="flex min-h-screen bg-[#0A0A0C] font-body-md text-body-md antialiased">
+<body class="flex min-h-screen bg-background font-body-md text-body-md antialiased selection:bg-primary/20 selection:text-primary">
 <!-- SideNavBar -->
-<nav class="bg-surface dark:bg-surface font-body-md text-body-md fixed left-0 top-0 h-screen w-64 border-r border-outline-variant dark:border-outline-variant flex flex-col h-full py-md px-sm">
-<div class="mb-lg px-sm mt-sm">
-<h1 class="font-display text-display text-primary dark:text-primary text-[24px] leading-tight mb-1">Linguist AI</h1>
-<p class="text-on-surface-variant dark:text-on-surface-variant font-body-sm text-body-sm">Premium Tier</p>
+<nav class="h-screen w-64 fixed left-0 top-0 bg-background border-r border-outline flex flex-col justify-between py-md px-sm z-20">
+<div class="flex flex-col gap-lg">
+<div class="mb-sm px-sm mt-sm">
+<h1 class="font-display text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent-glow tracking-tight leading-tight mb-1">Linguist AI</h1>
+<p class="text-on-surface-variant font-body-sm text-xs font-semibold">Premium Tier</p>
 </div>
-<ul class="flex flex-col gap-xs flex-grow">
-<li>
-<a class="flex items-center gap-sm px-sm py-2 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container dark:hover:bg-surface-container transition-colors duration-200" href="#">
+<nav class="flex flex-col gap-1.5">
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_dashboard.html">
 <span class="material-symbols-outlined">dashboard</span>
-                    Dashboard
-                </a>
-</li>
-<li>
-<a class="flex items-center gap-sm px-sm py-2 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container dark:hover:bg-surface-container transition-colors duration-200" href="#">
-<span class="material-symbols-outlined">school</span>
-                    Learn
-                </a>
-</li>
-<li>
-<a class="flex items-center gap-sm px-sm py-2 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container dark:hover:bg-surface-container transition-colors duration-200" href="#">
-<span class="material-symbols-outlined">bar_chart</span>
-                    Progress
-                </a>
-</li>
-<li>
-<a class="flex items-center gap-sm px-sm py-2 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container dark:hover:bg-surface-container transition-colors duration-200" href="#">
-<span class="material-symbols-outlined">person</span>
-                    Account
-                </a>
-</li>
-<li>
-<a class="flex items-center gap-sm px-sm py-2 rounded-lg text-primary dark:text-primary font-bold border-r-2 border-primary hover:bg-surface-container dark:hover:bg-surface-container transition-colors duration-200" href="#">
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
-                    Settings
-                </a>
-</li>
-</ul>
-<div class="mt-auto px-sm pt-md border-t border-outline-variant">
-<button class="w-full bg-primary-container text-on-primary-container py-2 rounded-lg font-body-sm text-body-sm hover:bg-opacity-90 transition-opacity">Upgrade Plan</button>
+<span class="text-label-md font-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="real_world_missions.html">
+<span class="material-symbols-outlined">explore</span>
+<span class="text-label-md font-label-md">Missions</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="ai_tutor_panel.html">
+<span class="material-symbols-outlined">smart_toy</span>
+<span class="text-label-md font-label-md">Tutor</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="vocabulary_list.html">
+<span class="material-symbols-outlined">translate</span>
+<span class="text-label-md font-label-md">Vocabulary</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_progress_profile.html">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-label-md font-label-md">Progress</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg bg-surface-raised text-primary font-semibold border-l-2 border-primary active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_settings.html">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-label-md font-label-md">Settings</span>
+</a>
+</nav>
+</div>
+<div class="px-xs pb-4">
+<a href="ai_voice_conversation_premium_interface.html" class="block w-full text-center bg-primary hover:bg-primary/90 text-white font-medium py-2.5 px-4 rounded-lg active:scale-[0.96] transition-[transform,background-color] duration-150 shadow-[0_0_12px_rgba(110,91,255,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+    New Session
+</a>
 </div>
 </nav>
 <!-- Main Content Area -->
-<main class="flex-1 ml-64 flex flex-col h-screen overflow-y-auto">
+<main class="flex-1 ml-64 flex flex-col h-screen overflow-y-auto custom-scrollbar">
 <!-- TopAppBar -->
-<header class="bg-surface dark:bg-surface border-b border-outline-variant dark:border-outline-variant flex justify-between items-center w-full h-16 px-xl sticky top-0 z-10">
-<div class="font-headline-lg text-headline-lg font-semibold text-on-surface dark:text-on-surface">
-                Settings
-            </div>
+<header class="bg-surface/85 backdrop-blur-md border-b border-outline flex justify-between items-center w-full h-16 px-xl sticky top-0 z-10 shrink-0">
+<div class="font-headline-lg text-2xl font-bold text-on-surface tracking-tight">
+    Settings
+</div>
 <div class="flex items-center gap-md">
-<button class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-high p-2 rounded-full transition-colors">
-<span class="material-symbols-outlined">help</span>
-</button>
-<button class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-high p-2 rounded-full transition-colors">
-<span class="material-symbols-outlined">notifications</span>
-</button>
+<!-- Streak -->
+<div class="flex items-center gap-xs bg-surface-raised border border-[#2A2A32] rounded-full py-1 px-3">
+<span class="material-symbols-outlined text-warning text-lg" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+<span class="font-label-md text-label-md text-on-surface tabular-nums">7 Day Streak</span>
+</div>
+<!-- XP -->
+<div class="flex items-center gap-xs bg-surface-raised border border-[#2A2A32] rounded-full py-1 px-3">
+<span class="material-symbols-outlined text-primary text-lg">military_tech</span>
+<span class="font-label-md text-label-md text-on-surface tabular-nums">1,250 XP</span>
+</div>
+<!-- Avatar -->
+<a href="linguist_ai_progress_profile.html">
+<img alt="User avatar" class="w-8 h-8 rounded-full border border-[#2A2A32] object-cover hover:border-primary/50 hover:shadow-[0_0_8px_rgba(110,91,255,0.4)] transition-all duration-200 cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAV5ByEFKVdjnv8F4NQRiNvpfpkfwGW5AoOADF6sg1NuI3TEEKMTpMRGurWxkqtI_oLbs0bFso6QhcJR8flD4u5R7vqJ7C_q_Qsf_AlR3eTZeAHFhM8GfuvdqE_G5CICHIw9ohRlN1lSowE47fl7U8hOXoTtZ07kkOekd1srA953bRSCysv9GeXR1KfAQZkVw2x5US5nIbuE28h2Zd0r-81urPJ9UpCTZLMr938jYJfrfC8FYLGMnt1QYnQDCbwbnjjNDC0lb8xWQ"/>
+</a>
 </div>
 </header>
 <!-- Settings Content -->
-<div class="flex-1 p-xl max-w-[800px] w-full mx-auto">
-<!-- Account Section -->
-<div class="mb-lg">
-<div class="section-header">Account</div>
-<div class="surface-card rounded-lg overflow-hidden">
-<div class="flex justify-between items-center p-sm row-border">
-<span class="text-[#F5F5F7]">Email</span>
-<span class="text-[#9A9AA5]">test@example.com</span>
+<form id="settings-form" class="flex-grow p-xl max-w-[800px] w-full mx-auto pb-24 flex flex-col gap-lg" onsubmit="event.preventDefault(); saveSettings();">
+    <!-- Account Section -->
+    <div>
+        <div class="section-header">Account Profile</div>
+        <div class="surface-card rounded-xl p-6 flex flex-col gap-4 shadow-md">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-sm">
+                <div class="flex flex-col gap-1.5">
+                    <label class="font-label-md text-xs font-semibold text-on-surface-variant" for="settings-fullname">Full Name</label>
+                    <input class="w-full bg-[#1E1E24] border border-[#2A2A32] rounded-lg text-on-surface placeholder:text-on-surface-variant/40 font-body-md text-body-md px-3.5 py-2.5 focus:border-primary focus:ring-0 focus:outline-none transition-all duration-200 focus:shadow-[0_0_14px_rgba(110,91,255,0.15)]" id="settings-fullname" type="text" value="Alex Johnson"/>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="font-label-md text-xs font-semibold text-on-surface-variant" for="settings-email">Email Address</label>
+                    <input class="w-full bg-[#1E1E24] border border-[#2A2A32] rounded-lg text-on-surface placeholder:text-on-surface-variant/40 font-body-md text-body-md px-3.5 py-2.5 focus:border-primary focus:ring-0 focus:outline-none transition-all duration-200 focus:shadow-[0_0_14px_rgba(110,91,255,0.15)]" id="settings-email" type="email" value="test@example.com"/>
+                </div>
+            </div>
+            
+            <div class="flex flex-col gap-1.5 mt-2">
+                <label class="font-label-md text-xs font-semibold text-on-surface-variant" for="settings-voice">AI Voice Speaking Agent</label>
+                <select class="w-full bg-[#1E1E24] border border-[#2A2A32] rounded-lg text-on-surface font-body-md text-body-md px-3.5 py-2.5 focus:border-primary focus:ring-0 focus:outline-none transition-all duration-200 focus:shadow-[0_0_14px_rgba(110,91,255,0.15)] cursor-pointer" id="settings-voice">
+                    <option value="hfc_female" selected>Premium Speaking Voice (hfc_female)</option>
+                    <option value="hfc_male">Premium Speaking Voice (hfc_male)</option>
+                    <option value="en-US-Wavenet-F">Google Wavenet English (en-US-Wavenet-F) - Soon we will add them</option>
+                    <option value="ru-RU-Wavenet-A">Google Wavenet Russian (ru-RU-Wavenet-A) - Soon we will add them</option>
+                    <option value="es-ES-Standard-A">Google Standard Spanish (es-ES-Standard-A) - Soon we will add them</option>
+                </select>
+                <p class="text-xs text-text-tertiary mt-1.5 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">info</span>
+                    <span>Local Piper TTS is active for hfc_female and hfc_male. Cloud voice models are listed and soon we will add them.</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Language Settings Section -->
+    <div>
+        <div class="section-header">Language Profile</div>
+        <div class="surface-card rounded-xl p-6 flex flex-col gap-5 shadow-md">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-sm">
+                <div class="flex flex-col gap-1.5">
+                    <label class="font-label-md text-xs font-semibold text-on-surface-variant" for="settings-target-lang">Target Language</label>
+                    <select class="w-full bg-[#1E1E24] border border-[#2A2A32] rounded-lg text-on-surface font-body-md text-body-md px-3.5 py-2.5 focus:border-primary focus:ring-0 focus:outline-none transition-all duration-200 focus:shadow-[0_0_14px_rgba(110,91,255,0.15)] cursor-pointer" id="settings-target-lang">
+                        <option value="en" selected>English</option>
+                        <option value="es">Spanish (⚠️ Requires DB Activation)</option>
+                        <option value="ru">Russian - Soon we will add them</option>
+                        <option value="tg">Tajik - Soon we will add them</option>
+                    </select>
+                    <p class="text-xs text-text-tertiary mt-1 flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">info</span>
+                        <span>English is fully active. Soon we will add native cloud database integration for Spanish, Russian, and Tajik.</span>
+                    </p>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="font-label-md text-xs font-semibold text-on-surface-variant" for="settings-native-lang">Native Language</label>
+                    <select class="w-full bg-[#1E1E24] border border-[#2A2A32] rounded-lg text-on-surface font-body-md text-body-md px-3.5 py-2.5 focus:border-primary focus:ring-0 focus:outline-none transition-all duration-200 focus:shadow-[0_0_14px_rgba(110,91,255,0.15)] cursor-pointer" id="settings-native-lang">
+                        <option value="ru" selected>Russian (ru)</option>
+                        <option value="en">English (en)</option>
+                        <option value="tg">Tajik (tg)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- CEFR Level Chips -->
+            <div class="flex flex-col gap-2">
+                <label class="font-label-md text-xs font-semibold text-on-surface-variant">Current Assessment Level (CEFR)</label>
+                <div class="flex flex-wrap gap-2" id="cefr-selector">
+                    <button type="button" onclick="selectCEFR('A1')" class="cefr-chip px-4 py-2 bg-[#1E1E24] border border-[#2A2A32] rounded-lg text-sm text-on-surface-variant hover:text-on-surface font-semibold transition-all">A1</button>
+                    <button type="button" onclick="selectCEFR('A2')" class="cefr-chip px-4 py-2 bg-[#1E1E24] border border-[#2A2A32] rounded-lg text-sm text-on-surface-variant hover:text-on-surface font-semibold transition-all">A2</button>
+                    <button type="button" onclick="selectCEFR('B1')" class="cefr-chip px-4 py-2 bg-[#1E1E24] border border-[#2A2A32] rounded-lg text-sm text-on-surface-variant hover:text-on-surface font-semibold transition-all">B1</button>
+                    <button type="button" onclick="selectCEFR('B2')" class="cefr-chip px-4 py-2 bg-primary/10 border border-primary text-primary rounded-lg text-sm font-semibold transition-all">B2</button>
+                    <button type="button" onclick="selectCEFR('C1')" class="cefr-chip px-4 py-2 bg-[#1E1E24] border border-[#2A2A32] rounded-lg text-sm text-on-surface-variant hover:text-on-surface font-semibold transition-all">C1</button>
+                    <button type="button" onclick="selectCEFR('C2')" class="cefr-chip px-4 py-2 bg-[#1E1E24] border border-[#2A2A32] rounded-lg text-sm text-on-surface-variant hover:text-on-surface font-semibold transition-all">C2</button>
+                </div>
+                <input type="hidden" id="settings-level" value="B2"/>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Targets Section -->
+    <div>
+        <div class="section-header">Daily Targets & limits</div>
+        <div class="surface-card rounded-xl p-6 flex flex-col gap-4 shadow-md">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-sm">
+                <div class="flex flex-col gap-1.5">
+                    <label class="font-label-md text-xs font-semibold text-on-surface-variant" for="settings-daily-minutes">Daily Practice Time</label>
+                    <select class="w-full bg-[#1E1E24] border border-[#2A2A32] rounded-lg text-on-surface font-body-md text-body-md px-3.5 py-2.5 focus:border-primary focus:ring-0 focus:outline-none transition-all duration-200 focus:shadow-[0_0_14px_rgba(110,91,255,0.15)] cursor-pointer" id="settings-daily-minutes">
+                        <option value="15">15 minutes / day</option>
+                        <option value="30" selected>30 minutes / day</option>
+                        <option value="45">45 minutes / day</option>
+                        <option value="60">60 minutes / day</option>
+                    </select>
+                    <p class="text-xs text-text-tertiary mt-1.5 flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[16px] text-warning" style="font-variation-settings: 'FILL' 1;">warning</span>
+                        <span>Note: System speaking session limit is hardcoded to 30 minutes in quota tracker.</span>
+                    </p>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <div class="flex items-center gap-1.5">
+                        <label class="font-label-md text-xs font-semibold text-on-surface-variant" for="settings-daily-xp">Daily XP Target</label>
+                        <span class="px-1.5 py-0.5 text-[9px] font-semibold bg-primary/20 text-accent-glow border border-primary/30 rounded-full uppercase tracking-wider">Soon to Sync</span>
+                    </div>
+                    <select class="w-full bg-[#1E1E24] border border-[#2A2A32] rounded-lg text-on-surface font-body-md text-body-md px-3.5 py-2.5 focus:border-primary focus:ring-0 focus:outline-none transition-all duration-200 focus:shadow-[0_0_14px_rgba(110,91,255,0.15)] cursor-pointer" id="settings-daily-xp">
+                        <option value="100">100 XP (Casual)</option>
+                        <option value="250">250 XP (Regular)</option>
+                        <option value="500" selected>500 XP (Serious)</option>
+                        <option value="1000">1000 XP (Insane)</option>
+                    </select>
+                    <p class="text-xs text-text-tertiary mt-1.5 flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">info</span>
+                        <span>Saved locally to browser preferences; soon we will add them to your cloud profile.</span>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="flex flex-col gap-1.5 mt-2">
+                <div class="flex items-center gap-1.5">
+                    <label class="font-label-md text-xs font-semibold text-on-surface-variant" for="settings-batch-size">Spaced Repetition Batch Size</label>
+                    <span class="px-1.5 py-0.5 text-[9px] font-semibold bg-primary/20 text-accent-glow border border-primary/30 rounded-full uppercase tracking-wider">Soon to Sync</span>
+                </div>
+                <select class="w-full bg-[#1E1E24] border border-[#2A2A32] rounded-lg text-on-surface font-body-md text-body-md px-3.5 py-2.5 focus:border-primary focus:ring-0 focus:outline-none transition-all duration-200 focus:shadow-[0_0_14px_rgba(110,91,255,0.15)] cursor-pointer" id="settings-batch-size">
+                    <option value="10">10 cards per session</option>
+                    <option value="20" selected>20 cards per session</option>
+                    <option value="50">50 cards per session</option>
+                </select>
+                <p class="text-xs text-text-tertiary mt-1.5 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">info</span>
+                    <span>Saved locally to browser preferences; soon we will add them to your cloud profile.</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coach & Notifications Section -->
+    <div>
+        <div class="section-header">Coaching & Notifications</div>
+        <div class="surface-card rounded-xl overflow-hidden shadow-md">
+            <div class="flex justify-between items-center p-sm px-md border-b border-[#2A2A32]">
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-on-surface font-medium text-sm">AI Weekly Reports</span>
+                        <span class="px-1.5 py-0.5 text-[9px] font-semibold bg-primary/20 text-accent-glow border border-primary/30 rounded-full uppercase tracking-wider">Soon to Sync</span>
+                    </div>
+                    <span class="text-xs text-text-tertiary mt-0.5">Coaching reports run weekly; delivery selection is stored locally. Soon we will add cloud sync.</span>
+                </div>
+                <select class="bg-[#1E1E24] border border-[#2A2A32] rounded-lg text-on-surface font-body-md text-sm px-3 py-1.5 focus:border-primary focus:ring-0 focus:outline-none cursor-pointer" id="settings-coach-freq">
+                    <option value="weekly" selected>Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="disabled">Disabled</option>
+                </select>
+            </div>
+            <div class="flex justify-between items-center p-sm px-md border-b border-[#2A2A32]">
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-on-surface font-medium text-sm">Email summaries & tips</span>
+                        <span class="px-1.5 py-0.5 text-[9px] font-semibold bg-primary/20 text-accent-glow border border-primary/30 rounded-full uppercase tracking-wider">Soon to Sync</span>
+                    </div>
+                    <span class="text-xs text-text-tertiary mt-0.5">Saved to browser settings; soon we will add them to cloud settings.</span>
+                </div>
+                <button type="button" class="toggle-btn w-10 h-6 rounded-full toggle-active relative transition-colors duration-200 focus:outline-none shrink-0" id="settings-email-notify">
+                    <span class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200"></span>
+                </button>
+            </div>
+            <div class="flex justify-between items-center p-sm px-md">
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-on-surface font-medium text-sm">Daily review reminders</span>
+                        <span class="px-1.5 py-0.5 text-[9px] font-semibold bg-primary/20 text-accent-glow border border-primary/30 rounded-full uppercase tracking-wider">Soon to Sync</span>
+                    </div>
+                    <span class="text-xs text-text-tertiary mt-0.5">Saved to browser settings; soon we will add them to cloud settings.</span>
+                </div>
+                <button type="button" class="toggle-btn w-10 h-6 rounded-full toggle-inactive relative transition-colors duration-200 focus:outline-none shrink-0" id="settings-push-notify">
+                    <span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Usage Quota Section (Read-Only Diagnostics) -->
+    <div>
+        <div class="section-header">Daily Premium Limits Usage</div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-sm">
+            <div class="bg-surface border border-outline rounded-xl p-4 shadow-sm flex flex-col justify-between group">
+                <span class="text-xs font-label-md text-on-surface-variant font-semibold">Speaking duration</span>
+                <div>
+                    <p class="text-xl font-bold text-on-surface mt-2 font-mono">12 <span class="text-xs font-normal text-on-surface-variant">/ 30m</span></p>
+                    <div class="h-1 w-full bg-surface-raised rounded-full overflow-hidden border border-outline-variant mt-2">
+                        <div class="h-full bg-primary w-[40%]"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-surface border border-outline rounded-xl p-4 shadow-sm flex flex-col justify-between group">
+                <span class="text-xs font-label-md text-on-surface-variant font-semibold">Tutor messages</span>
+                <div>
+                    <p class="text-xl font-bold text-on-surface mt-2 font-mono">15 <span class="text-xs font-normal text-on-surface-variant">/ 100</span></p>
+                    <div class="h-1 w-full bg-surface-raised rounded-full overflow-hidden border border-outline-variant mt-2">
+                        <div class="h-full bg-primary w-[15%]"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-surface border border-outline rounded-xl p-4 shadow-sm flex flex-col justify-between group">
+                <span class="text-xs font-label-md text-on-surface-variant font-semibold">Lesson Gen</span>
+                <div>
+                    <p class="text-xl font-bold text-on-surface mt-2 font-mono">1 <span class="text-xs font-normal text-on-surface-variant">/ 5</span></p>
+                    <div class="h-1 w-full bg-surface-raised rounded-full overflow-hidden border border-outline-variant mt-2">
+                        <div class="h-full bg-primary w-[20%]"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-surface border border-outline rounded-xl p-4 shadow-sm flex flex-col justify-between group">
+                <span class="text-xs font-label-md text-on-surface-variant font-semibold">Writing evaluations</span>
+                <div>
+                    <p class="text-xl font-bold text-on-surface mt-2 font-mono">0 <span class="text-xs font-normal text-on-surface-variant">/ 3</span></p>
+                    <div class="h-1 w-full bg-surface-raised rounded-full overflow-hidden border border-outline-variant mt-2">
+                        <div class="h-full bg-primary w-[0%]"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sticky Action Button -->
+    <div class="flex justify-end gap-sm pt-md border-t border-outline-variant/30">
+        <button type="submit" class="bg-primary hover:bg-primary/95 text-white font-medium py-2.5 px-6 rounded-lg active:scale-[0.96] transition-all duration-150 shadow-[0_0_12px_rgba(110,91,255,0.25)] border border-[#8B7CFF]/30 hover:border-[#8B7CFF]/60 flex items-center gap-1.5 focus:outline-none text-sm">
+            <span>Save Settings</span>
+            <span class="material-symbols-outlined text-[18px]">save</span>
+        </button>
+    </div>
+</form>
+
+<!-- Toast Alert Container -->
+<div id="toast-alert" class="fixed bottom-6 right-6 bg-surface border border-primary text-on-surface px-sm py-xs rounded-xl shadow-lg flex items-center gap-sm translate-y-24 opacity-0 transition-all duration-300 pointer-events-none z-50">
+    <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+    <span class="font-label-md text-sm" id="toast-text">Settings saved successfully!</span>
 </div>
-<div class="flex justify-between items-center p-sm row-border cursor-pointer hover:bg-[#1C1C24] transition-colors">
-<span class="text-[#F5F5F7]">Password</span>
-<div class="flex items-center gap-xs">
-<span class="text-[#9A9AA5] tracking-widest">••••••••</span>
-<span class="material-symbols-outlined text-[#9A9AA5] text-[18px]">chevron_right</span>
-</div>
-</div>
-</div>
-</div>
-<!-- Learning Goals Section -->
-<div class="mb-lg">
-<div class="section-header">Learning Goals</div>
-<div class="surface-card rounded-lg overflow-hidden">
-<div class="flex justify-between items-center p-sm row-border cursor-pointer hover:bg-[#1C1C24] transition-colors">
-<span class="text-[#F5F5F7]">Primary Goal</span>
-<div class="flex items-center gap-xs">
-<span class="text-[#9A9AA5]">Professional</span>
-<span class="material-symbols-outlined text-[#9A9AA5] text-[18px]">chevron_right</span>
-</div>
-</div>
-<div class="flex justify-between items-center p-sm row-border cursor-pointer hover:bg-[#1C1C24] transition-colors">
-<span class="text-[#F5F5F7]">Weekly Target</span>
-<div class="flex items-center gap-xs">
-<span class="text-[#9A9AA5]">5 lessons</span>
-<span class="material-symbols-outlined text-[#9A9AA5] text-[18px]">chevron_right</span>
-</div>
-</div>
-</div>
-</div>
-<!-- Interface Language Section -->
-<div class="mb-lg">
-<div class="section-header">Interface Language</div>
-<div class="surface-card rounded-lg overflow-hidden">
-<div class="flex justify-between items-center p-sm row-border cursor-pointer hover:bg-[#1C1C24] transition-colors">
-<span class="text-[#F5F5F7]">Language</span>
-<div class="flex items-center gap-xs">
-<span class="text-[#9A9AA5]">English</span>
-<span class="material-symbols-outlined text-[#9A9AA5] text-[18px]">chevron_right</span>
-</div>
-</div>
-</div>
-</div>
-<!-- Notifications Section -->
-<div class="mb-lg">
-<div class="section-header">Notifications</div>
-<div class="surface-card rounded-lg overflow-hidden">
-<div class="flex justify-between items-center p-sm row-border">
-<span class="text-[#F5F5F7]">Email alerts</span>
-<button class="w-10 h-6 rounded-full toggle-active relative transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#6E5BFF] focus:ring-offset-2 focus:ring-offset-[#0A0A0C]">
-<span class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200"></span>
-</button>
-</div>
-<div class="flex justify-between items-center p-sm row-border">
-<span class="text-[#F5F5F7]">Push notifications</span>
-<button class="w-10 h-6 rounded-full toggle-inactive relative transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#6E5BFF] focus:ring-offset-2 focus:ring-offset-[#0A0A0C]">
-<span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200"></span>
-</button>
-</div>
-</div>
-</div>
-<!-- Daily Limits Section -->
-<div class="mb-lg">
-<div class="section-header">Daily Limits</div>
-<div class="surface-card rounded-lg overflow-hidden">
-<div class="flex justify-between items-center p-sm row-border cursor-pointer hover:bg-[#1C1C24] transition-colors">
-<span class="text-[#F5F5F7]">AI Speaking time</span>
-<div class="flex items-center gap-xs">
-<span class="text-[#9A9AA5]">30 mins</span>
-<span class="material-symbols-outlined text-[#9A9AA5] text-[18px]">chevron_right</span>
-</div>
-</div>
-<div class="flex justify-between items-center p-sm row-border cursor-pointer hover:bg-[#1C1C24] transition-colors">
-<span class="text-[#F5F5F7]">Daily XP Goal</span>
-<div class="flex items-center gap-xs">
-<span class="text-[#9A9AA5]">500 XP</span>
-<span class="material-symbols-outlined text-[#9A9AA5] text-[18px]">chevron_right</span>
-</div>
-</div>
-</div>
-</div>
-</div>
+
 </main>
+
 <script>
-        // Simple toggle interaction logic
-        document.querySelectorAll('button[class*="toggle-"]').forEach(button => {
-            button.addEventListener('click', function() {
-                const isON = this.classList.contains('toggle-active');
-                const dot = this.querySelector('span');
-                
-                if (isON) {
-                    this.classList.remove('toggle-active');
-                    this.classList.add('toggle-inactive');
-                    dot.classList.remove('right-1');
-                    dot.classList.add('left-1');
-                } else {
-                    this.classList.remove('toggle-inactive');
-                    this.classList.add('toggle-active');
-                    dot.classList.remove('left-1');
-                    dot.classList.add('right-1');
-                }
-            });
+    // CEFR Selector Logic
+    function selectCEFR(level) {
+        document.querySelectorAll('.cefr-chip').forEach(btn => {
+            if (btn.textContent.trim() === level) {
+                btn.className = "cefr-chip px-4 py-2 bg-primary/10 border border-primary text-primary rounded-lg text-sm font-semibold transition-all";
+            } else {
+                btn.className = "cefr-chip px-4 py-2 bg-[#1E1E24] border border-[#2A2A32] rounded-lg text-sm text-on-surface-variant hover:text-on-surface font-semibold transition-all";
+            }
         });
-    </script>
+        document.getElementById('settings-level').value = level;
+    }
+
+    // Toggle button interactive state
+    document.querySelectorAll('.toggle-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const isON = this.classList.contains('toggle-active');
+            const dot = this.querySelector('span');
+            
+            if (isON) {
+                this.classList.remove('toggle-active');
+                this.classList.add('toggle-inactive');
+                dot.classList.remove('right-1');
+                dot.classList.add('left-1');
+            } else {
+                this.classList.remove('toggle-inactive');
+                this.classList.add('toggle-active');
+                dot.classList.remove('left-1');
+                dot.classList.add('right-1');
+            }
+        });
+    });
+
+    function setToggleState(id, isActive) {
+        const btn = document.getElementById(id);
+        if (!btn) return;
+        const dot = btn.querySelector('span');
+        if (isActive) {
+            btn.classList.remove('toggle-inactive');
+            btn.classList.add('toggle-active');
+            dot.classList.remove('left-1');
+            dot.classList.add('right-1');
+        } else {
+            btn.classList.remove('toggle-active');
+            btn.classList.add('toggle-inactive');
+            dot.classList.remove('right-1');
+            dot.classList.add('left-1');
+        }
+    }
+
+    // Load Settings from LocalStorage
+    document.addEventListener("DOMContentLoaded", () => {
+        if (localStorage.getItem("settings-fullname")) {
+            document.getElementById("settings-fullname").value = localStorage.getItem("settings-fullname");
+        }
+        if (localStorage.getItem("settings-email")) {
+            document.getElementById("settings-email").value = localStorage.getItem("settings-email");
+        }
+        if (localStorage.getItem("settings-voice")) {
+            document.getElementById("settings-voice").value = localStorage.getItem("settings-voice");
+        }
+        if (localStorage.getItem("settings-target-lang")) {
+            document.getElementById("settings-target-lang").value = localStorage.getItem("settings-target-lang");
+        }
+        if (localStorage.getItem("settings-native-lang")) {
+            document.getElementById("settings-native-lang").value = localStorage.getItem("settings-native-lang");
+        }
+        if (localStorage.getItem("settings-level")) {
+            selectCEFR(localStorage.getItem("settings-level"));
+        }
+        if (localStorage.getItem("settings-daily-minutes")) {
+            document.getElementById("settings-daily-minutes").value = localStorage.getItem("settings-daily-minutes");
+        }
+        if (localStorage.getItem("settings-daily-xp")) {
+            document.getElementById("settings-daily-xp").value = localStorage.getItem("settings-daily-xp");
+        }
+        if (localStorage.getItem("settings-batch-size")) {
+            document.getElementById("settings-batch-size").value = localStorage.getItem("settings-batch-size");
+        }
+        if (localStorage.getItem("settings-coach-freq")) {
+            document.getElementById("settings-coach-freq").value = localStorage.getItem("settings-coach-freq");
+        }
+        if (localStorage.getItem("settings-email-notify")) {
+            setToggleState("settings-email-notify", localStorage.getItem("settings-email-notify") === "true");
+        }
+        if (localStorage.getItem("settings-push-notify")) {
+            setToggleState("settings-push-notify", localStorage.getItem("settings-push-notify") === "true");
+        }
+    });
+
+    // Save Settings
+    function saveSettings() {
+        localStorage.setItem("settings-fullname", document.getElementById("settings-fullname").value);
+        localStorage.setItem("settings-email", document.getElementById("settings-email").value);
+        localStorage.setItem("settings-voice", document.getElementById("settings-voice").value);
+        localStorage.setItem("settings-target-lang", document.getElementById("settings-target-lang").value);
+        localStorage.setItem("settings-native-lang", document.getElementById("settings-native-lang").value);
+        localStorage.setItem("settings-level", document.getElementById("settings-level").value);
+        localStorage.setItem("settings-daily-minutes", document.getElementById("settings-daily-minutes").value);
+        localStorage.setItem("settings-daily-xp", document.getElementById("settings-daily-xp").value);
+        localStorage.setItem("settings-batch-size", document.getElementById("settings-batch-size").value);
+        localStorage.setItem("settings-coach-freq", document.getElementById("settings-coach-freq").value);
+        localStorage.setItem("settings-email-notify", document.getElementById("settings-email-notify").classList.contains("toggle-active"));
+        localStorage.setItem("settings-push-notify", document.getElementById("settings-push-notify").classList.contains("toggle-active"));
+
+        const toast = document.getElementById('toast-alert');
+        
+        // Show Toast
+        toast.classList.remove('translate-y-24', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+        
+        // Hide after 3 seconds
+        setTimeout(() => {
+            toast.classList.remove('translate-y-0', 'opacity-100');
+            toast.classList.add('translate-y-24', 'opacity-0');
+        }, 3000);
+    }
+</script>
 </body></html>

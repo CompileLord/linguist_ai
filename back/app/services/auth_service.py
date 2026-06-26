@@ -29,6 +29,7 @@ class AuthService(AbstractAuthService):
             email=schema.email,
             hashed_password=hashed,
             full_name=schema.full_name,
+            voice_name=schema.voice_name,
             is_active=True,
             is_superuser=False
         )

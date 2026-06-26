@@ -58,36 +58,17 @@ class TutorService(AbstractTutorService):
 
         contents = await self._context_manager.build_context(session_id)
 
-        client = getattr(self._ai_provider, "client", None)
-        model = getattr(self._ai_provider, "model", "gemini-2.5-flash")
-
         accumulated_text = ""
         error_occurred = False
 
-        if client:
-            try:
-                response = client.models.generate_content_stream(
-                    model=model,
-                    contents=contents
-                )
-                for chunk in response:
-                    chunk_text = chunk.text or ""
-                    accumulated_text += chunk_text
-                    yield chunk_text
-            except Exception as e:
-                error_occurred = True
-                yield f"\n[Error: Connection lost or generation failed. Details: {str(e)}]"
-                logger.exception("Error during tutor streaming")
-        else:
-            try:
-                prompt_str = "\n".join([c["parts"][0]["text"] for c in contents])
-                async for chunk in self._ai_provider.generate_content_stream(prompt_str):
-                    accumulated_text += chunk
-                    yield chunk
-            except Exception as e:
-                error_occurred = True
-                yield f"\n[Error: Connection lost or generation failed. Details: {str(e)}]"
-                logger.exception("Error during tutor streaming")
+        try:
+            async for chunk in self._ai_provider.generate_content_stream(contents):
+                accumulated_text += chunk
+                yield chunk
+        except Exception as e:
+            error_occurred = True
+            yield f"\n[Error: Connection lost or generation failed. Details: {str(e)}]"
+            logger.exception("Error during tutor streaming")
 
         assistant_msg = TutorMessage(
             session_id=session_id,

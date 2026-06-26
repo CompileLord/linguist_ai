@@ -41,7 +41,9 @@ export default function DashboardPage() {
             <>
               <div className="relative z-10">
                 <span className="inline-block px-xs py-base bg-[#1C1C24] text-on-surface-variant rounded text-code-sm font-code-sm mb-sm border border-[#2A2A32]">
-                  {nextLesson ? t("continue_learning") : t("generate_next_lesson")}
+                  {nextLesson
+                    ? t("continue_learning")
+                    : t("generate_next_lesson")}
                 </span>
                 <h1 className="text-display font-display text-on-surface mb-xs">
                   {nextLesson?.topic || t("no_pending_lessons")}
@@ -96,7 +98,9 @@ export default function DashboardPage() {
             ) : (
               <p className="text-body-md font-body-md text-on-surface-variant flex items-center gap-xs">
                 <span className="text-on-surface font-medium">
-                  {t("items_ready", { count: reviewStats?.total_due_today || 0 })}
+                  {t("items_ready", {
+                    count: reviewStats?.total_due_today || 0,
+                  })}
                 </span>{" "}
                 {t("ready_for_review")}
               </p>
@@ -105,26 +109,25 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Quick Actions Scroll */}
       <div className="mb-lg">
         <h2 className="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider mb-sm">
-          {t("quick_actions")}
+          Quick Actions
         </h2>
         <div
           className="flex gap-md overflow-x-auto pb-sm"
           style={{ scrollbarWidth: "none" }}
         >
           {[
-            { icon: "smart_toy", label: t("actions.tutor") },
-            { icon: "explore", label: t("actions.missions") },
-            { icon: "workspace_premium", label: t("actions.exams") },
-            { icon: "translate", label: t("actions.vocabulary") },
+            { icon: "smart_toy", label: "AI Tutor" },
+            { icon: "explore", label: "Real World Missions" },
+            { icon: "workspace_premium", label: "Exams" },
+            { icon: "translate", label: "Vocabulary" },
           ].map((action) => (
             <button
               key={action.label}
               className="flex-shrink-0 w-[200px] bg-[#15151A] border border-[#2A2A32] rounded-lg p-sm flex items-center gap-sm hover:bg-[#1C1C24] hover:border-primary/30 transition-all text-left"
             >
-              <div className="p-xs bg-[#1C1C24] rounded border border-[#2A2A32] text-on-surface-variant flex items-center">
+              <div className="p-xs bg-[#1C1C24] rounded border border-[#2A2A32] text-on-surface-variant">
                 <span className="material-symbols-outlined">{action.icon}</span>
               </div>
               <span className="text-label-md font-label-md text-on-surface">
@@ -135,7 +138,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Recent Activity List */}
       <div className="bg-[#15151A] border border-[#2A2A32] rounded-xl overflow-hidden min-h-[200px]">
         <div className="p-sm border-b border-[#2A2A32] bg-[#1C1C24]/50">
           <h3 className="text-label-md font-label-md text-on-surface">

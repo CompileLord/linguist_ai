@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>AI Coach Archive - Linguist AI</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Hanken+Grotesk:wght@500;600;700&family=Geist:wght@400;500&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        background: "#0A0A0C",
+                        surface: "#15151A",
+                        "surface-raised": "#1E1E24",
+                        outline: "#2A2A32",
+                        "outline-variant": "#2A2A32",
+                        primary: "#6E5BFF",
+                        "primary-container": "#6E5BFF",
+                        "on-primary-container": "#F5F5F7",
+                        "on-surface": "#F5F5F7",
+                        "on-surface-variant": "#9A9AA5",
+                        "text-tertiary": "#62626C",
+                        accent: "#6E5BFF",
+                        "accent-glow": "#8B7CFF",
+                        success: "#3DD68C",
+                        warning: "#E8B339",
+                        error: "#FF5C6C",
+                        "surface-container-lowest": "#0A0A0C",
+                        "surface-container-low": "#15151A",
+                        "surface-container": "#15151A",
+                        "surface-container-high": "#1E1E24",
+                        "surface-container-highest": "#2A2A32",
+                    },
+                    borderRadius: {
+                        "DEFAULT": "8px",
+                        "md": "8px",
+                        "lg": "12px",
+                        "xl": "16px",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "xs": "8px",
+                        "xl": "64px",
+                        "md": "24px",
+                        "base": "4px",
+                        "sm": "16px",
+                        "lg": "40px",
+                        "container-max": "1440px",
+                        "gutter": "24px"
+                    },
+                    fontFamily: {
+                        "label-md": ["Geist", "sans-serif"],
+                        "headline-md": ["Hanken Grotesk", "sans-serif"],
+                        "body-sm": ["Inter", "sans-serif"],
+                        "body-md": ["Inter", "sans-serif"],
+                        "code-sm": ["Geist", "monospace"],
+                        "headline-lg": ["Hanken Grotesk", "sans-serif"],
+                        "display": ["Hanken Grotesk", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"]
+                    },
+                    fontSize: {
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "code-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0A0A0C;
+            color: #F5F5F7;
+        }
+    </style>
+</head>
+<body class="flex min-h-screen bg-background font-body-md text-body-md antialiased selection:bg-primary/20 selection:text-primary">
+    <!-- SideNavBar -->
+    <nav class="h-screen w-64 fixed left-0 top-0 bg-background border-r border-outline flex flex-col justify-between py-md px-sm z-20">
+        <div class="flex flex-col gap-lg">
+            <div class="mb-sm px-sm mt-sm">
+                <h1 class="font-display text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent-glow tracking-tight leading-tight mb-1">Linguist AI</h1>
+                <p class="text-on-surface-variant font-body-sm text-xs font-semibold">Premium Tier</p>
+            </div>
+            <nav class="flex flex-col gap-1.5">
+                <a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_dashboard.html">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <span class="text-label-md font-label-md">Dashboard</span>
+                </a>
+                <a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="real_world_missions.html">
+                    <span class="material-symbols-outlined">explore</span>
+                    <span class="text-label-md font-label-md">Missions</span>
+                </a>
+                <a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="ai_tutor_panel.html">
+                    <span class="material-symbols-outlined">smart_toy</span>
+                    <span class="text-label-md font-label-md">Tutor</span>
+                </a>
+                <a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="vocabulary_list.html">
+                    <span class="material-symbols-outlined">translate</span>
+                    <span class="text-label-md font-label-md">Vocabulary</span>
+                </a>
+                <a class="flex items-center gap-sm px-4 py-2.5 rounded-lg bg-surface-raised text-primary font-semibold border-l-2 border-primary active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_progress_profile.html">
+                    <span class="material-symbols-outlined">analytics</span>
+                    <span class="text-label-md font-label-md">Progress</span>
+                </a>
+                <a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_settings.html">
+                    <span class="material-symbols-outlined">settings</span>
+                    <span class="text-label-md font-label-md">Settings</span>
+                </a>
+            </nav>
+        </div>
+        <div class="px-xs pb-4">
+            <a href="ai_voice_conversation_premium_interface.html" class="block w-full text-center bg-primary hover:bg-primary/90 text-white font-medium py-2.5 px-4 rounded-lg active:scale-[0.96] transition-[transform,background-color] duration-150 shadow-[0_0_12px_rgba(110,91,255,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+                New Session
+            </a>
+        </div>
+    </nav>
+    <!-- Main Content Area -->
+    <main class="flex-grow ml-64 flex flex-col h-screen overflow-y-auto custom-scrollbar">
+        <!-- TopAppBar -->
+        <header class="bg-surface/85 backdrop-blur-md border-b border-outline flex justify-between items-center w-full h-16 px-xl sticky top-0 z-10 shrink-0">
+            <div class="font-headline-lg text-2xl font-bold text-on-surface tracking-tight flex items-center gap-sm">
+                <a href="linguist_ai_progress_profile.html" class="flex items-center text-on-surface-variant hover:text-on-surface transition-colors p-1 rounded-md">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                </a>
+                <span>AI Coach Reports Archive</span>
+            </div>
+            <div class="flex items-center gap-md">
+                <!-- Streak -->
+                <div class="flex items-center gap-xs bg-surface-raised border border-[#2A2A32] rounded-full py-1 px-3">
+                    <span class="material-symbols-outlined text-warning text-lg" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+                    <span class="font-label-md text-label-md text-on-surface tabular-nums">7 Day Streak</span>
+                </div>
+                <!-- XP -->
+                <div class="flex items-center gap-xs bg-surface-raised border border-[#2A2A32] rounded-full py-1 px-3">
+                    <span class="material-symbols-outlined text-primary text-lg">military_tech</span>
+                    <span class="font-label-md text-label-md text-on-surface tabular-nums">1,250 XP</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-grow p-xl max-w-[1000px] w-full mx-auto pb-24">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+                <!-- Reports History List -->
+                <div class="md:col-span-1 flex flex-col gap-sm">
+                    <h3 class="font-label-md text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-xs px-2">History</h3>
+                    <div class="flex flex-col gap-2">
+                        <!-- Active Card -->
+                        <div onclick="selectReport(0)" id="report-item-0" class="report-item p-4 bg-surface border border-primary rounded-xl cursor-pointer shadow-md transition-all duration-200">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-label-md text-sm font-bold text-on-surface">May 15 – May 21</span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse" id="unread-dot-0"></span>
+                            </div>
+                            <p class="font-body-sm text-xs text-on-surface-variant line-clamp-2">This week you made strong progress with Present Perfect, but past tense irregular verbs...</p>
+                        </div>
+                        <!-- Secondary Card -->
+                        <div onclick="selectReport(1)" id="report-item-1" class="report-item p-4 bg-surface border border-outline hover:border-primary/40 rounded-xl cursor-pointer shadow-md transition-all duration-200">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-label-md text-sm font-bold text-on-surface">May 08 – May 14</span>
+                            </div>
+                            <p class="font-body-sm text-xs text-on-surface-variant line-clamp-2">Focus on active listening exercises paid off. Improved passive grammar comprehension by 15%...</p>
+                        </div>
+                        <!-- Third Card -->
+                        <div onclick="selectReport(2)" id="report-item-2" class="report-item p-4 bg-surface border border-outline hover:border-primary/40 rounded-xl cursor-pointer shadow-md transition-all duration-200">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-label-md text-sm font-bold text-on-surface">May 01 – May 07</span>
+                            </div>
+                            <p class="font-body-sm text-xs text-on-surface-variant line-clamp-2">Initial diagnostics report. Identified article usage and subjunctive mood as primary goals...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report Detail Card -->
+                <div class="md:col-span-2">
+                    <div class="bg-surface rounded-xl p-6 border border-outline shadow-lg flex flex-col gap-6" id="report-detail">
+                        <div class="flex justify-between items-start border-b border-outline-variant pb-4">
+                            <div>
+                                <h2 class="font-headline-md text-2xl font-bold text-on-surface" id="detail-title">Weekly AI Coaching Report</h2>
+                                <p class="font-body-sm text-sm text-on-surface-variant mt-1" id="detail-date">Period: May 15 – May 21</p>
+                            </div>
+                            <span class="material-symbols-outlined text-primary text-2xl">auto_awesome</span>
+                        </div>
+
+                        <!-- Strengths & Progress -->
+                        <div class="space-y-2">
+                            <h3 class="font-label-md text-xs font-bold text-on-surface uppercase tracking-wider">Strengths & Progress</h3>
+                            <p class="font-body-md text-sm text-on-surface-variant leading-relaxed text-pretty" id="detail-strengths">
+                                This week you made strong progress with Present Perfect, but past tense irregular verbs are still tripping you up. Your consistency during evening sessions is helping with long-term retention.
+                            </p>
+                        </div>
+
+                        <!-- Persistent Area Metrics -->
+                        <div class="space-y-3">
+                            <h3 class="font-label-md text-xs font-bold text-on-surface uppercase tracking-wider">Persistent Areas</h3>
+                            <div class="grid grid-cols-2 gap-sm" id="detail-mistakes">
+                                <div class="bg-surface-raised/40 p-3 rounded-lg border border-outline flex justify-between items-center">
+                                    <span class="font-body-sm text-xs text-on-surface-variant">Subject-Verb Agreement</span>
+                                    <span class="text-xs bg-surface-raised text-error px-2 py-0.5 rounded border border-outline font-semibold">5x</span>
+                                </div>
+                                <div class="bg-surface-raised/40 p-3 rounded-lg border border-outline flex justify-between items-center">
+                                    <span class="font-body-sm text-xs text-on-surface-variant">Irregular Verbs</span>
+                                    <span class="text-xs bg-surface-raised text-error px-2 py-0.5 rounded border border-outline font-semibold">4x</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recommendations -->
+                        <div class="bg-surface-raised/40 p-5 rounded-lg border border-outline flex flex-col gap-3">
+                            <h4 class="font-label-md text-xs font-bold text-on-surface uppercase tracking-wider">Coach Recommendations</h4>
+                            <ul class="list-disc list-inside space-y-2 text-sm text-on-surface-variant leading-relaxed pl-1" id="detail-recommendations">
+                                <li>Review irregular past participles using vocabulary reviews.</li>
+                                <li>Try a "Restaurant scenario" roleplay or "Job Interview" to practice formal speaking registers.</li>
+                                <li>Practice past perfect exercises to reinforce timeline nuances.</li>
+                            </ul>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex justify-end gap-sm pt-2">
+                            <a href="real_world_missions.html" class="bg-primary hover:bg-primary/95 text-white font-medium py-2.5 px-5 rounded-lg active:scale-[0.96] transition-all border border-[#8B7CFF]/30 text-sm shadow-md">
+                                Start Suggested Mission
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const reportsData = [
+            {
+                title: "Weekly AI Coaching Report",
+                date: "Period: May 15 – May 21",
+                strengths: "This week you made strong progress with Present Perfect, but past tense irregular verbs are still tripping you up. Your consistency during evening sessions is helping with long-term retention. Speaking fluency score increased by 4%.",
+                mistakes: [
+                    { label: "Subject-Verb Agreement", count: "5x" },
+                    { label: "Irregular Verbs", count: "4x" }
+                ],
+                recommendations: [
+                    "Review irregular past participles using vocabulary reviews.",
+                    "Try a 'Restaurant scenario' roleplay or 'Job Interview' to practice formal speaking registers.",
+                    "Practice past perfect exercises to reinforce timeline nuances."
+                ]
+            },
+            {
+                title: "Weekly AI Coaching Report",
+                date: "Period: May 08 – May 14",
+                strengths: "Focus on active listening exercises paid off. Improved passive grammar comprehension by 15%. Pronunciation metrics are steady at 78% correctness. Good accuracy on relative clauses.",
+                mistakes: [
+                    { label: "Article Usage", count: "6x" },
+                    { label: "Preposition Choice", count: "3x" }
+                ],
+                recommendations: [
+                    "Practice with audio playback speed in listening exams set to 1.1x.",
+                    "Review rules for definite and indefinite articles (a/an/the).",
+                    "Do a daily vocabulary flashcard drill."
+                ]
+            },
+            {
+                title: "Weekly AI Coaching Report",
+                date: "Period: May 01 – May 07",
+                strengths: "Initial diagnostics report. Good vocabulary baseline of 1,200 words. Expresses basic ideas effectively. Strong written structure in paragraph transitions.",
+                mistakes: [
+                    { label: "Subjunctive Mood", count: "8x" },
+                    { label: "Passive Construction", count: "5x" }
+                ],
+                recommendations: [
+                    "Study Present Subjunctive theory cards.",
+                    "Complete a grammar practice test on conditionals.",
+                    "Configure settings to set a target of 5 lessons per week."
+                ]
+            }
+        ];
+
+        function selectReport(index) {
+            const data = reportsData[index];
+            
+            // Update selected style on items
+            document.querySelectorAll('.report-item').forEach((el, idx) => {
+                if (idx === index) {
+                    el.classList.remove('border-outline', 'hover:border-primary/40');
+                    el.classList.add('border-primary');
+                } else {
+                    el.classList.remove('border-primary');
+                    el.classList.add('border-outline');
+                }
+            });
+
+            // Mark unread dot read
+            const unreadDot = document.getElementById(`unread-dot-${index}`);
+            if (unreadDot) {
+                unreadDot.remove();
+            }
+
+            // Update details view
+            document.getElementById('detail-title').textContent = data.title;
+            document.getElementById('detail-date').textContent = data.date;
+            document.getElementById('detail-strengths').textContent = data.strengths;
+
+            // Update mistakes
+            const mistakesEl = document.getElementById('detail-mistakes');
+            mistakesEl.innerHTML = data.mistakes.map(m => `
+                <div class="bg-surface-raised/40 p-3 rounded-lg border border-outline flex justify-between items-center">
+                    <span class="font-body-sm text-xs text-on-surface-variant">${m.label}</span>
+                    <span class="text-xs bg-surface-raised text-error px-2 py-0.5 rounded border border-outline font-semibold">${m.count}</span>
+                </div>
+            `).join('');
+
+            // Update recommendations
+            const recEl = document.getElementById('detail-recommendations');
+            recEl.innerHTML = data.recommendations.map(r => `<li>${r}</li>`).join('');
+        }
+    </script>
+</body>
+</html>

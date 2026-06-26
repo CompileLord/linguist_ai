@@ -3,72 +3,48 @@
 <html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Linguist AI - Vocabulary Flashcard</title>
+<title>Vocabulary Flashcard - Linguist AI</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Hanken+Grotesk:wght@500;600&amp;family=Inter:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Hanken+Grotesk:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
-                    "colors": {
-                        "on-secondary-fixed": "#170065",
-                        "surface": "#13121c",
-                        "outline": "#928ea1",
-                        "on-primary": "#2700a0",
-                        "background": "#13121c",
-                        "primary-fixed": "#e4dfff",
-                        "on-secondary": "#2a039d",
-                        "secondary-container": "#422db2",
-                        "on-tertiary-fixed-variant": "#733500",
-                        "primary-container": "#6e5bff",
-                        "on-background": "#e5e0ee",
-                        "secondary-fixed-dim": "#c7bfff",
-                        "on-error": "#690005",
-                        "tertiary": "#ffb688",
-                        "outline-variant": "#474555",
-                        "tertiary-fixed": "#ffdbc7",
-                        "on-primary-container": "#fffeff",
-                        "surface-container": "#201e28",
-                        "on-error-container": "#ffdad6",
-                        "inverse-primary": "#563fe6",
-                        "secondary-fixed": "#e4dfff",
-                        "surface-container-highest": "#35343e",
-                        "on-tertiary-fixed": "#311300",
-                        "secondary": "#c7bfff",
-                        "surface-container-high": "#2a2933",
-                        "primary": "#c6bfff",
-                        "surface-bright": "#393842",
-                        "error-container": "#93000a",
-                        "inverse-surface": "#e5e0ee",
-                        "surface-container-low": "#1c1a24",
-                        "primary-fixed-dim": "#c6bfff",
-                        "inverse-on-surface": "#312f39",
-                        "surface-dim": "#13121c",
-                        "surface-container-lowest": "#0e0d16",
-                        "on-surface-variant": "#c8c4d8",
-                        "on-tertiary-container": "#ffffff",
-                        "tertiary-fixed-dim": "#ffb688",
-                        "on-secondary-fixed-variant": "#422db2",
-                        "tertiary-container": "#bb5b00",
-                        "surface-variant": "#35343e",
-                        "error": "#ffb4ab",
-                        "surface-tint": "#c6bfff",
-                        "on-primary-fixed": "#160066",
-                        "on-surface": "#e5e0ee",
-                        "on-primary-fixed-variant": "#3d1acf",
-                        "on-tertiary": "#512400",
-                        "on-secondary-container": "#b4abff"
+                    colors: {
+                        background: "#0A0A0C",
+                        surface: "#15151A",
+                        "surface-raised": "#1E1E24",
+                        outline: "#2A2A32",
+                        "outline-variant": "#2A2A32",
+                        primary: "#6E5BFF",
+                        "primary-container": "#6E5BFF",
+                        "on-primary-container": "#F5F5F7",
+                        "on-surface": "#F5F5F7",
+                        "on-surface-variant": "#9A9AA5",
+                        "text-tertiary": "#62626C",
+                        accent: "#6E5BFF",
+                        "accent-glow": "#8B7CFF",
+                        success: "#3DD68C",
+                        warning: "#E8B339",
+                        error: "#FF5C6C",
+                        // Keep compatibility with existing container levels
+                        "surface-container-lowest": "#0A0A0C",
+                        "surface-container-low": "#15151A",
+                        "surface-container": "#15151A",
+                        "surface-container-high": "#1E1E24",
+                        "surface-container-highest": "#2A2A32",
                     },
-                    "borderRadius": {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
+                    borderRadius: {
+                        "DEFAULT": "8px",
+                        "md": "8px",
+                        "lg": "12px",
+                        "xl": "16px",
                         "full": "9999px"
                     },
-                    "spacing": {
+                    spacing: {
                         "lg": "40px",
                         "base": "4px",
                         "md": "24px",
@@ -78,17 +54,17 @@
                         "gutter": "24px",
                         "xs": "8px"
                     },
-                    "fontFamily": {
-                        "label-md": ["Geist"],
-                        "headline-md": ["Hanken Grotesk"],
-                        "body-sm": ["Inter"],
-                        "body-md": ["Inter"],
-                        "code-sm": ["Geist"],
-                        "headline-lg": ["Hanken Grotesk"],
-                        "display": ["Hanken Grotesk"],
-                        "body-lg": ["Inter"]
+                    fontFamily: {
+                        "label-md": ["Geist", "sans-serif"],
+                        "headline-md": ["Hanken Grotesk", "sans-serif"],
+                        "body-sm": ["Inter", "sans-serif"],
+                        "body-md": ["Inter", "sans-serif"],
+                        "code-sm": ["Geist", "monospace"],
+                        "headline-lg": ["Hanken Grotesk", "sans-serif"],
+                        "display": ["Hanken Grotesk", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"]
                     },
-                    "fontSize": {
+                    fontSize: {
                         "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500" }],
                         "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
                         "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
@@ -104,12 +80,8 @@
     </script>
 <style>
         body {
-            background-color: #0A0A0C; /* Level 0 Background */
-            color: theme('colors.on-background');
-        }
-        .surface-card {
-            background-color: #15151A; /* Level 1 Surface */
-            border: 1px solid #2A2A32;
+            background-color: #0A0A0C;
+            color: #F5F5F7;
         }
         .reveal-gradient {
             background: linear-gradient(180deg, rgba(21, 21, 26, 0) 0%, rgba(21, 21, 26, 1) 100%);
@@ -123,7 +95,7 @@
             transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-in-out;
         }
         #translation-content.revealed {
-            max-height: 200px; /* Arbitrary enough to fit content */
+            max-height: 200px;
             opacity: 1;
             margin-top: 24px;
         }
@@ -136,70 +108,125 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col font-body-md antialiased selection:bg-primary-container selection:text-on-primary-container overflow-hidden">
-<!-- TopAppBar (Simplified for learning session) -->
-<header class="fixed top-0 w-full z-50">
-<!-- Progress Bar -->
-<div class="h-1 w-full bg-surface-container-high">
-<div class="h-full bg-primary-container transition-all duration-300 ease-out" style="width: 25%;"></div>
+<body class="flex min-h-screen bg-background font-body-md text-body-md antialiased selection:bg-primary/20 selection:text-primary overflow-hidden">
+<!-- SideNavBar -->
+<nav class="h-screen w-64 fixed left-0 top-0 bg-background border-r border-outline flex flex-col justify-between py-md px-sm z-20">
+<div class="flex flex-col gap-lg">
+<div class="mb-sm px-sm mt-sm">
+<h1 class="font-display text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent-glow tracking-tight leading-tight mb-1">Linguist AI</h1>
+<p class="text-on-surface-variant font-body-sm text-xs font-semibold">Premium Tier</p>
 </div>
-<!-- App Bar Logic -->
-<div class="flex justify-between items-center px-md py-sm w-full bg-transparent">
-<div class="font-headline-md text-headline-md text-on-background">Lumina Axiom</div>
-<button aria-label="Close Session" class="text-on-surface-variant hover:text-on-background transition-colors p-2 rounded-full hover:bg-surface-container-high">
-<span class="material-symbols-outlined" data-icon="close">close</span>
-</button>
+<nav class="flex flex-col gap-1.5">
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_dashboard.html">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-label-md font-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="real_world_missions.html">
+<span class="material-symbols-outlined">explore</span>
+<span class="text-label-md font-label-md">Missions</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="ai_tutor_panel.html">
+<span class="material-symbols-outlined">smart_toy</span>
+<span class="text-label-md font-label-md">Tutor</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg bg-surface-raised text-primary font-semibold border-l-2 border-primary active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="vocabulary_list.html">
+<span class="material-symbols-outlined">translate</span>
+<span class="text-label-md font-label-md">Vocabulary</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_progress_profile.html">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-label-md font-label-md">Progress</span>
+</a>
+<a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_settings.html">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-label-md font-label-md">Settings</span>
+</a>
+</nav>
+</div>
+<div class="px-xs pb-4">
+<a href="ai_voice_conversation_premium_interface.html" class="block w-full text-center bg-primary hover:bg-primary/90 text-white font-medium py-2.5 px-4 rounded-lg active:scale-[0.96] transition-[transform,background-color] duration-150 shadow-[0_0_12px_rgba(110,91,255,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+    New Session
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 ml-64 flex flex-col h-screen overflow-y-auto custom-scrollbar">
+<!-- TopAppBar -->
+<header class="bg-surface/85 backdrop-blur-md border-b border-outline flex justify-between items-center w-full h-16 px-xl sticky top-0 z-10 shrink-0">
+<div class="font-headline-lg text-2xl font-bold text-on-surface tracking-tight">
+    Vocabulary Flashcards
+</div>
+<div class="flex items-center gap-md">
+<!-- Streak -->
+<div class="flex items-center gap-xs bg-surface-raised border border-[#2A2A32] rounded-full py-1 px-3">
+<span class="material-symbols-outlined text-warning text-lg" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+<span class="font-label-md text-label-md text-on-surface tabular-nums">7 Day Streak</span>
+</div>
+<!-- XP -->
+<div class="flex items-center gap-xs bg-surface-raised border border-[#2A2A32] rounded-full py-1 px-3">
+<span class="material-symbols-outlined text-primary text-lg">military_tech</span>
+<span class="font-label-md text-label-md text-on-surface tabular-nums">1,250 XP</span>
+</div>
+<!-- Avatar -->
+<a href="linguist_ai_progress_profile.html">
+<img alt="User avatar" class="w-8 h-8 rounded-full border border-[#2A2A32] object-cover hover:border-primary/50 hover:shadow-[0_0_8px_rgba(110,91,255,0.4)] transition-all duration-200 cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAV5ByEFKVdjnv8F4NQRiNvpfpkfwGW5AoOADF6sg1NuI3TEEKMTpMRGurWxkqtI_oLbs0bFso6QhcJR8flD4u5R7vqJ7C_q_Qsf_AlR3eTZeAHFhM8GfuvdqE_G5CICHIw9ohRlN1lSowE47fl7U8hOXoTtZ07kkOekd1srA953bRSCysv9GeXR1KfAQZkVw2x5US5nIbuE28h2Zd0r-81urPJ9UpCTZLMr938jYJfrfC8FYLGMnt1QYnQDCbwbnjjNDC0lb8xWQ"/>
+</a>
 </div>
 </header>
+<!-- Progress Bar -->
+<div class="w-full h-1 bg-surface-container-high z-10 sticky top-16 shrink-0">
+<div class="h-full bg-gradient-to-r from-primary to-accent-glow transition-all duration-300 ease-out" style="width: 25%;"></div>
+</div>
 <!-- Main Content Canvas -->
-<main class="flex-grow flex flex-col items-center justify-center px-gutter pt-xl pb-32 max-w-[800px] mx-auto w-full relative z-10">
+<div class="flex-grow flex flex-col items-center justify-center px-gutter pt-xl pb-32 max-w-[800px] mx-auto w-full relative z-10">
 <!-- Flashcard -->
-<div class="surface-card rounded-[16px] w-full max-w-md p-xl flex flex-col items-center justify-center relative shadow-sm">
+<div class="bg-surface border border-outline rounded-xl w-full max-w-md p-8 flex flex-col items-center justify-center relative shadow-lg hover:border-primary/20 transition-all duration-300">
 <!-- Source Word -->
-<h1 class="font-display text-display text-on-background text-center mb-md break-words w-full">
-                achievement
-            </h1>
+<h1 class="font-display text-4xl font-bold text-on-surface text-center mb-6 tracking-tight break-words w-full">
+    achievement
+</h1>
 <!-- Interactive Reveal Area -->
 <div class="w-full flex flex-col items-center relative">
 <!-- Reveal Prompt -->
-<button class="mt-lg py-sm px-md rounded-full border border-outline-variant text-on-surface-variant hover:border-primary-container hover:text-primary-container transition-all duration-200 font-label-md text-label-md flex items-center gap-2 group focus:outline-none focus:ring-1 focus:ring-primary-container focus:ring-offset-2 focus:ring-offset-background" id="reveal-button">
-<span class="material-symbols-outlined text-[18px] group-hover:scale-110 transition-transform" data-icon="visibility">visibility</span>
-                    Tap to reveal
-                </button>
+<button class="mt-8 py-2 px-4 rounded-full border border-outline text-on-surface-variant hover:border-primary hover:text-primary active:scale-[0.96] transition-all duration-150 font-label-md text-sm flex items-center gap-2 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50" id="reveal-button">
+<span class="material-symbols-outlined text-[18px] group-hover:scale-115 transition-transform">visibility</span>
+    Tap to reveal
+</button>
 <!-- Revealed Content (Hidden initially) -->
 <div class="w-full flex flex-col items-center" id="translation-content">
-<div class="h-[1px] w-1/2 bg-[#2A2A32] mb-md"></div>
-<div class="flex items-center gap-sm mb-xs">
-<span class="font-headline-lg text-headline-lg text-primary-fixed">достижение</span>
+<div class="h-[1px] w-1/2 bg-outline mb-6"></div>
+<div class="flex items-center gap-sm mb-2">
+<span class="font-headline-lg text-2xl font-bold text-on-surface">достижение</span>
 </div>
-<div class="flex items-center gap-sm">
-<span class="font-code-sm text-code-sm text-[#9A9AA5]">/əˈtʃiːvmənt/</span>
-<button aria-label="Play pronunciation" class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container hover:bg-inverse-primary transition-colors focus:outline-none focus:ring-1 focus:ring-primary-fixed">
-<span class="material-symbols-outlined text-[16px]" data-icon="volume_up" data-weight="fill" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+<div class="flex items-center gap-2.5">
+<span class="font-code-sm text-sm text-on-surface-variant font-mono tabular-nums">/əˈtʃiːvmənt/</span>
+<button aria-label="Play pronunciation" class="w-8 h-8 rounded-full bg-primary/10 hover:bg-primary/20 text-primary flex items-center justify-center active:scale-[0.93] transition-all duration-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">volume_up</span>
 </button>
 </div>
 </div>
 </div>
 </div>
 <!-- Navigation Dots -->
-<div class="mt-lg flex flex-col items-center gap-xs">
-<span class="font-label-md text-label-md text-on-surface-variant">3 / 12</span>
+<div class="mt-8 flex flex-col items-center gap-2">
+<span class="font-label-md text-sm text-on-surface-variant tabular-nums font-medium">3 / 12</span>
 <div class="flex gap-2">
-<div class="w-1.5 h-1.5 rounded-full bg-surface-container-high"></div>
-<div class="w-1.5 h-1.5 rounded-full bg-surface-container-high"></div>
-<div class="w-1.5 h-1.5 rounded-full bg-primary-container"></div>
-<div class="w-1.5 h-1.5 rounded-full bg-surface-container-high"></div>
-<div class="w-1.5 h-1.5 rounded-full bg-surface-container-high"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-outline-variant"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-outline-variant"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-outline-variant"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-outline-variant"></div>
+</div>
 </div>
 </div>
 </main>
-<!-- BottomNavBar (Structurally integrated as single action) -->
-<nav class="fixed bottom-0 w-full z-50 flex justify-center items-center px-md py-md bg-background border-t border-outline-variant">
-<button class="bg-primary-container text-on-primary-container rounded-full px-xl py-sm font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled="" id="next-action">
-            Next
-            <span class="material-symbols-outlined text-[18px]" data-icon="arrow_forward">arrow_forward</span>
+<!-- Bottom Action Footer -->
+<footer class="fixed bottom-0 left-64 right-0 z-30 flex justify-center items-center px-md py-4 bg-surface border-t border-outline">
+<button class="bg-primary hover:bg-primary/95 text-white rounded-full px-8 py-2.5 font-medium active:scale-[0.96] transition-all duration-150 flex items-center gap-1.5 shadow-[0_0_12px_rgba(110,91,255,0.25)] border border-[#8B7CFF]/30 hover:border-[#8B7CFF]/60 disabled:bg-surface disabled:text-on-surface-variant/40 disabled:opacity-40 disabled:border-outline disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100" disabled="" id="next-action">
+    <span>Next</span>
+    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
 </button>
-</nav>
+</footer>
 <script>
         document.addEventListener('DOMContentLoaded', () => {
             const revealButton = document.getElementById('reveal-button');
@@ -215,6 +242,10 @@
                 
                 // Enable next button
                 nextAction.removeAttribute('disabled');
+            });
+
+            nextAction.addEventListener('click', () => {
+                window.location.href = 'listening_exam_audio_playback_animated.html';
             });
         });
     </script>

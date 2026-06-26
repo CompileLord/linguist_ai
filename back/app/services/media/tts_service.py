@@ -25,6 +25,8 @@ VOICE_MAP = {
     }
 }
 
+_voice_cache = {}
+
 class TextToSpeechService:
     def __init__(self, storage_service: StorageService) -> None:
         self._storage_service = storage_service
@@ -76,63 +78,33 @@ class TextToSpeechService:
         if clean_text.startswith("<speak>") and clean_text.endswith("</speak>"):
             clean_text = clean_text[7:-8].strip()
 
-        fd, temp_path = tempfile.mkstemp(suffix=".wav")
-        os.close(fd)
-
         resolved_voice = voice_name or "hfc_female"
-        if resolved_voice in VOICE_MAP:
-            try:
-                model_path = await self._ensure_voice_files(resolved_voice)
-                model_name = str(model_path)
-            except Exception as e:
-                logger.error(f"Failed to ensure voice files: {e}")
-                model_name = resolved_voice
-        else:
-            model_name = resolved_voice
-
-        import sys
-        piper_bin = Path(sys.executable).parent / "piper"
-        piper_cmd = str(piper_bin) if piper_bin.exists() else "piper"
+        if resolved_voice not in VOICE_MAP:
+            resolved_voice = "hfc_female"
 
         try:
-            process = await asyncio.create_subprocess_exec(
-                piper_cmd,
-                "--model", model_name,
-                "--output_file", temp_path,
-                stdin=asyncio.subprocess.PIPE,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
-            )
+            model_path = await self._ensure_voice_files(resolved_voice)
+            model_path_str = str(model_path)
             
-            stdout, stderr = await process.communicate(input=clean_text.encode("utf-8"))
+            import piper
+            if model_path_str not in _voice_cache:
+                _voice_cache[model_path_str] = piper.PiperVoice.load(model_path_str)
             
-            if process.returncode != 0:
-                raise ExternalServiceException(
-                    detail=f"Piper synthesis process returned error: {stderr.decode()}",
-                    error_code="TTS_PIPER_PROCESS_ERROR"
-                )
-
-            with open(temp_path, "rb") as f:
-                audio_content = f.read()
-
-            return audio_content
-
-        except FileNotFoundError:
-            logger.warning("Piper TTS executable 'piper' was not found. Returning fallback dummy audio.")
-            dummy_wav = (
-                b"RIFF\x24\x08\x00\x00WAVEfmt \x10\x00\x00\x00\x01\x00\x01\x00"
-                b"\x40\x1f\x00\x00\x80\x3e\x00\x00\x02\x00\x10\x00data\x00\x08\x00\x00"
-                + b"\x00" * 2048
-            )
-            return dummy_wav
+            voice = _voice_cache[model_path_str]
+            
+            import io
+            import wave
+            
+            wav_io = io.BytesIO()
+            with wave.open(wav_io, "wb") as wav_file:
+                voice.synthesize_wav(clean_text, wav_file)
+            
+            return wav_io.getvalue()
         except Exception as e:
             raise ExternalServiceException(
                 detail=f"TTS synthesis failed: {str(e)}",
                 error_code="TTS_SYNTHESIS_ERROR"
             )
-        finally:
-            if os.path.exists(temp_path):
-                os.remove(temp_path)
 
     async def synthesize_and_store(
         self,

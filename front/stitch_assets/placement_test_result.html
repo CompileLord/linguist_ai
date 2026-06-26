@@ -3,7 +3,7 @@
 <html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Linguist AI - Placement Result</title>
+<title>Placement Result - Linguist AI</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Hanken+Grotesk:wght@400;500;600;700;800&amp;family=Geist:wght@400;500&amp;display=swap" rel="stylesheet"/>
@@ -13,62 +13,38 @@
             darkMode: "class",
             theme: {
                 extend: {
-                    "colors": {
-                        "on-secondary-container": "#b4abff",
-                        "surface-dim": "#13121c",
-                        "surface-container-high": "#2a2933",
-                        "tertiary-container": "#bb5b00",
-                        "on-primary-fixed": "#160066",
-                        "inverse-primary": "#563fe6",
-                        "surface": "#13121c",
-                        "primary-fixed-dim": "#c6bfff",
-                        "error": "#ffb4ab",
-                        "on-tertiary-fixed-variant": "#733500",
-                        "surface-container-highest": "#35343e",
-                        "tertiary-fixed": "#ffdbc7",
-                        "inverse-on-surface": "#312f39",
-                        "secondary-fixed-dim": "#c7bfff",
-                        "tertiary": "#ffb688",
-                        "surface-variant": "#35343e",
-                        "secondary": "#c7bfff",
-                        "on-primary": "#2700a0",
-                        "on-background": "#e5e0ee",
-                        "on-primary-container": "#fffeff",
-                        "on-primary-fixed-variant": "#3d1acf",
-                        "surface-container-lowest": "#0e0d16",
-                        "primary": "#c6bfff",
-                        "secondary-fixed": "#e4dfff",
-                        "outline-variant": "#474555",
-                        "on-secondary-fixed-variant": "#422db2",
-                        "error-container": "#93000a",
-                        "surface-bright": "#393842",
-                        "secondary-container": "#422db2",
-                        "surface-container": "#201e28",
-                        "inverse-surface": "#e5e0ee",
-                        "primary-container": "#6e5bff",
-                        "outline": "#928ea1",
-                        "on-tertiary": "#512400",
-                        "background": "#13121c",
-                        "on-surface-variant": "#c8c4d8",
-                        "on-surface": "#e5e0ee",
-                        "surface-tint": "#c6bfff",
-                        "primary-fixed": "#e4dfff",
-                        "on-tertiary-container": "#ffffff",
-                        "on-secondary": "#2a039d",
-                        "on-error": "#690005",
-                        "surface-container-low": "#1c1a24",
-                        "on-tertiary-fixed": "#311300",
-                        "tertiary-fixed-dim": "#ffb688",
-                        "on-error-container": "#ffdad6",
-                        "on-secondary-fixed": "#170065"
+                    colors: {
+                        background: "#0A0A0C",
+                        surface: "#15151A",
+                        "surface-raised": "#1E1E24",
+                        outline: "#2A2A32",
+                        "outline-variant": "#2A2A32",
+                        primary: "#6E5BFF",
+                        "primary-container": "#6E5BFF",
+                        "on-primary-container": "#F5F5F7",
+                        "on-surface": "#F5F5F7",
+                        "on-surface-variant": "#9A9AA5",
+                        "text-tertiary": "#62626C",
+                        accent: "#6E5BFF",
+                        "accent-glow": "#8B7CFF",
+                        success: "#3DD68C",
+                        warning: "#E8B339",
+                        error: "#FF5C6C",
+                        // Keep compatibility with existing container levels
+                        "surface-container-lowest": "#0A0A0C",
+                        "surface-container-low": "#15151A",
+                        "surface-container": "#15151A",
+                        "surface-container-high": "#1E1E24",
+                        "surface-container-highest": "#2A2A32",
                     },
-                    "borderRadius": {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
+                    borderRadius: {
+                        "DEFAULT": "8px",
+                        "md": "8px",
+                        "lg": "12px",
+                        "xl": "16px",
                         "full": "9999px"
                     },
-                    "spacing": {
+                    spacing: {
                         "container-max": "1440px",
                         "base": "4px",
                         "md": "24px",
@@ -78,7 +54,7 @@
                         "xl": "64px",
                         "lg": "40px"
                     },
-                    "fontFamily": {
+                    fontFamily: {
                         "label-md": ["Geist", "sans-serif"],
                         "body-sm": ["Inter", "sans-serif"],
                         "headline-md": ["Hanken Grotesk", "sans-serif"],
@@ -88,7 +64,7 @@
                         "headline-lg": ["Hanken Grotesk", "sans-serif"],
                         "display": ["Hanken Grotesk", "sans-serif"]
                     },
-                    "fontSize": {
+                    fontSize: {
                         "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500" }],
                         "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
                         "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
@@ -103,24 +79,28 @@
         }
     </script>
 <style>
+        body {
+            background-color: #0A0A0C;
+            color: #F5F5F7;
+        }
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
     </style>
 </head>
-<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md antialiased selection:bg-primary-container selection:text-on-primary-container overflow-x-hidden">
+<body class="bg-background text-on-surface min-h-screen flex flex-col font-body-md antialiased selection:bg-primary/20 selection:text-primary overflow-x-hidden">
 <!-- TopNavBar -->
-<header class="bg-surface dark:bg-surface fixed top-0 w-full z-50 border-b border-outline-variant dark:border-outline-variant flat no shadows">
+<header class="bg-surface/85 backdrop-blur-md fixed top-0 w-full z-50 border-b border-outline">
 <div class="flex justify-between items-center h-16 px-md max-w-container-max mx-auto">
 <div class="flex items-center">
-<span class="font-headline-md text-headline-md font-semibold text-on-surface dark:text-on-surface tracking-tight">Linguist AI</span>
+<span class="font-headline-md text-headline-md font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent-glow tracking-tight">Linguist AI</span>
 </div>
 <div class="flex items-center gap-sm">
-<button class="p-xs text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary transition-colors duration-200 Active: scale-95 transition-transform rounded-full hover:bg-surface-container-high focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-<span class="material-symbols-outlined block" data-icon="settings">settings</span>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors active:scale-95 transition-transform rounded-lg hover:bg-surface-raised/50 focus:outline-none">
+<span class="material-symbols-outlined block text-xl">settings</span>
 </button>
-<button class="p-xs text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary transition-colors duration-200 Active: scale-95 transition-transform rounded-full hover:bg-surface-container-high focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-<span class="material-symbols-outlined block" data-icon="account_circle">account_circle</span>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors active:scale-95 transition-transform rounded-lg hover:bg-surface-raised/50 focus:outline-none">
+<span class="material-symbols-outlined block text-xl">account_circle</span>
 </button>
 </div>
 </div>
@@ -129,45 +109,45 @@
 <main class="flex-1 flex flex-col items-center justify-center pt-xl pb-xl px-md mt-16 relative w-full max-w-[800px] mx-auto z-10">
 <!-- Ambient Glow Base -->
 <div class="absolute inset-0 flex items-center justify-center pointer-events-none -z-10">
-<div class="w-64 h-64 bg-primary-container rounded-full opacity-10 blur-3xl transform scale-150"></div>
+<div class="w-64 h-64 bg-primary/10 rounded-full opacity-30 blur-3xl transform scale-150"></div>
 </div>
 <div class="flex flex-col items-center justify-center text-center w-full max-w-md mx-auto space-y-lg opacity-0 animate-[fadeIn_1s_ease-out_forwards]">
 <!-- Hero CEFR Level -->
 <div class="relative flex items-center justify-center py-lg w-full">
-<div class="absolute w-40 h-40 bg-primary-container rounded-full opacity-20 blur-2xl z-0"></div>
-<h1 class="font-display text-display font-bold text-on-surface relative z-10 tracking-tighter" style="font-size: 8rem; line-height: 1;">
-                    B2
-                </h1>
+<div class="absolute w-40 h-40 bg-primary/20 rounded-full opacity-20 blur-2xl z-0"></div>
+<h1 class="font-display font-bold relative z-10 tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-[#F5F5F7] via-[#8B7CFF] to-[#6E5BFF]" style="font-size: 8rem; line-height: 1;">
+    B2
+</h1>
 </div>
 <!-- Description -->
 <div class="space-y-sm px-sm z-10">
-<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
-                    Your English is solid. You can express complex ideas fluently and you're ready to master professional nuances.
-                </p>
+<p class="font-body-lg text-lg text-on-surface-variant leading-relaxed text-pretty">
+    Your English is solid. You can express complex ideas fluently and you're ready to master professional nuances.
+</p>
 </div>
 <!-- Stats -->
-<div class="flex items-center justify-center gap-md font-body-sm text-body-sm text-outline z-10">
+<div class="flex items-center justify-center gap-md font-body-sm text-sm text-on-surface-variant/80 z-10 font-medium">
 <div class="flex items-center gap-xs">
-<span class="material-symbols-outlined text-[16px]" style="font-size: 16px;">timer</span>
-<span>Time: 14:20</span>
+<span class="material-symbols-outlined text-[16px] text-primary">timer</span>
+<span class="tabular-nums">Time: 14:20</span>
 </div>
-<div class="w-1 h-1 bg-outline-variant rounded-full"></div>
+<div class="w-1 h-1 bg-outline rounded-full"></div>
 <div class="flex items-center gap-xs">
-<span class="material-symbols-outlined text-[16px]" style="font-size: 16px;">check_circle</span>
-<span>Accuracy: 88%</span>
+<span class="material-symbols-outlined text-[16px] text-primary">check_circle</span>
+<span class="tabular-nums">Accuracy: 88%</span>
 </div>
 </div>
 <!-- Action -->
 <div class="pt-md w-full flex justify-center z-10">
-<button class="bg-primary-container text-on-primary-container font-label-md text-label-md px-lg py-[12px] rounded-lg transition-all duration-200 hover:bg-inverse-primary border border-transparent focus:border-primary focus:ring-4 focus:ring-primary/20 shadow-[0_0_15px_rgba(139,124,255,0.1)] hover:shadow-[0_0_20px_rgba(139,124,255,0.2)]">
-                    Set your goals
-                </button>
+<button onclick="window.location.href='linguist_ai_dashboard.html';" class="bg-primary hover:bg-primary/95 text-white font-medium px-8 py-3 rounded-lg active:scale-[0.96] transition-all duration-150 shadow-[0_0_15px_rgba(110,91,255,0.25)] border border-[#8B7CFF]/30 hover:border-[#8B7CFF]/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 text-sm">
+    Go to Dashboard
+</button>
 </div>
 </div>
 </main>
 <style>
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
         }
     </style>

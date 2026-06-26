@@ -6,70 +6,45 @@
 <title>Register - LinguistAI</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@500;600&amp;family=Inter:wght@400&amp;family=Geist:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;family=Geist:wght@400;500&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
-                    "colors": {
-                        "on-surface-variant": "#c8c4d8",
-                        "surface-bright": "#393842",
-                        "on-tertiary-fixed-variant": "#733500",
-                        "on-primary-container": "#fffeff",
-                        "primary-fixed": "#e4dfff",
-                        "inverse-on-surface": "#312f39",
-                        "surface-container-highest": "#35343e",
-                        "error-container": "#93000a",
-                        "on-tertiary-fixed": "#311300",
-                        "on-primary-fixed-variant": "#3d1acf",
-                        "surface-container": "#201e28",
-                        "surface-tint": "#c6bfff",
-                        "secondary-fixed": "#e4dfff",
-                        "surface-variant": "#35343e",
-                        "surface-container-low": "#1c1a24",
-                        "surface-container-high": "#2a2933",
-                        "on-error": "#690005",
-                        "on-surface": "#e5e0ee",
-                        "surface-container-lowest": "#0e0d16",
-                        "secondary-container": "#422db2",
-                        "on-secondary-fixed": "#170065",
-                        "secondary": "#c7bfff",
-                        "outline": "#928ea1",
-                        "primary-fixed-dim": "#c6bfff",
-                        "inverse-primary": "#563fe6",
-                        "background": "#13121c",
-                        "surface-dim": "#13121c",
-                        "tertiary-container": "#bb5b00",
-                        "on-tertiary": "#512400",
-                        "tertiary-fixed": "#ffdbc7",
-                        "tertiary": "#ffb688",
-                        "primary-container": "#6e5bff",
-                        "secondary-fixed-dim": "#c7bfff",
-                        "on-tertiary-container": "#ffffff",
-                        "on-primary": "#2700a0",
-                        "surface": "#13121c",
-                        "on-primary-fixed": "#160066",
-                        "error": "#ffb4ab",
-                        "primary": "#c6bfff",
-                        "tertiary-fixed-dim": "#ffb688",
-                        "on-error-container": "#ffdad6",
-                        "on-secondary-container": "#b4abff",
-                        "on-secondary-fixed-variant": "#422db2",
-                        "on-background": "#e5e0ee",
-                        "outline-variant": "#474555",
-                        "on-secondary": "#2a039d",
-                        "inverse-surface": "#e5e0ee"
+                    colors: {
+                        background: "#0A0A0C",
+                        surface: "#15151A",
+                        "surface-raised": "#1E1E24",
+                        outline: "#2A2A32",
+                        "outline-variant": "#2A2A32",
+                        primary: "#6E5BFF",
+                        "primary-container": "#6E5BFF",
+                        "on-primary-container": "#F5F5F7",
+                        "on-surface": "#F5F5F7",
+                        "on-surface-variant": "#9A9AA5",
+                        "text-tertiary": "#62626C",
+                        accent: "#6E5BFF",
+                        "accent-glow": "#8B7CFF",
+                        success: "#3DD68C",
+                        warning: "#E8B339",
+                        error: "#FF5C6C",
+                        // Keep compatibility with existing container levels
+                        "surface-container-lowest": "#0A0A0C",
+                        "surface-container-low": "#15151A",
+                        "surface-container": "#15151A",
+                        "surface-container-high": "#1E1E24",
+                        "surface-container-highest": "#2A2A32",
                     },
-                    "borderRadius": {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px",
-                        "input": "10px"
+                    borderRadius: {
+                        "DEFAULT": "8px",
+                        "md": "8px",
+                        "lg": "12px",
+                        "xl": "16px",
+                        "full": "9999px"
                     },
-                    "spacing": {
+                    spacing: {
                         "base": "4px",
                         "xs": "8px",
                         "container-max": "1440px",
@@ -79,17 +54,17 @@
                         "gutter": "24px",
                         "md": "24px"
                     },
-                    "fontFamily": {
-                        "headline-lg": ["Hanken Grotesk"],
-                        "label-md": ["Geist"],
-                        "display": ["Hanken Grotesk"],
-                        "body-sm": ["Inter"],
-                        "code-sm": ["Geist"],
-                        "body-md": ["Inter"],
-                        "headline-md": ["Hanken Grotesk"],
-                        "body-lg": ["Inter"]
+                    fontFamily: {
+                        "headline-lg": ["Hanken Grotesk", "sans-serif"],
+                        "label-md": ["Geist", "sans-serif"],
+                        "display": ["Hanken Grotesk", "sans-serif"],
+                        "body-sm": ["Inter", "sans-serif"],
+                        "code-sm": ["Geist", "monospace"],
+                        "body-md": ["Inter", "sans-serif"],
+                        "headline-md": ["Hanken Grotesk", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"]
                     },
-                    "fontSize": {
+                    fontSize: {
                         "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
                         "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500" }],
                         "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
@@ -106,91 +81,65 @@
 <style>
         body {
             background-color: #0A0A0C;
+            color: #F5F5F7;
         }
-        .form-input {
-            background-color: #15151A;
-            border: 1px solid #2A2A32;
-        }
-        .form-input:focus {
-            border-color: #6E5BFF;
-            box-shadow: 0 0 0 4px rgba(139, 124, 255, 0.2);
-            outline: none;
-        }
-        .social-btn {
-            background-color: #15151A;
-            border: 1px solid #2A2A32;
-        }
-        .social-btn:hover {
-            border-color: #474555;
-        }
-        .btn-primary {
-            background-color: #6E5BFF;
-            color: #ffffff;
-        }
-        .btn-primary:hover {
-            background-color: #563fe6;
-        }
-        .text-muted { color: #9A9AA5; }
-        .text-micro { color: #62626C; font-size: 12px; line-height: 16px; }
-        .link-accent { color: #6E5BFF; }
-        .link-accent:hover { text-decoration: underline; }
-        .text-brand { color: #F5F5F7; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-sm md:p-md text-on-surface font-body-md antialiased selection:bg-primary-container selection:text-white">
-<main class="w-full max-w-[420px] flex flex-col gap-lg">
-<header class="flex flex-col items-center text-center gap-sm">
-<div class="font-display text-body-md font-bold text-on-surface tracking-wider">LINGUIST AI</div>
-<h1 class="font-headline-lg text-headline-lg text-brand mt-xs">Create your account</h1>
-<p class="font-body-md text-body-md text-muted">Start your personalized AI learning path</p>
-</header>
-<div class="flex flex-col gap-md">
-<button class="social-btn w-full flex items-center justify-center gap-sm py-3 px-4 rounded-input font-label-md text-label-md text-on-surface transition-colors duration-200">
-<svg class="w-5 h-5" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<body class="min-h-screen flex flex-col items-center justify-center p-sm md:p-md text-on-surface bg-background font-body-md antialiased selection:bg-primary/20 selection:text-primary">
+<main class="w-full max-w-[420px] flex flex-col gap-sm">
+<!-- Card Container -->
+<div class="bg-surface rounded-xl border border-outline p-8 w-full flex flex-col gap-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+<div class="flex flex-col gap-1 items-center text-center">
+<span class="font-bold text-xs text-primary uppercase tracking-widest mb-2">Linguist AI</span>
+<h1 class="font-headline-lg text-2xl font-bold text-on-surface tracking-tight text-balance">Create your account</h1>
+<p class="font-body-md text-sm text-on-surface-variant text-pretty">Start your personalized AI learning path</p>
+</div>
+<div class="flex flex-col gap-4">
+<button class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-surface-raised border border-outline text-on-surface font-medium hover:bg-[#1E1E24] active:scale-[0.97] transition-all duration-150 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+<svg class="w-4 h-4" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path>
 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
 </svg>
-                Sign up with Google
-            </button>
-<div class="flex items-center gap-4 w-full">
-<div class="h-px flex-1 bg-[#2A2A32]"></div>
-<span class="font-label-md text-label-md text-muted">or</span>
-<div class="h-px flex-1 bg-[#2A2A32]"></div>
+    Sign up with Google
+</button>
+<div class="flex items-center gap-sm my-1">
+<div class="h-[1px] flex-1 bg-outline"></div>
+<span class="font-code-sm text-xs text-on-surface-variant uppercase tracking-wider">or</span>
+<div class="h-[1px] flex-1 bg-outline"></div>
 </div>
-<form action="#" class="flex flex-col gap-sm" method="POST">
-<div class="flex flex-col gap-base">
-<label class="font-label-md text-label-md text-on-surface-variant sr-only" for="name">Full Name</label>
-<input class="form-input w-full px-4 py-3 rounded-input text-on-surface placeholder:text-[#474555] font-body-md text-body-md transition-all duration-200" id="name" name="name" placeholder="Full Name" required="" type="text"/>
+<form onsubmit="event.preventDefault(); window.location.href='language_selection_onboarding.html';" class="flex flex-col gap-4">
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-xs font-semibold text-on-surface-variant" for="name">Full Name</label>
+<input class="w-full bg-surface-raised border border-outline rounded-lg text-on-surface placeholder:text-on-surface-variant/40 font-body-md text-body-md px-3.5 py-2.5 focus:border-primary focus:ring-0 focus:outline-none transition-all duration-200 focus:shadow-[0_0_14px_rgba(110,91,255,0.15)]" id="name" name="name" placeholder="Full Name" required="" type="text"/>
 </div>
-<div class="flex flex-col gap-base">
-<label class="font-label-md text-label-md text-on-surface-variant sr-only" for="email">Email Address</label>
-<input class="form-input w-full px-4 py-3 rounded-input text-on-surface placeholder:text-[#474555] font-body-md text-body-md transition-all duration-200" id="email" name="email" placeholder="Email Address" required="" type="email"/>
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-xs font-semibold text-on-surface-variant" for="email">Email Address</label>
+<input class="w-full bg-surface-raised border border-outline rounded-lg text-on-surface placeholder:text-on-surface-variant/40 font-body-md text-body-md px-3.5 py-2.5 focus:border-primary focus:ring-0 focus:outline-none transition-all duration-200 focus:shadow-[0_0_14px_rgba(110,91,255,0.15)]" id="email" name="email" placeholder="Email Address" required="" type="email"/>
 </div>
-<div class="flex flex-col gap-base">
-<label class="font-label-md text-label-md text-on-surface-variant sr-only" for="password">Password</label>
-<input class="form-input w-full px-4 py-3 rounded-input text-on-surface placeholder:text-[#474555] font-body-md text-body-md transition-all duration-200" id="password" name="password" placeholder="Password" required="" type="password"/>
-<div class="flex gap-1 mt-1 px-1">
-<div class="h-1 w-full max-w-[24px] rounded-full bg-[#2A2A32] transition-colors duration-300" id="pwd-req-1"></div>
-<div class="h-1 w-full max-w-[24px] rounded-full bg-[#2A2A32] transition-colors duration-300" id="pwd-req-2"></div>
-<div class="h-1 w-full max-w-[24px] rounded-full bg-[#2A2A32] transition-colors duration-300" id="pwd-req-3"></div>
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-xs font-semibold text-on-surface-variant" for="password">Password</label>
+<input class="w-full bg-surface-raised border border-outline rounded-lg text-on-surface placeholder:text-on-surface-variant/40 font-body-md text-body-md px-3.5 py-2.5 focus:border-primary focus:ring-0 focus:outline-none transition-all duration-200 focus:shadow-[0_0_14px_rgba(110,91,255,0.15)]" id="password" name="password" placeholder="Password" required="" type="password"/>
+<div class="flex gap-1.5 mt-1.5 px-0.5">
+<div class="h-1 w-full max-w-[24px] rounded-full bg-outline transition-all duration-300" id="pwd-req-1"></div>
+<div class="h-1 w-full max-w-[24px] rounded-full bg-outline transition-all duration-300" id="pwd-req-2"></div>
+<div class="h-1 w-full max-w-[24px] rounded-full bg-outline transition-all duration-300" id="pwd-req-3"></div>
 </div>
 </div>
-<p class="text-micro mt-2">
-                    By creating an account, you agree to our 
-                    <a class="underline decoration-[#474555] hover:text-on-surface transition-colors" href="#">Terms of Service</a> and 
-                    <a class="underline decoration-[#474555] hover:text-on-surface transition-colors" href="#">Privacy Policy</a>.
-                </p>
-<button class="btn-primary w-full py-3 px-4 rounded-input font-label-md text-label-md mt-2 transition-all duration-200" type="submit">
-                    Create account
-                </button>
+<p class="text-[11px] text-on-surface-variant/80 mt-1 leading-relaxed text-pretty">
+    By creating an account, you agree to our 
+    <a class="text-primary hover:text-accent-glow hover:underline transition-colors font-medium" href="#">Terms of Service</a> and 
+    <a class="text-primary hover:text-accent-glow hover:underline transition-colors font-medium" href="#">Privacy Policy</a>.
+</p>
+<button class="w-full bg-primary hover:bg-primary/95 text-white font-medium py-2.5 px-4 rounded-lg active:scale-[0.97] transition-all duration-150 mt-2 flex items-center justify-center border border-primary/30 hover:border-[#8B7CFF]/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 shadow-[0_0_12px_rgba(110,91,255,0.25)]" type="submit">
+    Create account
+</button>
 </form>
 </div>
-<div class="text-center">
-<p class="font-body-sm text-body-sm text-muted">
-                Already have an account? <a class="font-label-md text-label-md link-accent" href="#">Log in</a>
-</p>
+</div>
+<div class="text-center font-body-sm text-sm text-on-surface-variant">
+    Already have an account? <a class="text-primary hover:text-accent-glow hover:underline transition-colors duration-150 font-medium ml-1" href="linguist_ai_login.html">Log in</a>
 </div>
 </main>
 <script>
@@ -213,7 +162,7 @@
             // Lower opacity for subtlety
             [req1, req2, req3].forEach(el => {
                 if(el.style.backgroundColor === 'rgb(110, 91, 255)') {
-                    el.style.opacity = '0.6';
+                    el.style.opacity = '0.7';
                 } else {
                     el.style.opacity = '1';
                 }

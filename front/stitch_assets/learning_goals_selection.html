@@ -14,53 +14,23 @@
             theme: {
                 extend: {
                     "colors": {
-                        "error": "#ffb4ab",
-                        "tertiary-container": "#bb5b00",
-                        "error-container": "#93000a",
-                        "outline-variant": "#474555",
-                        "tertiary-fixed-dim": "#ffb688",
-                        "on-secondary-fixed": "#170065",
-                        "inverse-surface": "#e5e0ee",
-                        "on-primary-container": "#fffeff",
-                        "on-background": "#e5e0ee",
-                        "on-tertiary-fixed": "#311300",
-                        "surface-tint": "#c6bfff",
-                        "on-secondary-fixed-variant": "#422db2",
-                        "inverse-on-surface": "#312f39",
-                        "primary-fixed-dim": "#c6bfff",
-                        "background": "#13121c",
-                        "secondary-fixed-dim": "#c7bfff",
-                        "on-tertiary-container": "#ffffff",
-                        "on-primary-fixed": "#160066",
-                        "surface-container-lowest": "#0e0d16",
-                        "primary": "#c6bfff",
-                        "outline": "#928ea1",
-                        "surface-bright": "#393842",
-                        "surface-container-low": "#1c1a24",
-                        "on-secondary-container": "#b4abff",
-                        "surface-container-high": "#2a2933",
-                        "on-surface-variant": "#c8c4d8",
-                        "surface-container-highest": "#35343e",
-                        "surface-variant": "#35343e",
-                        "on-primary-fixed-variant": "#3d1acf",
-                        "on-error": "#690005",
-                        "on-tertiary": "#512400",
-                        "on-error-container": "#ffdad6",
-                        "on-surface": "#e5e0ee",
-                        "surface": "#13121c",
-                        "secondary": "#c7bfff",
-                        "on-tertiary-fixed-variant": "#733500",
-                        "tertiary-fixed": "#ffdbc7",
-                        "secondary-container": "#422db2",
-                        "on-secondary": "#2a039d",
-                        "inverse-primary": "#563fe6",
-                        "tertiary": "#ffb688",
-                        "surface-container": "#201e28",
-                        "secondary-fixed": "#e4dfff",
-                        "on-primary": "#2700a0",
-                        "primary-container": "#6e5bff",
-                        "surface-dim": "#13121c",
-                        "primary-fixed": "#e4dfff"
+                        "background": "#0A0A0C",
+                        "surface": "#15151A",
+                        "surface-container": "#1C1C24",
+                        "surface-container-low": "#15151A",
+                        "surface-container-high": "#22222A",
+                        "surface-container-highest": "#2E2E38",
+                        "surface-container-lowest": "#070709",
+                        "outline-variant": "#2A2A32",
+                        "outline": "#474555",
+                        "primary": "#6E5BFF",
+                        "primary-container": "#6E5BFF",
+                        "on-surface": "#F5F5F7",
+                        "on-surface-variant": "#9A9AA5",
+                        "surface-input": "#1E1E24",
+                        "error": "#FF5C6C",
+                        "success": "#3DD68C",
+                        "warning": "#E8B339"
                     },
                     "borderRadius": {
                         "DEFAULT": "0.25rem",
@@ -106,7 +76,8 @@
 <style>
         body {
             background-color: #0A0A0C;
-            color: #e5e0ee;
+            background-image: radial-gradient(circle at 50% 50%, rgba(110, 91, 255, 0.04) 0%, transparent 70%);
+            color: #F5F5F7;
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
             display: flex;
@@ -117,7 +88,7 @@
             background-color: #15151A;
             border: 1px solid #2A2A32;
             border-radius: 14px;
-            transition: all 200ms ease-out;
+            transition: transform 200ms ease-out, border-color 200ms ease-out, background-color 200ms ease-out, box-shadow 200ms ease-out;
             cursor: pointer;
             display: flex;
             flex-direction: column;
@@ -130,12 +101,17 @@
 
         .goal-card:hover {
             border-color: #474555;
+            transform: scale(1.02);
+        }
+
+        .goal-card:active {
+            transform: scale(0.98);
         }
 
         .goal-card.selected {
             background-color: #1E1E24;
             border-color: #6E5BFF;
-            box-shadow: 0 0 0 4px rgba(139, 124, 255, 0.2);
+            box-shadow: 0 0 16px 2px rgba(139, 124, 255, 0.15);
         }
 
         .goal-card .icon-container {
@@ -187,13 +163,11 @@
     </style>
 </head>
 <body class="antialiased selection:bg-primary-container selection:text-white">
-<!-- Top Navigation (Suppressed per logic: Linear Onboarding Intent) -->
-<!-- Side Navigation (Suppressed per logic: Linear Onboarding Intent) -->
 <main class="flex-grow flex items-center justify-center p-md md:p-xl">
 <div class="max-w-[800px] w-full mx-auto flex flex-col items-center">
 <div class="text-center mb-xl w-full">
-<h1 class="font-headline-lg text-headline-lg text-on-surface mb-xs">What are you learning English for?</h1>
-<p class="font-body-md text-body-md text-[#9A9AA5]">Choose up to 3</p>
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-xs text-balance">What are you learning English for?</h1>
+<p class="font-body-md text-body-md text-on-surface-variant text-pretty">Choose up to 3</p>
 </div>
 <div class="bento-grid mb-xl">
 <!-- Row 1 -->
@@ -238,7 +212,7 @@
 </div>
 </div>
 <div class="w-full flex justify-center mt-auto md:mt-0">
-<button class="bg-surface-container-highest text-on-surface-variant font-label-md text-label-md px-xl py-sm rounded-lg border border-[#2A2A32] transition-colors duration-200 w-full md:w-auto min-w-[200px]" disabled="" id="continueBtn">
+<button class="bg-surface-container-highest text-on-surface-variant font-label-md text-label-md px-xl py-2.5 rounded-lg border border-[#2A2A32] transition-[transform,colors] duration-200 active:scale-[0.96] w-full md:w-auto min-w-[200px]" disabled="" id="continueBtn">
                     Continue
                 </button>
 </div>
@@ -248,10 +222,10 @@
         let selectedCount = 0;
         const maxSelections = 3;
         const continueBtn = document.getElementById('continueBtn');
-
+ 
         function toggleCard(element) {
             const isSelected = element.classList.contains('selected');
-
+ 
             if (isSelected) {
                 element.classList.remove('selected');
                 selectedCount--;
@@ -265,20 +239,26 @@
                     setTimeout(() => element.style.transform = 'scale(1)', 100);
                 }
             }
-
+ 
             updateButtonState();
         }
-
+ 
         function updateButtonState() {
             if (selectedCount > 0) {
                 continueBtn.disabled = false;
                 continueBtn.classList.remove('bg-surface-container-highest', 'text-on-surface-variant', 'border-[#2A2A32]');
-                continueBtn.classList.add('bg-primary-container', 'text-white', 'border-transparent', 'hover:opacity-90');
+                continueBtn.classList.add('bg-primary', 'text-white', 'border-transparent', 'hover:opacity-95');
             } else {
                 continueBtn.disabled = true;
                 continueBtn.classList.add('bg-surface-container-highest', 'text-on-surface-variant', 'border-[#2A2A32]');
-                continueBtn.classList.remove('bg-primary-container', 'text-white', 'border-transparent', 'hover:opacity-90');
+                continueBtn.classList.remove('bg-primary', 'text-white', 'border-transparent', 'hover:opacity-95');
             }
         }
+
+        continueBtn.addEventListener('click', () => {
+            if (!continueBtn.disabled) {
+                window.location.href = 'english_placement_test_question.html';
+            }
+        });
     </script>
 </body></html>

@@ -87,6 +87,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   const navItems = [
     { href: "/dashboard", label: t("navigation.dashboard"), icon: "dashboard" },
+    { href: "/speaking", label: "AI Speaking", icon: "settings_voice" },
     { href: "/missions", label: t("navigation.missions"), icon: "explore" },
     { href: "/tutor", label: t("navigation.tutor"), icon: "smart_toy" },
     { href: "/progress", label: t("navigation.progress"), icon: "leaderboard" },

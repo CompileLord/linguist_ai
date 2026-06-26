@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Review Session - Linguist AI</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Hanken+Grotesk:wght@500;600;700&family=Geist:wght@400;500&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        background: "#0A0A0C",
+                        surface: "#15151A",
+                        "surface-raised": "#1E1E24",
+                        outline: "#2A2A32",
+                        "outline-variant": "#2A2A32",
+                        primary: "#6E5BFF",
+                        "primary-container": "#6E5BFF",
+                        "on-primary-container": "#F5F5F7",
+                        "on-surface": "#F5F5F7",
+                        "on-surface-variant": "#9A9AA5",
+                        "text-tertiary": "#62626C",
+                        accent: "#6E5BFF",
+                        "accent-glow": "#8B7CFF",
+                        success: "#3DD68C",
+                        warning: "#E8B339",
+                        error: "#FF5C6C",
+                        "surface-container-lowest": "#0A0A0C",
+                        "surface-container-low": "#15151A",
+                        "surface-container": "#15151A",
+                        "surface-container-high": "#1E1E24",
+                        "surface-container-highest": "#2A2A32",
+                    },
+                    borderRadius: {
+                        "DEFAULT": "8px",
+                        "md": "8px",
+                        "lg": "12px",
+                        "xl": "16px",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "xs": "8px",
+                        "xl": "64px",
+                        "md": "24px",
+                        "base": "4px",
+                        "sm": "16px",
+                        "lg": "40px",
+                        "container-max": "1440px",
+                        "gutter": "24px"
+                    },
+                    fontFamily: {
+                        "label-md": ["Geist", "sans-serif"],
+                        "headline-md": ["Hanken Grotesk", "sans-serif"],
+                        "body-sm": ["Inter", "sans-serif"],
+                        "body-md": ["Inter", "sans-serif"],
+                        "code-sm": ["Geist", "monospace"],
+                        "headline-lg": ["Hanken Grotesk", "sans-serif"],
+                        "display": ["Hanken Grotesk", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"]
+                    },
+                    fontSize: {
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "code-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0A0A0C;
+            color: #F5F5F7;
+        }
+        
+        #answer-content {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-in-out;
+        }
+        #answer-content.revealed {
+            max-height: 250px;
+            opacity: 1;
+            margin-top: 24px;
+        }
+        #reveal-btn {
+            transition: opacity 0.2s;
+        }
+        #reveal-btn.hidden-state {
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="flex min-h-screen bg-background font-body-md text-body-md antialiased selection:bg-primary/20 selection:text-primary overflow-hidden">
+    <!-- SideNavBar -->
+    <nav class="h-screen w-64 fixed left-0 top-0 bg-background border-r border-outline flex flex-col justify-between py-md px-sm z-20">
+        <div class="flex flex-col gap-lg">
+            <div class="mb-sm px-sm mt-sm">
+                <h1 class="font-display text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent-glow tracking-tight leading-tight mb-1">Linguist AI</h1>
+                <p class="text-on-surface-variant font-body-sm text-xs font-semibold">Premium Tier</p>
+            </div>
+            <nav class="flex flex-col gap-1.5">
+                <a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_dashboard.html">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <span class="text-label-md font-label-md">Dashboard</span>
+                </a>
+                <a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="real_world_missions.html">
+                    <span class="material-symbols-outlined">explore</span>
+                    <span class="text-label-md font-label-md">Missions</span>
+                </a>
+                <a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="ai_tutor_panel.html">
+                    <span class="material-symbols-outlined">smart_toy</span>
+                    <span class="text-label-md font-label-md">Tutor</span>
+                </a>
+                <a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="vocabulary_list.html">
+                    <span class="material-symbols-outlined">translate</span>
+                    <span class="text-label-md font-label-md">Vocabulary</span>
+                </a>
+                <a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_progress_profile.html">
+                    <span class="material-symbols-outlined">analytics</span>
+                    <span class="text-label-md font-label-md">Progress</span>
+                </a>
+                <a class="flex items-center gap-sm px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-raised/50 hover:text-on-surface active:scale-[0.98] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50" href="linguist_ai_settings.html">
+                    <span class="material-symbols-outlined">settings</span>
+                    <span class="text-label-md font-label-md">Settings</span>
+                </a>
+            </nav>
+        </div>
+        <div class="px-xs pb-4">
+            <a href="ai_voice_conversation_premium_interface.html" class="block w-full text-center bg-primary hover:bg-primary/90 text-white font-medium py-2.5 px-4 rounded-lg active:scale-[0.96] transition-[transform,background-color] duration-150 shadow-[0_0_12px_rgba(110,91,255,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+                New Session
+            </a>
+        </div>
+    </nav>
+    <!-- Main Content Area -->
+    <main class="flex-grow ml-64 flex flex-col h-screen overflow-y-auto custom-scrollbar">
+        <!-- TopAppBar -->
+        <header class="bg-surface/85 backdrop-blur-md border-b border-outline flex justify-between items-center w-full h-16 px-xl sticky top-0 z-10 shrink-0">
+            <div class="font-headline-lg text-2xl font-bold text-on-surface tracking-tight">
+                Review Session
+            </div>
+            <div class="flex items-center gap-md">
+                <!-- Streak -->
+                <div class="flex items-center gap-xs bg-surface-raised border border-[#2A2A32] rounded-full py-1 px-3">
+                    <span class="material-symbols-outlined text-warning text-lg" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+                    <span class="font-label-md text-label-md text-on-surface tabular-nums">7 Day Streak</span>
+                </div>
+                <!-- XP -->
+                <div class="flex items-center gap-xs bg-surface-raised border border-[#2A2A32] rounded-full py-1 px-3">
+                    <span class="material-symbols-outlined text-primary text-lg">military_tech</span>
+                    <span class="font-label-md text-label-md text-on-surface tabular-nums">1,250 XP</span>
+                </div>
+                <!-- Avatar -->
+                <a href="linguist_ai_progress_profile.html">
+                    <img alt="User avatar" class="w-8 h-8 rounded-full border border-[#2A2A32] object-cover hover:border-primary/50 hover:shadow-[0_0_8px_rgba(110,91,255,0.4)] transition-all duration-200 cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAV5ByEFKVdjnv8F4NQRiNvpfpkfwGW5AoOADF6sg1NuI3TEEKMTpMRGurWxkqtI_oLbs0bFso6QhcJR8flD4u5R7vqJ7C_q_Qsf_AlR3eTZeAHFhM8GfuvdqE_G5CICHIw9ohRlN1lSowE47fl7U8hOXoTtZ07kkOekd1srA953bRSCysv9GeXR1KfAQZkVw2x5US5nIbuE28h2Zd0r-81urPJ9UpCTZLMr938jYJfrfC8FYLGMnt1QYnQDCbwbnjjNDC0lb8xWQ"/>
+                </a>
+            </div>
+        </header>
+
+        <!-- Progress Bar -->
+        <div class="w-full h-1 bg-surface-container-high z-10 sticky top-16 shrink-0">
+            <div id="session-progress" class="h-full bg-gradient-to-r from-primary to-accent-glow transition-all duration-300 ease-out" style="width: 10%;"></div>
+        </div>
+
+        <!-- Main Content Canvas -->
+        <div id="deck-view" class="flex-grow flex flex-col items-center justify-center px-gutter pt-xl pb-32 max-w-[800px] mx-auto w-full relative z-10">
+            <!-- Flashcard -->
+            <div class="bg-surface border border-outline rounded-xl w-full max-w-md p-8 flex flex-col items-center justify-center relative shadow-lg hover:border-primary/20 transition-all duration-300 min-h-[340px]">
+                <!-- Item Type Badge -->
+                <span id="item-type-badge" class="absolute top-4 left-4 px-2 py-0.5 bg-surface-raised border border-[#2A2A32] text-xs font-label-md text-primary rounded-full">Vocabulary</span>
+                
+                <!-- Front/Topic Word -->
+                <h1 id="front-word" class="font-display text-4xl font-bold text-on-surface text-center mb-6 tracking-tight break-words w-full">
+                    sophisticated
+                </h1>
+                
+                <!-- Front Sentence / Clue -->
+                <p id="context-sentence" class="font-body-md text-sm text-on-surface-variant text-center max-w-[90%] mb-4 text-pretty italic">
+                    "The system uses a highly ___ algorithm to predict user behavior."
+                </p>
+
+                <!-- Interactive Reveal Area -->
+                <div class="w-full flex flex-col items-center relative">
+                    <!-- Reveal Prompt -->
+                    <button class="mt-8 py-2.5 px-6 rounded-full border border-outline text-on-surface-variant hover:border-primary hover:text-primary active:scale-[0.96] transition-all duration-150 font-label-md text-sm flex items-center gap-2 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50" id="reveal-btn">
+                        <span class="material-symbols-outlined text-[18px] group-hover:scale-110 transition-transform">visibility</span>
+                        Tap to reveal answer
+                    </button>
+                    <!-- Revealed Content (Hidden initially) -->
+                    <div class="w-full flex flex-col items-center" id="answer-content">
+                        <div class="h-[1px] w-1/2 bg-outline mb-6"></div>
+                        <div class="flex items-center gap-sm mb-2 text-center">
+                            <span id="back-translation" class="font-headline-lg text-2xl font-bold text-on-surface">сложный, искушенный</span>
+                        </div>
+                        <p id="back-explanation" class="font-body-sm text-xs text-on-surface-variant text-center max-w-[85%] leading-relaxed text-pretty mt-2">
+                            Having, revealing, or involving a great deal of worldly experience and knowledge of fashion and culture.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Dots / Counter -->
+            <div class="mt-8 flex flex-col items-center gap-2">
+                <span id="card-counter" class="font-label-md text-sm text-on-surface-variant tabular-nums font-medium">1 / 10</span>
+                <div id="dot-indicators" class="flex gap-2">
+                    <div class="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                    <div class="w-1.5 h-1.5 rounded-full bg-outline-variant"></div>
+                    <div class="w-1.5 h-1.5 rounded-full bg-outline-variant"></div>
+                    <div class="w-1.5 h-1.5 rounded-full bg-outline-variant"></div>
+                    <div class="w-1.5 h-1.5 rounded-full bg-outline-variant"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session Finished View (Hidden initially) -->
+        <div id="finish-view" class="hidden flex-grow flex flex-col items-center justify-center px-gutter pt-xl pb-24 max-w-[800px] w-full mx-auto relative z-10 text-center space-y-lg">
+            <div class="w-24 h-24 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto animate-pulse">
+                <span class="material-symbols-outlined text-primary text-5xl">task_alt</span>
+            </div>
+            <div class="space-y-sm">
+                <h2 class="font-headline-lg text-3xl font-bold text-on-surface">Review Session Completed!</h2>
+                <p class="font-body-md text-on-surface-variant max-w-sm mx-auto text-pretty">
+                    You have successfully completed all due spaced repetition reviews for today.
+                </p>
+            </div>
+            <!-- Stats -->
+            <div class="grid grid-cols-2 gap-md max-w-xs w-full mx-auto pt-sm">
+                <div class="bg-surface border border-outline rounded-xl p-sm">
+                    <p class="font-label-md text-xs font-semibold text-on-surface-variant">XP Earned</p>
+                    <p class="text-2xl font-bold text-primary mt-1">+100 XP</p>
+                </div>
+                <div class="bg-surface border border-outline rounded-xl p-sm">
+                    <p class="font-label-md text-xs font-semibold text-on-surface-variant">Accuracy</p>
+                    <p class="text-2xl font-bold text-success mt-1">90%</p>
+                </div>
+            </div>
+            <div class="pt-lg">
+                <a href="linguist_ai_dashboard.html" class="bg-primary hover:bg-primary/95 text-white font-medium py-3 px-8 rounded-lg active:scale-[0.96] transition-all duration-150 shadow-[0_0_12px_rgba(110,91,255,0.25)] border border-[#8B7CFF]/30 focus:outline-none">
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Bottom Spaced Repetition Action Footer (Revealed after flip) -->
+        <footer id="evaluation-footer" class="fixed bottom-0 left-64 right-0 z-30 flex justify-center items-center gap-sm px-md py-4 bg-surface border-t border-outline translate-y-full transition-transform duration-300">
+            <button onclick="submitEvaluation('again')" class="flex-1 max-w-[120px] bg-error/10 hover:bg-error/20 border border-error/30 text-error font-medium py-2 rounded-lg text-sm active:scale-[0.95] transition-all">
+                Again
+            </button>
+            <button onclick="submitEvaluation('hard')" class="flex-1 max-w-[120px] bg-warning/10 hover:bg-warning/20 border border-warning/30 text-warning font-medium py-2 rounded-lg text-sm active:scale-[0.95] transition-all">
+                Hard
+            </button>
+            <button onclick="submitEvaluation('good')" class="flex-1 max-w-[120px] bg-primary/10 hover:bg-primary/25 border border-primary/30 text-primary font-medium py-2 rounded-lg text-sm active:scale-[0.95] transition-all">
+                Good
+            </button>
+            <button onclick="submitEvaluation('easy')" class="flex-1 max-w-[120px] bg-success/10 hover:bg-success/20 border border-success/30 text-success font-medium py-2 rounded-lg text-sm active:scale-[0.95] transition-all">
+                Easy
+            </button>
+        </footer>
+    </main>
+
+    <script>
+        const reviewItems = [
+            {
+                type: "Vocabulary",
+                front: "sophisticated",
+                clue: `"The system uses a highly ___ algorithm to predict user behavior."`,
+                back: "сложный, искушенный",
+                explanation: "Having, revealing, or involving a great deal of worldly experience and knowledge."
+            },
+            {
+                type: "Grammar",
+                front: "If she had study...",
+                clue: `Correct this conditional sentence: "If she had studied, she would pass the test."`,
+                back: "...she would have passed",
+                explanation: "Third conditional structures use 'If + past perfect' and 'would have + past participle' for counterfactual past scenarios."
+            },
+            {
+                type: "Vocabulary",
+                front: "persistence",
+                clue: `"His ___ paid off when he finally got the job offer."`,
+                back: "настойчивость, упорство",
+                explanation: "Firm or obstinate continuance in a course of action in spite of difficulty or opposition."
+            },
+            {
+                type: "Grammar",
+                front: "Present Perfect vs Past Simple",
+                clue: `"I ___ (know) him for ten years." (Action continuing into the present)`,
+                back: "have known",
+                explanation: "Use the Present Perfect to express a state that began in the past and continues into the present."
+            },
+            {
+                type: "Vocabulary",
+                front: "ambiguity",
+                clue: `"We should write requirements clearly to avoid any ___."`,
+                back: "двусмысленность, неопределенность",
+                explanation: "The quality of being open to more than one interpretation; inexactness."
+            }
+        ];
+
+        let currentIndex = 0;
+        const totalItems = reviewItems.length;
+
+        const revealBtn = document.getElementById('reveal-btn');
+        const answerContent = document.getElementById('answer-content');
+        const evaluationFooter = document.getElementById('evaluation-footer');
+        const deckView = document.getElementById('deck-view');
+        const finishView = document.getElementById('finish-view');
+        const progressFill = document.getElementById('session-progress');
+        const cardCounter = document.getElementById('card-counter');
+        const dotIndicators = document.getElementById('dot-indicators');
+
+        const badgeEl = document.getElementById('item-type-badge');
+        const frontWordEl = document.getElementById('front-word');
+        const clueEl = document.getElementById('context-sentence');
+        const backTranslationEl = document.getElementById('back-translation');
+        const backExplanationEl = document.getElementById('back-explanation');
+
+        function loadCard(index) {
+            if (index >= totalItems) {
+                showFinished();
+                return;
+            }
+            
+            const item = reviewItems[index];
+            badgeEl.textContent = item.type;
+            badgeEl.className = `absolute top-4 left-4 px-2 py-0.5 border text-xs font-label-md rounded-full ${
+                item.type === 'Grammar' ? 'bg-warning/10 border-warning/20 text-warning' : 'bg-primary/10 border-primary/20 text-primary'
+            }`;
+            frontWordEl.textContent = item.front;
+            clueEl.textContent = item.clue;
+            backTranslationEl.textContent = item.back;
+            backExplanationEl.textContent = item.explanation;
+
+            // Reset UI states
+            answerContent.classList.remove('revealed');
+            revealBtn.classList.remove('hidden-state');
+            evaluationFooter.classList.add('translate-y-full');
+
+            // Update counters
+            cardCounter.textContent = `${index + 1} / ${totalItems}`;
+            progressFill.style.width = `${((index) / totalItems) * 100}%`;
+
+            // Update dots
+            let dotsHtml = '';
+            for (let i = 0; i < totalItems; i++) {
+                dotsHtml += `<div class="w-1.5 h-1.5 rounded-full ${i === index ? 'bg-primary' : 'bg-outline-variant'}"></div>`;
+            }
+            dotIndicators.innerHTML = dotsHtml;
+        }
+
+        revealBtn.addEventListener('click', () => {
+            revealBtn.classList.add('hidden-state');
+            answerContent.classList.add('revealed');
+            evaluationFooter.classList.remove('translate-y-full');
+        });
+
+        function submitEvaluation(rating) {
+            currentIndex++;
+            if (currentIndex < totalItems) {
+                loadCard(currentIndex);
+            } else {
+                progressFill.style.width = '100%';
+                showFinished();
+            }
+        }
+
+        function showFinished() {
+            deckView.classList.add('hidden');
+            evaluationFooter.classList.add('translate-y-full');
+            finishView.classList.remove('hidden');
+        }
+
+        // Initialize first card
+        loadCard(currentIndex);
+    </script>
+</body>
+</html>

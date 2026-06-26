@@ -8,59 +8,28 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Geist:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
                     "colors": {
-                        "secondary-fixed-dim": "#c7bfff",
-                        "on-tertiary": "#512400",
-                        "surface": "#13121c",
-                        "on-tertiary-container": "#ffffff",
-                        "on-error-container": "#ffdad6",
-                        "on-primary-fixed": "#160066",
-                        "primary-container": "#6e5bff",
-                        "on-tertiary-fixed": "#311300",
-                        "on-primary-container": "#fffeff",
-                        "primary": "#c6bfff",
-                        "primary-fixed": "#e4dfff",
-                        "on-background": "#e5e0ee",
-                        "on-surface-variant": "#c8c4d8",
-                        "inverse-primary": "#563fe6",
-                        "on-secondary-container": "#b4abff",
-                        "error-container": "#93000a",
-                        "on-secondary": "#2a039d",
-                        "on-primary": "#2700a0",
-                        "secondary-container": "#422db2",
-                        "inverse-on-surface": "#312f39",
-                        "on-tertiary-fixed-variant": "#733500",
-                        "error": "#ffb4ab",
-                        "surface-container-high": "#2a2933",
-                        "background": "#13121c",
-                        "surface-tint": "#c6bfff",
-                        "outline-variant": "#474555",
-                        "surface-container-low": "#1c1a24",
-                        "surface-container": "#201e28",
-                        "surface-dim": "#13121c",
-                        "on-surface": "#e5e0ee",
-                        "surface-variant": "#35343e",
-                        "secondary-fixed": "#e4dfff",
-                        "on-primary-fixed-variant": "#3d1acf",
-                        "tertiary": "#ffb688",
-                        "primary-fixed-dim": "#c6bfff",
-                        "outline": "#928ea1",
-                        "inverse-surface": "#e5e0ee",
-                        "secondary": "#c7bfff",
-                        "on-secondary-fixed": "#170065",
-                        "on-error": "#690005",
-                        "on-secondary-fixed-variant": "#422db2",
-                        "tertiary-fixed-dim": "#ffb688",
-                        "surface-container-lowest": "#0e0d16",
-                        "tertiary-fixed": "#ffdbc7",
-                        "surface-container-highest": "#35343e",
-                        "tertiary-container": "#bb5b00",
-                        "surface-bright": "#393842"
+                        "background": "#0A0A0C",
+                        "surface": "#15151A",
+                        "surface-container": "#1C1C24",
+                        "surface-container-low": "#15151A",
+                        "surface-container-high": "#22222A",
+                        "surface-container-highest": "#2E2E38",
+                        "surface-container-lowest": "#070709",
+                        "outline-variant": "#2A2A32",
+                        "outline": "#474555",
+                        "primary": "#6E5BFF",
+                        "primary-container": "#6E5BFF",
+                        "on-surface": "#F5F5F7",
+                        "on-surface-variant": "#9A9AA5",
+                        "surface-input": "#1E1E24",
+                        "error": "#FF5C6C",
+                        "success": "#3DD68C",
+                        "warning": "#E8B339"
                     },
                     "borderRadius": {
                         "DEFAULT": "0.25rem",
@@ -103,25 +72,26 @@
         }
     </script>
 <style>
-        body { background-color: #0A0A0C; color: #e5e0ee; }
-        .test-card { background-color: #15151A; border: 1px solid #2A2A32; border-radius: 10px; transition: all 0.2s ease-out; }
-        .test-card:hover { border-color: #6E5BFF; background-color: #1E1E24; cursor: pointer; }
-        .test-card.selected { border-color: #6E5BFF; background-color: #1E1E24; }
-        .progress-segment { height: 4px; border-radius: 2px; flex: 1; margin: 0 2px; background-color: #2A2A32; }
+        body { background-color: #0A0A0C; color: #F5F5F7; }
+        .test-card { background-color: #15151A; border: 1px solid #2A2A32; border-radius: 12px; transition: transform 0.2s ease-out, border-color 0.2s ease-out, background-color 0.2s ease-out; }
+        .test-card:hover { border-color: #6E5BFF; background-color: #1C1C24; }
+        .test-card:active { transform: scale(0.98); }
+        .test-card.selected { border-color: #6E5BFF; background-color: #1C1C24; }
+        .progress-segment { height: 4px; border-radius: 9999px; flex: 1; margin: 0 4px; background-color: #2A2A32; transition: background-color 0.3s ease; }
         .progress-segment.filled { background-color: #6E5BFF; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased">
 <!-- TopAppBar -->
-<header class="bg-surface dark:bg-surface text-primary dark:text-primary docked full-width top-0 border-b border-outline-variant flat no shadows flex justify-between items-center h-16 px-xl max-w-container-max mx-auto w-full z-50 sticky">
-<div class="font-display text-headline-md font-bold text-on-surface dark:text-on-surface">
+<header class="bg-surface text-primary border-b border-outline-variant flex justify-between items-center h-16 px-gutter max-w-container-max mx-auto w-full z-50 sticky">
+<div class="font-display text-headline-md font-bold text-on-surface">
             Linguist AI
         </div>
-<div class="flex items-center gap-md">
-<button class="hover:bg-surface-container-high transition-colors duration-200 p-xs rounded-full flex items-center justify-center">
+<div class="flex items-center gap-xs">
+<button class="hover:bg-surface-container-high transition-[transform,colors] duration-200 p-2 rounded-full flex items-center justify-center active:scale-[0.96] focus:outline-none">
 <span class="material-symbols-outlined text-on-surface" style="font-variation-settings: 'FILL' 0;">help_outline</span>
 </button>
-<button class="hover:bg-surface-container-high transition-colors duration-200 p-xs rounded-full flex items-center justify-center">
+<button class="hover:bg-surface-container-high transition-[transform,colors] duration-200 p-2 rounded-full flex items-center justify-center active:scale-[0.96] focus:outline-none">
 <span class="material-symbols-outlined text-on-surface" style="font-variation-settings: 'FILL' 0;">account_circle</span>
 </button>
 </div>
@@ -145,32 +115,32 @@
 </div>
 <!-- Question -->
 <div class="w-full text-center mb-lg">
-<h1 class="font-display text-display text-on-surface tracking-tight leading-tight">
-                If I <span class="text-primary-container border-b-2 border-primary-container inline-block w-32 translate-y-2 opacity-50"></span> more time, I would have finished the project.
+<h1 class="font-display text-headline-lg md:text-display text-on-surface tracking-tight leading-tight text-balance">
+                If I <span class="text-primary border-b-2 border-primary inline-block w-32 translate-y-1 opacity-60"></span> more time, I would have finished the project.
             </h1>
 </div>
 <!-- Answer Options -->
 <div class="w-full max-w-[480px] flex flex-col gap-sm">
 <button class="test-card p-sm text-left flex items-center gap-sm group">
-<div class="w-6 h-6 rounded-full border border-outline-variant flex items-center justify-center text-label-md font-label-md text-on-surface-variant group-hover:border-primary-container group-hover:text-primary-container transition-colors">A</div>
-<span class="font-body-lg text-body-lg text-on-surface">had</span>
+<div class="w-6 h-6 rounded-full border border-outline-variant flex items-center justify-center text-label-md font-label-md text-on-surface-variant group-hover:border-primary group-hover:text-primary transition-colors">A</div>
+<span class="font-body-lg text-body-lg text-on-surface text-pretty">had</span>
 </button>
 <button class="test-card p-sm text-left flex items-center gap-sm group">
-<div class="w-6 h-6 rounded-full border border-outline-variant flex items-center justify-center text-label-md font-label-md text-on-surface-variant group-hover:border-primary-container group-hover:text-primary-container transition-colors">B</div>
-<span class="font-body-lg text-body-lg text-on-surface">have had</span>
+<div class="w-6 h-6 rounded-full border border-outline-variant flex items-center justify-center text-label-md font-label-md text-on-surface-variant group-hover:border-primary group-hover:text-primary transition-colors">B</div>
+<span class="font-body-lg text-body-lg text-on-surface text-pretty">have had</span>
 </button>
 <button class="test-card p-sm text-left flex items-center gap-sm group">
-<div class="w-6 h-6 rounded-full border border-outline-variant flex items-center justify-center text-label-md font-label-md text-on-surface-variant group-hover:border-primary-container group-hover:text-primary-container transition-colors">C</div>
-<span class="font-body-lg text-body-lg text-on-surface">would have</span>
+<div class="w-6 h-6 rounded-full border border-outline-variant flex items-center justify-center text-label-md font-label-md text-on-surface-variant group-hover:border-primary group-hover:text-primary transition-colors">C</div>
+<span class="font-body-lg text-body-lg text-on-surface text-pretty">would have</span>
 </button>
 <button class="test-card p-sm text-left flex items-center gap-sm group">
-<div class="w-6 h-6 rounded-full border border-outline-variant flex items-center justify-center text-label-md font-label-md text-on-surface-variant group-hover:border-primary-container group-hover:text-primary-container transition-colors">D</div>
-<span class="font-body-lg text-body-lg text-on-surface">had had</span>
+<div class="w-6 h-6 rounded-full border border-outline-variant flex items-center justify-center text-label-md font-label-md text-on-surface-variant group-hover:border-primary group-hover:text-primary transition-colors">D</div>
+<span class="font-body-lg text-body-lg text-on-surface text-pretty">had had</span>
 </button>
 </div>
 <!-- Skip Action -->
 <div class="mt-lg">
-<button class="font-label-md text-label-md text-[#62626C] hover:text-on-surface transition-colors duration-200 px-md py-sm">
+<button onclick="window.location.href='placement_test_result.html';" class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-[transform,colors] duration-200 px-md py-2.5 rounded-lg active:scale-[0.96]">
                 Skip for now
             </button>
 </div>
@@ -182,7 +152,7 @@
                 // Remove selected class from all
                 document.querySelectorAll('.test-card').forEach(c => c.classList.remove('selected'));
                 document.querySelectorAll('.test-card .w-6').forEach(c => {
-                    c.classList.remove('bg-primary-container', 'text-on-primary-container', 'border-primary-container');
+                    c.classList.remove('bg-primary', 'text-white', 'border-primary');
                     c.classList.add('border-outline-variant', 'text-on-surface-variant');
                 });
                 
@@ -190,7 +160,12 @@
                 this.classList.add('selected');
                 const indicator = this.querySelector('.w-6');
                 indicator.classList.remove('border-outline-variant', 'text-on-surface-variant');
-                indicator.classList.add('bg-primary-container', 'text-on-primary-container', 'border-primary-container');
+                indicator.classList.add('bg-primary', 'text-white', 'border-primary');
+
+                // Redirect to results after a brief delay
+                setTimeout(() => {
+                    window.location.href = 'placement_test_result.html';
+                }, 500);
             });
         });
     </script>
