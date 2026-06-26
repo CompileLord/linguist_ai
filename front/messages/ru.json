@@ -18,6 +18,22 @@
       "submit": "Создать аккаунт",
       "submitting": "Создание...",
       "already_have_account": "Уже есть аккаунт? <login>Войти</login>"
+    },
+    "Login": {
+      "title": "С возвращением",
+      "subtitle": "Пожалуйста, введите свои данные для входа.",
+      "signin_google": "Войти через Google",
+      "or": "или",
+      "email": "Электронная почта",
+      "email_placeholder": "Введите ваш email",
+      "password": "Пароль",
+      "password_placeholder": "Введите ваш пароль",
+      "submit": "Войти",
+      "submitting": "Вход...",
+      "dont_have_account": "Нет аккаунта? <signup>Зарегистрироваться</signup>",
+      "email_err": "Неверный адрес электронной почты",
+      "password_min_err": "Пароль должен содержать не менее 6 символов",
+      "failed": "Ошибка входа. Пожалуйста, проверьте свои учетные данные и попробуйте снова."
     }
   },
   "Onboarding": {
@@ -35,6 +51,7 @@
       "title": "Выберите ваш уровень",
       "description": "Выберите уровень, который лучше всего описывает ваше текущее владение английским языком.",
       "continue": "Продолжить",
+      "saving": "Сохранение...",
       "back": "Назад",
       "levels": {
         "a1_title": "A1 - Начальный",
@@ -80,6 +97,36 @@
         "university": "Университет",
         "daily_communication": "Ежедневное общение"
       }
+    }
+  },
+  "Dashboard": {
+    "continue_learning": "Продолжить обучение",
+    "generate_next_lesson": "Создать следующий урок",
+    "no_pending_lessons": "Нет отложенных уроков",
+    "level": "Уровень",
+    "select_new_module": "Выберите новый модуль, чтобы начать",
+    "ready": "Готов",
+    "continue": "Продолжить",
+    "generate": "Создать",
+    "review_queue": "Очередь повторения",
+    "items_ready": "Элементов: {count}",
+    "ready_for_review": "готово для повторения",
+    "quick_actions": "Быстрые действия",
+    "actions": {
+      "tutor": "ИИ Репетитор",
+      "missions": "Реальные миссии",
+      "exams": "Экзамены",
+      "vocabulary": "Словарный запас"
+    },
+    "recent_activity": "Последняя активность",
+    "navigation": {
+      "dashboard": "Панель управления",
+      "missions": "Миссии",
+      "tutor": "Репетитор",
+      "progress": "Прогресс",
+      "start_lesson": "Начать урок",
+      "day_streak": "Ударный режим: {count} дн.",
+      "mastery_level": "Уровень мастерства {level}"
     }
   }
 }

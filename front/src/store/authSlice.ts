@@ -35,6 +35,10 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+      }
     },
     setUiLanguage: (state, action: PayloadAction<'en' | 'ru' | 'tg'>) => {
       if (state.user) {

@@ -1,4 +1,4 @@
-import { api } from './api';
+import { api } from "./api";
 
 export interface ProfileResponse {
   user_id: string;
@@ -39,44 +39,48 @@ export interface PlacementResult {
 
 export const onboardingApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    setupProfile: builder.mutation<ProfileResponse, { target_language_code: string; native_language_code: string; daily_goal_minutes?: number; goals: string[] }>({
+    setupProfile: builder.mutation<
+      ProfileResponse,
+      {
+        target_language_code: string;
+        native_language_code: string;
+        daily_goal_minutes?: number;
+        goals: string[];
+      }
+    >({
       query: (body) => ({
-        url: '/profile/setup',
-        method: 'POST',
+        url: "/profile/setup",
+        method: "POST",
         body,
       }),
-      invalidatesTags: ['Profile'],
+      invalidatesTags: ["Profile"],
     }),
     updateGoals: builder.mutation<any, string[]>({
       query: (goals) => ({
-        url: '/profile/goals',
-        method: 'PUT',
+        url: "/profile/goals",
+        method: "PUT",
         body: { goals },
       }),
-      invalidatesTags: ['Profile'],
+      invalidatesTags: ["Profile"],
     }),
     startPlacementTest: builder.mutation<PlacementQuestion, void>({
       query: () => ({
-        url: '/profile/placement/start',
-        method: 'POST',
+        url: "/profile/placement/start",
+        method: "POST",
       }),
     }),
-    answerPlacementQuestion: builder.mutation<PlacementStepResult, { answer_index: number }>({
+    answerPlacementQuestion: builder.mutation<
+      PlacementStepResult,
+      { answer_index: number }
+    >({
       query: (body) => ({
-        url: '/profile/placement/answer',
-        method: 'POST',
+        url: "/profile/placement/answer",
+        method: "POST",
         body,
       }),
     }),
     getPlacementResult: builder.query<PlacementResult, void>({
-      query: () => '/profile/placement/result',
-    }),
-    updateLevelManually: builder.mutation<ProfileResponse, string>({
-      query: (level) => ({
-        url: `/profile/level?level=${level}`,
-        method: 'PUT',
-      }),
-      invalidatesTags: ['Profile'],
+      query: () => "/profile/placement/result",
     }),
   }),
 });
@@ -87,6 +91,4 @@ export const {
   useStartPlacementTestMutation,
   useAnswerPlacementQuestionMutation,
   useGetPlacementResultQuery,
-  useUpdateLevelManuallyMutation,
 } = onboardingApi;
-

@@ -5,3 +5,4 @@ media
 *.log
 *.onnx
 *.pyc
+python311/

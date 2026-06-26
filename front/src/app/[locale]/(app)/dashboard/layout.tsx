@@ -2,16 +2,20 @@
 
 import { ReactNode, useState } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
+import { useGetGamificationStatsQuery } from "@/services/dashboardApi";
+import { useTranslations } from "next-intl";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const t = useTranslations("Dashboard");
+  const { data: gamification, isLoading } = useGetGamificationStatsQuery();
 
   const navItems = [
-    { href: "/dashboard", label: "Dashboard", icon: "dashboard" },
-    { href: "/missions", label: "Missions", icon: "explore" },
-    { href: "/tutor", label: "Tutor", icon: "smart_toy" },
-    { href: "/progress", label: "Progress", icon: "leaderboard" },
+    { href: "/dashboard", label: t("navigation.dashboard"), icon: "dashboard" },
+    { href: "/missions", label: t("navigation.missions"), icon: "explore" },
+    { href: "/tutor", label: t("navigation.tutor"), icon: "smart_toy" },
+    { href: "/progress", label: t("navigation.progress"), icon: "leaderboard" },
   ];
 
   return (
@@ -26,7 +30,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               Linguist AI
             </h2>
             <p className="text-label-md font-label-md text-on-surface-variant mt-base">
-              Mastery Level 4
+              {t("navigation.mastery_level", { level: isLoading ? "-" : (gamification?.current_game_level || 1) })}
             </p>
           </div>
           <nav className="flex flex-col gap-base flex-1">
@@ -51,7 +55,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             })}
           </nav>
           <button className="w-full py-xs px-sm bg-primary-container text-on-primary-container rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity cursor-pointer">
-            Start Lesson
+            {t("navigation.start_lesson")}
           </button>
         </aside>
 
@@ -71,7 +75,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     Linguist AI
                   </h2>
                   <p className="text-label-md font-label-md text-on-surface-variant mt-base">
-                    Mastery Level 4
+                    {t("navigation.mastery_level", { level: isLoading ? "-" : (gamification?.current_game_level || 1) })}
                   </p>
                 </div>
                 <button
@@ -108,7 +112,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               </nav>
 
               <button className="w-full py-xs px-sm bg-primary-container text-on-primary-container rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity cursor-pointer">
-                Start Lesson
+                {t("navigation.start_lesson")}
               </button>
             </aside>
           </div>
@@ -125,7 +129,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       <footer className="fixed left-[256px] bottom-0 w-[calc(100%-256px)] bg-[#15151A] border-t border-[#2A2A32] z-40 md:pl-64">
         <div className="max-w-[1000px] mx-auto px-gutter py-sm flex items-center gap-md">
           <span className="text-label-md font-label-md text-on-surface-variant whitespace-nowrap">
-            Level 4
+            {t("level")} {gamification?.current_game_level || 1}
           </span>
           <div className="flex-1 h-1 bg-[#1C1C24] rounded-full overflow-hidden">
             <div
@@ -134,7 +138,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             ></div>
           </div>
           <span className="text-label-md font-label-md text-on-surface whitespace-nowrap">
-            Level 5
+            {t("level")} {(gamification?.current_game_level || 1) + 1}
           </span>
         </div>
       </footer>

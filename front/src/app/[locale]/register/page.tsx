@@ -1,16 +1,18 @@
 "use client";
 
+import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useRegisterMutation } from "@/services/authApi";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setCredentials } from "@/store/authSlice";
 import { useTranslations } from "next-intl";
+import type { RootState } from "@/store/store";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -26,6 +28,23 @@ export default function RegisterPage() {
   const dispatch = useDispatch();
   const t = useTranslations("Auth.Register");
   const [registerApi, { isLoading }] = useRegisterMutation();
+
+  const isAuthenticated = useSelector(
+    (state: RootState) => state.auth.isAuthenticated,
+  );
+  const [isRedirecting, setIsRedirecting] = React.useState(true);
+
+  React.useEffect(() => {
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("access_token")
+        : null;
+    if (token) {
+      router.replace("/dashboard");
+    } else {
+      setIsRedirecting(false);
+    }
+  }, [router]);
 
   const {
     register,
@@ -44,7 +63,10 @@ export default function RegisterPage() {
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue.trim());
   const isPasswordValid = passwordValue.length >= 8;
 
+  const [registerError, setRegisterError] = React.useState<string | null>(null);
+
   const onSubmit = async (data: RegisterFormValues) => {
+    setRegisterError(null);
     try {
       const result = await registerApi({
         email: data.email,
@@ -54,6 +76,12 @@ export default function RegisterPage() {
 
       const currentLocale = (params?.locale as "en" | "ru" | "tg") || "ru";
 
+      if (typeof window !== "undefined") {
+        localStorage.setItem("access_token", result.access_token);
+        localStorage.setItem("refresh_token", result.refresh_token);
+        localStorage.setItem("ui_language", currentLocale);
+      }
+
       dispatch(
         setCredentials({
           token: result.access_token,
@@ -61,17 +89,63 @@ export default function RegisterPage() {
         }),
       );
       router.push("/onboarding");
-    } catch (err: any) {
-      console.error("Registration failed:", err?.data?.detail || err?.data || err?.error || err?.message || err);
+    } catch (err) {
+      console.error("Registration failed:", err);
+      const apiError = err as {
+        data?: { detail?: { msg?: string }[] | string };
+      };
+      if (apiError?.data?.detail) {
+        const detail = apiError.data.detail;
+        setRegisterError(
+          Array.isArray(detail)
+            ? detail[0]?.msg || "Registration failed"
+            : detail,
+        );
+      } else {
+        setRegisterError("Registration failed. Please try again.");
+      }
     }
   };
+
+  if (isRedirecting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background text-on-surface">
+        <div className="text-lg animate-pulse">{t("submitting")}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-sm md:p-md text-on-surface font-body-md antialiased selection:bg-primary-container selection:text-white bg-background">
       <main className="w-full max-w-[420px] flex flex-col gap-lg">
         <header className="flex flex-col items-center text-center gap-sm">
-          <div className="font-display text-body-md font-bold text-on-surface tracking-wider">
-            LINGUIST AI
+          <div className="flex justify-between items-center w-full">
+            <div className="font-display text-body-md font-bold text-on-surface tracking-wider">
+              LINGUIST AI
+            </div>
+            <div className="flex gap-2">
+              <Link
+                href="/register"
+                locale="en"
+                className={`text-sm ${params?.locale === "en" ? "text-primary font-bold" : "text-on-surface-variant hover:text-on-surface"}`}
+              >
+                EN
+              </Link>
+              <Link
+                href="/register"
+                locale="ru"
+                className={`text-sm ${params?.locale === "ru" ? "text-primary font-bold" : "text-on-surface-variant hover:text-on-surface"}`}
+              >
+                RU
+              </Link>
+              <Link
+                href="/register"
+                locale="tg"
+                className={`text-sm ${params?.locale === "tg" ? "text-primary font-bold" : "text-on-surface-variant hover:text-on-surface"}`}
+              >
+                TG
+              </Link>
+            </div>
           </div>
           <h1 className="font-headline-lg text-headline-lg text-inverse-surface mt-xs">
             {t("title")}
@@ -80,6 +154,12 @@ export default function RegisterPage() {
             {t("subtitle")}
           </p>
         </header>
+
+        {registerError && (
+          <div className="bg-error/10 text-error p-sm rounded-lg text-center font-body-sm text-body-sm">
+            {registerError}
+          </div>
+        )}
 
         <div className="flex flex-col gap-md">
           <Button variant="social" type="button" className="w-full py-3">
@@ -233,12 +313,12 @@ export default function RegisterPage() {
           <p className="font-body-sm text-body-sm text-[#9A9AA5]">
             {t.rich("already_have_account", {
               login: (chunks) => (
-                <a
-                  href="#"
+                <Link
+                  href="/login"
                   className="font-label-md text-label-md text-primary-container hover:underline"
                 >
                   {chunks}
-                </a>
+                </Link>
               ),
             })}
           </p>

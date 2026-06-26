@@ -18,6 +18,22 @@
       "submit": "Ҳисоб сохтан",
       "submitting": "Сохта истодааст...",
       "already_have_account": "Аллакай ҳисоб доред? <login>Ворид шудан</login>"
+    },
+    "Login": {
+      "title": "Хуш омадед",
+      "subtitle": "Лутфан, тафсилоти худро барои ворид шудан ворид кунед.",
+      "signin_google": "Давом додан бо Google",
+      "or": "ё",
+      "email": "Суроғаи электронӣ",
+      "email_placeholder": "Почтаи худро ворид кунед",
+      "password": "Рамз",
+      "password_placeholder": "Рамзи худро ворид кунед",
+      "submit": "Ворид шудан",
+      "submitting": "Ворид шуда истодааст...",
+      "dont_have_account": "Ҳисоб надоред? <signup>Бақайдгирӣ</signup>",
+      "email_err": "Суроғаи электронӣ нодуруст аст",
+      "password_min_err": "Рамз бояд ҳадди аққал 6 ҳарф бошад",
+      "failed": "Воридшавӣ ноком шуд. Лутфан, маълумоти худро тафтиш кунед ва бори дигар кӯшиш кунед."
     }
   },
   "Onboarding": {
@@ -35,6 +51,7 @@
       "title": "Сатҳи худро интихоб кунед",
       "description": "Сатҳеро интихоб кунед, ки дониши ҳозираи забони англисии шуморо беҳтар тавсиф кунад.",
       "continue": "Давом додан",
+      "saving": "Сабт...",
       "back": "Ба қафо",
       "levels": {
         "a1_title": "A1 - Навомӯз",
@@ -80,6 +97,36 @@
         "university": "Донишгоҳ",
         "daily_communication": "Муоширати ҳаррӯза"
       }
+    }
+  },
+  "Dashboard": {
+    "continue_learning": "Давом додани омӯзиш",
+    "generate_next_lesson": "Сохтани дарси навбатӣ",
+    "no_pending_lessons": "Дарсҳои нотамом нест",
+    "level": "Сатҳ",
+    "select_new_module": "Модули навро барои оғоз интихоб кунед",
+    "ready": "Тайёр",
+    "continue": "Давом додан",
+    "generate": "Сохтан",
+    "review_queue": "Навбати такрор",
+    "items_ready": "{count} унсур",
+    "ready_for_review": "барои такрор омода аст",
+    "quick_actions": "Амалҳои зуд",
+    "actions": {
+      "tutor": "ИИ Репетитор",
+      "missions": "Миссияҳои воқеӣ",
+      "exams": "Имтиҳонҳо",
+      "vocabulary": "Захираи луғавӣ"
+    },
+    "recent_activity": "Фаъолияти охирин",
+    "navigation": {
+      "dashboard": "Панел",
+      "missions": "Миссияҳо",
+      "tutor": "Репетитор",
+      "progress": "Пешравӣ",
+      "start_lesson": "Оғози дарс",
+      "day_streak": "{count} рӯз пайваста",
+      "mastery_level": "Сатҳи маҳорат {level}"
     }
   }
 }

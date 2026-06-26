@@ -18,6 +18,22 @@
       "submit": "Create account",
       "submitting": "Creating account...",
       "already_have_account": "Already have an account? <login>Log in</login>"
+    },
+    "Login": {
+      "title": "Welcome Back",
+      "subtitle": "Please enter your details to sign in.",
+      "signin_google": "Continue with Google",
+      "or": "or",
+      "email": "Email Address",
+      "email_placeholder": "Enter your email",
+      "password": "Password",
+      "password_placeholder": "Enter your password",
+      "submit": "Sign in",
+      "submitting": "Signing in...",
+      "dont_have_account": "Don't have an account? <signup>Sign up</signup>",
+      "email_err": "Invalid email address",
+      "password_min_err": "Password must be at least 6 characters",
+      "failed": "Login failed. Please check your credentials and try again."
     }
   },
   "Onboarding": {
@@ -35,6 +51,7 @@
       "title": "Select your level",
       "description": "Choose the level that best describes your current English proficiency.",
       "continue": "Continue",
+      "saving": "Saving...",
       "back": "Back",
       "levels": {
         "a1_title": "A1 - Beginner",
@@ -80,6 +97,36 @@
         "university": "University",
         "daily_communication": "Daily Communication"
       }
+    }
+  },
+  "Dashboard": {
+    "continue_learning": "Continue Learning",
+    "generate_next_lesson": "Generate Next Lesson",
+    "no_pending_lessons": "No pending lessons",
+    "level": "Level",
+    "select_new_module": "Select a new module to start",
+    "ready": "Ready",
+    "continue": "Continue",
+    "generate": "Generate",
+    "review_queue": "Review Queue",
+    "items_ready": "{count} items",
+    "ready_for_review": "ready for review",
+    "quick_actions": "Quick Actions",
+    "actions": {
+      "tutor": "AI Tutor",
+      "missions": "Real World Missions",
+      "exams": "Exams",
+      "vocabulary": "Vocabulary"
+    },
+    "recent_activity": "Recent Activity",
+    "navigation": {
+      "dashboard": "Dashboard",
+      "missions": "Missions",
+      "tutor": "Tutor",
+      "progress": "Progress",
+      "start_lesson": "Start Lesson",
+      "day_streak": "{count} Day Streak",
+      "mastery_level": "Mastery Level {level}"
     }
   }
 }

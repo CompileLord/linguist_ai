@@ -18,16 +18,20 @@ export function LanguageSetupStep({ onNext, onBack }: Props) {
   const router = useRouter();
 
   const languages = [
-    { code: "tg", name: "Тоҷикӣ" },
-    { code: "ru", name: "Русский" },
-    { code: "en", name: "English" },
+    { code: "tg", lang: "tajik", name: "Тоҷикӣ" },
+    { code: "ru", lang: "russian", name: "Русский" },
+    { code: "en", lang: "english", name: "English" },
   ] as const;
 
-  const handleLanguageSelect = async (code: "tg" | "ru" | "en") => {
+  const handleLanguageSelect = async (
+    code: "tg" | "ru" | "en",
+    lang: string,
+  ) => {
     try {
       await setupProfile({
         target_language_code: "en",
-        native_language_code: code,
+        native_language_code: lang,
+        daily_goal_minutes: 15,
         goals: [],
       }).unwrap();
       dispatch(setUiLanguage(code));
@@ -48,7 +52,7 @@ export function LanguageSetupStep({ onNext, onBack }: Props) {
         {languages.map((lang) => (
           <button
             key={lang.code}
-            onClick={() => handleLanguageSelect(lang.code)}
+            onClick={() => handleLanguageSelect(lang.code, lang.lang)}
             disabled={isLoading}
             className="group flex items-center justify-center py-xl px-lg bg-[#15151A] border border-[#2A2A32] rounded-[14px] transition-all duration-200 ease-out hover:scale-[1.02] hover:border-primary-container hover:shadow-[0_0_4px_0_rgba(139,124,255,0.2)] focus:outline-none disabled:opacity-50"
           >
@@ -70,4 +74,3 @@ export function LanguageSetupStep({ onNext, onBack }: Props) {
     </div>
   );
 }
-

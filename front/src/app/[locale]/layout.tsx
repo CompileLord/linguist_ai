@@ -32,6 +32,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
+import { AuthInitializer } from "@/components/AuthInitializer";
 
 type Locale = (typeof routing.locales)[number];
 
@@ -62,7 +63,9 @@ export default async function RootLayout({
       </head>
       <body className="min-h-full flex flex-col font-body-md text-on-surface">
         <NextIntlClientProvider messages={messages}>
-          <StoreProvider>{children}</StoreProvider>
+          <StoreProvider>
+            <AuthInitializer>{children}</AuthInitializer>
+          </StoreProvider>
         </NextIntlClientProvider>
       </body>
     </html>
