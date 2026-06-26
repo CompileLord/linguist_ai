@@ -12,7 +12,7 @@ The backend utilizes FastAPI and is structured around a multi-layered architectu
 - `core`: Global configurations, database manager, and middlewares.
 
 **Separation of Concerns:**
-While the directory structure suggests a clean separation, the implementation leaks concerns across boundaries. For instance, some API routers (e.g., `ws_speaking` in `speaking.py`, `ws_tutor` in `tutor.py`) embed substantial business logic, orchestrate multiple repositories, and even handle direct TTS/STT orchestration and WebSocket chunking. Furthermore, several services instantiate database sessions directly (`async with db_manager.get_session()`) instead of receiving injected dependencies, breaking the repository pattern's abstraction and making unit testing difficult.
+While the directory structure suggests a clean separation, the implementation leaks concerns across boundaries. For instance, some API routers (e.g., `ws_speaking` in `app/api/routers/speaking.py`, `ws_tutor` in `app/api/routers/tutor.py`) embed substantial business logic, orchestrate multiple repositories, and even handle direct TTS/STT orchestration and WebSocket chunking. Furthermore, several routers and services instantiate database sessions directly (`async with db_manager.get_session()`), breaking the repository pattern's abstraction and making unit testing difficult. Examples include `app/api/routers/vocabulary.py`, `writing_exam.py`, `listening_exam.py`, and `coach.py`.
 
 **Data Lifecycle:**
 Incoming requests hit FastAPI routers, where Pydantic schemas validate payloads. Routers use FastAPI `Depends` to inject services/repositories. Services process the request (often communicating with external AI models via `AbstractAIProvider`) and call repositories to persist data via SQLAlchemy's `AsyncSession`. While the general flow is solid, the manual management of sessions within some services bypasses the intended request-scoped transaction lifecycle.
@@ -21,42 +21,39 @@ Incoming requests hit FastAPI routers, where Pydantic schemas validate payloads.
 
 ## 2. High-Risk Logical Issues & Edge Cases
 
-*   **Stateful Services in a Distributed Environment:**
-    *   `ErrorSignalService` maintains an in-memory class variable `_emitted_signals: List[Dict[str, Any]]`.
-    *   `ErrorExplanationService` uses an in-memory `_cache: Dict[str, str]`.
-    *   `QuotaTrackingService` maintains an in-memory `_cache` for configuration limits.
-    *   *Risk:* In a multi-worker production environment (e.g., multiple Uvicorn workers or distributed containers), these in-memory states will be isolated per worker. This leads to inconsistent caching, memory leaks, and logic failures (like duplicated signals).
-*   **Race Conditions in Concurrent Operations:**
-    *   `QuotaTrackingService.check_quota` performs a "check-then-act" sequence: it queries for an existing `UserQuota`, and if not found, creates one. Concurrent requests could lead to `IntegrityError` or multiple quota records for the same function and date.
-    *   Similar race conditions exist in `user_lesson_repository.get_user_lesson()` logic.
-*   **WebSocket Error Handling and Unbounded Loops:**
-    *   In `tutor.py` and `speaking.py`, WebSockets use `while True:` loops to parse audio and handle text generation. The error handling is overly broad (`except Exception:`), which masks underlying issues and can lead to silent failures or memory leaks if connections hang.
+*   **Leaking Abstractions in API Layer:**
+    *   Many FastAPI endpoints (e.g. in `vocabulary.py`, `writing_exam.py`, `listening_exam.py`, `coach.py`, `review.py`) directly import `db_manager` or raw SQLAlchemy `select`, `func` utilities to execute queries (often for counting records) inline inside the HTTP handler.
+    *   *Risk:* This tightly couples the API layer to the specific database schema, bypassing the established repository pattern and making testing/mocking impossible without a live DB connection.
+*   **Missing Database Transaction Boundaries (`commit` bypassing):**
+    *   Services like `LessonScoringService` (`calculate_score`) directly access a repository's protected `_session` attribute (`self._user_lesson_repository._session.commit()`).
+    *   *Risk:* Directly manipulating private session objects from the service layer breaks encapsulation and risks partial commits or transaction deadlocks if other repositories were manipulated during the same request.
+*   **Unsafe Broad Exception Handlers in WebSockets:**
+    *   Both `app/api/routers/tutor.py` and `speaking.py` use broad `except Exception:` blocks that simply invoke `pass` or log minimal errors on disconnects or unknown failures.
+    *   *Risk:* Memory leaks from unclosed socket connections and difficulty debugging runtime failures.
 
 ---
 
 ## 3. Performance Bottlenecks & Scalability Blindspots
 
-*   **Database Session Management:**
-    *   Services like `weekly_report_scheduler.py` iterate over users and create new database sessions inside loops (`async with db_manager.get_session() as session:`). This can exhaust connection pools under heavy load.
-*   **N+1 Queries and Inefficient Joins:**
-    *   In several routers (e.g., `list_missions`), the code loops over retrieved models to fetch related data (e.g., `attempts = await attempt_repo.list_by_user(..., mission_id=m.id)`). This results in an N+1 query problem. This should be solved using SQLAlchemy's `joinedload` or subqueries.
-*   **Computational Bottlenecks in the Main Thread:**
-    *   The `TextToSpeechService` uses `io.BytesIO` and synchronous file operations (like `wave.open(wav_io, "wb")`) within `async` functions without deferring to a thread pool via `asyncio.to_thread`. This blocks the main event loop, significantly degrading FastAPI's concurrency.
-*   **Missing Pagination:**
-    *   Certain endpoints default to fetching all records or have excessively high default limits without hard boundaries, risking memory exhaustion if tables grow large.
+*   **Unbounded Query Computations in Services:**
+    *   `AchievementEvaluationEngine` fetches large datasets into memory using `select(func.count(UserLesson.id))` across *all* user attempts continuously during every progress evaluation. It does this synchronously during hot paths (like finishing a speaking session).
+*   **Excessive Instantiations inside Loops:**
+    *   In `UserActivityAggregationService`, inside the loop fetching `UserLesson` history, there are multiple sub-queries triggered implicitly. Similar issues exist in `dashboard_analytics_service.py`.
+*   **Inefficient Pagination Implementations:**
+    *   In `listening_exam.py` (`list_available_listening_exams`), the API executes a complex `NOT IN` subquery against `UserListeningAttempt` which requires a full scan against all user attempts. This will degrade linearly as the user does more exams.
+*   **Missing Application-Level Caching for AI Results:**
+    *   In `WritingPromptGenerationService`, the AI generates prompts based on level and goal. There is no cache; every single request for `/exams/writing/prompt` hits the Vertex AI API, leading to extreme latency and unbounded Google Cloud API costs.
 
 ---
 
 ## 4. Code Maintenance & Modernization Opportunities
 
-*   **Decoupling WebSockets & Business Logic:**
-    *   Routers like `ws_speaking` are over 100 lines of complex procedural code. The extraction, audio processing, and AI generation logic should be moved to a dedicated `SpeakingInteractionService`.
-*   **DRY Principle Violations:**
-    *   Counting total items for pagination is manually rewritten across `vocabulary.py`, `writing_exam.py`, and `coach.py`. This should be abstracted into a generic repository pagination method.
-*   **Hardcoded Configuration:**
-    *   TTS/STT URLs and local paths (e.g., `VOICE_MAP` in `tts_service.py`) are hardcoded. These should be moved to the `Settings` class or environment variables.
-*   **Modern Language Patterns:**
-    *   Use of Dependency Injection (DI) should be standardized. Currently, there is a mix of `Depends()` at the router level and manual instantiations (e.g., `ProfileRepository(db)`) inside router bodies. A centralized DI container or consistent FastAPI dependency injection pattern is highly recommended.
+*   **Repository Consolidation:**
+    *   The `count()` operations scattered across `routers/` should be moved to their respective Repository classes (e.g., `VocabularyRepository.count_by_level()`). This DRYs up the code and restores the Domain layer isolation.
+*   **Unit of Work Pattern (UoW):**
+    *   Since services coordinate multiple repositories (e.g., updating user stats, streaks, gamification points, and lesson status), the codebase desperately needs a `UnitOfWork` manager. Currently, each repository relies on its own injected session, and manual `session.commit()` calls are prone to race conditions if one update fails after another has committed.
+*   **Background Tasks Refactoring:**
+    *   In `lesson_scoring_service.py`, `BackgroundTasks` are used, but if not provided, it falls back to raw `asyncio.create_task()` which lacks error context and can mask fatal runtime exceptions. Moving this to a message queue (like Celery or Redis Queue) would be much safer.
 
 ---
 
@@ -64,138 +61,99 @@ Incoming requests hit FastAPI routers, where Pydantic schemas validate payloads.
 
 | Component/File | Issue Summary | Impact Severity | Effort to Fix |
 | :--- | :--- | :--- | :--- |
-| `app/services/error_signal_service.py`, `error_explanation_service.py` | In-memory class variables (`_emitted_signals`, `_cache`) used for state, causing memory leaks and breaking multi-worker setups. | **Critical** | Low |
-| `app/api/routers/speaking.py`, `tutor.py` | Blocking synchronous audio/wave operations (`wave.open`) inside `async` WebSocket endpoints, starving the event loop. | **Critical** | Medium |
-| `app/api/routers/missions.py` | N+1 query issue in `list_missions` loop fetching attempts per mission. | **High** | Low |
-| `app/services/quota_tracking_service.py` | Race condition in quota creation/checking logic (check-then-act pattern). | **High** | Low |
-| `app/api/routers/speaking.py` | God-function: `ws_speaking` contains massive business logic, STT/TTS orchestration, and chunking. Violates SRP. | **Medium** | High |
-| `app/services/weekly_report_scheduler.py` | Inefficient session management: opening new DB sessions inside a loop. | **Medium** | Low |
+| `app/api/routers/*.py` (Multiple) | Raw SQLAlchemy queries executed directly inside API routers (e.g., `func.count()`), bypassing repositories. | **High** | Medium |
+| `app/services/lesson_scoring_service.py` | Direct mutation of private `_session` attribute (`self._user_lesson_repository._session.commit()`). | **High** | Low |
+| `app/api/routers/listening_exam.py` | Costly `NOT IN` subquery scaling linearly with user activity history. | **Medium** | Low |
+| `app/services/writing_exam_service.py` | No application-level caching for AI prompt generation, resulting in massive cloud API overhead. | **Medium** | Low |
+| `app/api/routers/tutor.py`, `speaking.py` | Silent catch-all exception swallowing (`except Exception: pass`) in WebSockets. | **Medium** | Low |
 
 
 ### Production-Ready Refactoring Blueprints for Top Issues
 
-#### Blueprint 1: Fixing In-Memory Caching (Critical)
-*Issue: `ErrorExplanationService` and `ErrorSignalService` use in-memory dicts/lists.*
-**Solution:** Migrate caching to Redis or use an async lru_cache with a TTL, and persist signals to the database.
+#### Blueprint 1: Restoring Repository Encapsulation (High)
+*Issue: Routers running raw SQL counts instead of using Repositories.*
+**Solution:** Move the counting logic to the repository layer.
 
 ```python
-# Refactored ErrorExplanationService leveraging an async Redis client (or an injected Cache provider)
-import hashlib
-from typing import Optional
-from app.models.enums import CEFRLevel
-from app.services.ai.base import AbstractAIProvider
-from app.services.cache_service import AbstractCacheService # New abstraction
-
-class ErrorExplanationService:
-    def __init__(self, ai_provider: AbstractAIProvider, cache_service: AbstractCacheService) -> None:
-        self._ai_provider = ai_provider
-        self._cache_service = cache_service
-
-    def _generate_cache_key(self, error_text: str, correct_text: str, category: str, target_language: str, ui_language: str) -> str:
-        raw_key = f"{error_text}||{correct_text}||{category}||{target_language}||{ui_language}"
-        return f"error_explanation:{hashlib.sha256(raw_key.encode('utf-8')).hexdigest()}"
-
-    async def generate_explanation(self, error_text: str, correct_text: str, category: str, target_language: str, cefr_level: CEFRLevel, ui_language: str) -> str:
-        cache_key = self._generate_cache_key(error_text, correct_text, category, target_language, ui_language)
-
-        # 1. Check Distributed Cache
-        cached_val = await self._cache_service.get(cache_key)
-        if cached_val:
-            return cached_val
-
-        # 2. Generate
-        prompt = f"..." # Omitted for brevity
-        try:
-            explanation = await self._ai_provider.generate_content(prompt=prompt, system_instruction="...")
-            explanation = explanation.strip() or f"The correct form is: {correct_text}"
-
-            # 3. Store in Cache with TTL (e.g., 7 days)
-            await self._cache_service.set(cache_key, explanation, ttl_seconds=604800)
-            return explanation
-        except Exception:
-            return f"The correct form is: {correct_text}"
-```
-
-#### Blueprint 2: Eliminating Blocking Operations in Event Loop (Critical)
-*Issue: Synchronous `wave.open()` and `io.BytesIO` in async contexts block the main thread.*
-**Solution:** Offload blocking I/O to a threadpool.
-
-```python
-# Inside TextToSpeechService or WebSocket routers
-import asyncio
-import io
-import wave
-
-async def synthesize_wav_non_blocking(voice, clean_text: str) -> bytes:
-    """Runs the blocking Piper TTS synthesis in a separate thread."""
-    def _blocking_synth():
-        wav_io = io.BytesIO()
-        with wave.open(wav_io, "wb") as wav_file:
-            voice.synthesize_wav(clean_text, wav_file)
-        return wav_io.getvalue()
-
-    return await asyncio.to_thread(_blocking_synth)
-
-async def get_audio_duration_non_blocking(audio_bytes: bytes) -> float:
-    """Runs blocking wave file inspection in a separate thread."""
-    def _blocking_duration():
-        try:
-            with wave.open(io.BytesIO(audio_bytes), "rb") as wav:
-                frames = wav.getnframes()
-                rate = wav.getframerate()
-                return frames / float(rate)
-        except Exception:
-            return 2.0
-
-    return await asyncio.to_thread(_blocking_duration)
-```
-
-#### Blueprint 3: Fixing N+1 Query in `list_missions` (High)
-*Issue: Querying mission attempts inside a for loop.*
-**Solution:** Use SQLAlchemy's `selectinload` or perform a single query with an `IN` clause.
-
-```python
-# Refactoring MissionRepository to fetch missions and user's best attempts in a single optimized query
+# In app/repositories/vocabulary_repository.py
 from sqlalchemy import select, func
-from sqlalchemy.orm import aliased
 
-class MissionRepository:
+class VocabularyRepository(BaseRepository):
     # ...
-    async def list_available_with_user_stats(self, cefr_level: str, user_id: uuid.UUID, skip: int, limit: int):
-        from app.models.mission import Mission
-        from app.models.user_mission_attempt import UserMissionAttempt
-
-        # Subquery to find best score and completion status per mission for the user
-        stats_subq = (
-            select(
-                UserMissionAttempt.mission_id,
-                func.max(UserMissionAttempt.score).label("best_score"),
-                func.count(UserMissionAttempt.id).label("attempt_count")
-            )
-            .filter(UserMissionAttempt.user_id == user_id, UserMissionAttempt.status == "completed")
-            .group_by(UserMissionAttempt.mission_id)
-            .subquery()
+    async def count_by_language_and_level(self, language_id: uuid.UUID, cefr_level: CEFRLevel) -> int:
+        query = select(func.count(Vocabulary.id)).filter(
+            Vocabulary.language_id == language_id,
+            Vocabulary.cefr_level == cefr_level
         )
-
-        query = (
-            select(Mission, stats_subq.c.best_score, stats_subq.c.attempt_count)
-            .outerjoin(stats_subq, Mission.id == stats_subq.c.mission_id)
-            .filter(Mission.cefr_level_min <= cefr_level)
-            .offset(skip).limit(limit)
-        )
-
         result = await self._session.execute(query)
-        rows = result.all()
+        return result.scalar() or 0
 
-        # Transform rows directly into responses
-        return [
-            MissionResponse(
-                id=row.Mission.id,
-                title=row.Mission.title,
-                # ... Map other fields
-                completed_before=(row.attempt_count is not None and row.attempt_count > 0),
-                best_score=row.best_score
-            )
-            for row in rows
-        ]
+# In app/api/routers/vocabulary.py
+@router.get("", response_model=PaginatedVocabularyResponse)
+async def list_vocabulary(
+    # ...
+    vocab_repo: VocabularyRepository = Depends(get_vocabulary_repository)
+):
+    skip = (page - 1) * per_page
+    if cefr_level:
+        items = await vocab_repo.list_by_cefr_level(language_id, cefr_level, skip=skip, limit=per_page)
+        # Replacing the raw SQL with the repository method
+        total = await vocab_repo.count_by_language_and_level(language_id, cefr_level)
+    # ...
+```
+
+#### Blueprint 2: Removing Private Session Access in Services (High)
+*Issue: `LessonScoringService` calls `.commit()` on a private repository attribute.*
+**Solution:** Expose a generic save/commit method in the base repository or use the Unit of Work pattern.
+
+```python
+# In app/repositories/base.py
+class BaseRepository:
+    def __init__(self, session: AsyncSession):
+        self._session = session
+
+    async def save_changes(self) -> None:
+        """Safely commits changes tracked by the current session."""
+        try:
+            await self._session.commit()
+        except Exception:
+            await self._session.rollback()
+            raise
+
+# In app/services/lesson_scoring_service.py
+class LessonScoringService:
+    # ...
+    async def calculate_score(self, ...):
+        # ... logic ...
+
+        # Replace: await self._user_lesson_repository._session.commit()
+        # With:
+        await self._user_lesson_repository.save_changes()
+
+        # ...
+```
+
+#### Blueprint 3: Optimizing the `NOT IN` Subquery (Medium)
+*Issue: `listening_exam.py` router performs a slow `NOT IN` query for available exams.*
+**Solution:** Use an `OUTER JOIN` and filter for `NULL` to find unattempted exams more efficiently, and move it to the repository.
+
+```python
+# In app/repositories/listening_exam_repository.py
+async def count_available_exams(self, user_id: uuid.UUID, language_id: uuid.UUID, level: str) -> int:
+    from app.models.user_listening_attempt import UserListeningAttempt
+
+    query = (
+        select(func.count(ListeningExam.id))
+        .outerjoin(
+            UserListeningAttempt,
+            (ListeningExam.id == UserListeningAttempt.exam_id) & (UserListeningAttempt.user_id == user_id)
+        )
+        .filter(
+            ListeningExam.language_id == language_id,
+            ListeningExam.level == level,
+            UserListeningAttempt.id.is_(None) # Only exams with no matching attempt
+        )
+    )
+    result = await self._session.execute(query)
+    return result.scalar() or 0
 ```
