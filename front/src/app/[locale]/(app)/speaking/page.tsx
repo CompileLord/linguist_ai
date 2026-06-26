@@ -271,7 +271,7 @@ export default function SpeakingPage() {
         <div className="flex items-center gap-md mb-lg">
           <Button
             onClick={isRecording ? stopRecording : startRecording}
-            variant={isRecording ? "primary" : "secondary"}
+            variant={isRecording ? "primary" : "outline"}
             className="w-16 h-16 rounded-full flex items-center justify-center group shadow-sm"
           >
             <span className="material-symbols-outlined text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>
@@ -281,7 +281,7 @@ export default function SpeakingPage() {
 
           <Button
             onClick={endSession}
-            variant="secondary"
+            variant="outline"
             className="w-16 h-16 rounded-full flex items-center justify-center text-error border-error/30 hover:bg-error/10 hover:border-error transition-[transform,colors] duration-200"
           >
             <span className="material-symbols-outlined text-[24px]">call_end</span>

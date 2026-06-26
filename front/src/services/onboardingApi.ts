@@ -39,6 +39,10 @@ export interface PlacementResult {
 
 export const onboardingApi = api.injectEndpoints({
   endpoints: (builder) => ({
+    getProfile: builder.query<ProfileResponse, void>({
+      query: () => '/profile',
+      providesTags: ['Profile'],
+    }),
     setupProfile: builder.mutation<ProfileResponse, { target_language_code: string; native_language_code: string; daily_goal_minutes?: number; goals: string[] }>({
       query: (body) => ({
         url: '/profile/setup',
@@ -82,6 +86,8 @@ export const onboardingApi = api.injectEndpoints({
 });
 
 export const {
+  useGetProfileQuery,
+  useLazyGetProfileQuery,
   useSetupProfileMutation,
   useUpdateGoalsMutation,
   useStartPlacementTestMutation,

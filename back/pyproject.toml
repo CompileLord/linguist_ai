@@ -11,13 +11,20 @@ dependencies = [
     "alembic",
     "pydantic>=2.0",
     "pydantic-settings",
+    "email-validator",
     "google-genai",
     "google-cloud-texttospeech",
     "google-cloud-speech",
     "google-cloud-storage",
     "python-jose[cryptography]",
     "passlib[bcrypt]",
-    "httpx"
+    "httpx",
+    "apscheduler",
+    "aiosqlite",
+    "piper-tts",
+    "transformers",
+    "torch",
+    "soundfile"
 ]
 
 [project.optional-dependencies]

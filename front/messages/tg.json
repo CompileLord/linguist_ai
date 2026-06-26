@@ -18,6 +18,18 @@
       "submit": "Ҳисоб сохтан",
       "submitting": "Сохта истодааст...",
       "already_have_account": "Аллакай ҳисоб доред? <login>Ворид шудан</login>"
+    },
+    "Login": {
+      "title": "Хуш омадед",
+      "subtitle": "Барои идома додани дарсҳо ворид шавед",
+      "submit": "Ворид шудан",
+      "submitting": "Воридшавӣ...",
+      "login_google": "Воридшавӣ бо Google",
+      "or": "ё",
+      "email": "Суроғаи электронӣ",
+      "password": "Рамз",
+      "forgot": "Фаромӯш кардед?",
+      "no_account": "Ҳисоб надоред? <signup>Бақайдгирӣ</signup>"
     }
   },
   "Onboarding": {

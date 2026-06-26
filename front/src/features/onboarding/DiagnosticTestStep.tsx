@@ -85,9 +85,9 @@ export function DiagnosticTestStep({ onComplete, onSkip }: Props) {
   const letters = ["A", "B", "C", "D"];
 
   return (
-    <div className="flex-grow flex flex-col items-center justify-start pt-lg pb-xl px-md sm:px-lg max-w-[800px] w-full overflow-hidden">
+    <div className="flex-grow flex flex-col items-center justify-start pt-md pb-md md:pt-lg md:pb-xl px-sm sm:px-lg max-w-[800px] w-full overflow-hidden">
       {/* Progress Indicator */}
-      <div className="w-full flex justify-between items-center mb-xl max-w-[480px]">
+      <div className="w-full flex justify-between items-center mb-md md:mb-xl max-w-[480px]">
         {Array.from({ length: 10 }).map((_, i) => (
           <div
             key={i}
@@ -96,7 +96,7 @@ export function DiagnosticTestStep({ onComplete, onSkip }: Props) {
         ))}
       </div>
 
-      <div className="w-full flex-grow flex flex-col items-center justify-start max-w-[480px] relative">
+      <div className="w-full flex-grow flex flex-col items-center justify-start max-w-[480px] relative overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={questionCount}
@@ -106,8 +106,8 @@ export function DiagnosticTestStep({ onComplete, onSkip }: Props) {
             transition={{ duration: 0.25, ease: "easeInOut" }}
             className="w-full flex flex-col items-center justify-start"
           >
-            <div className="w-full text-center mb-lg">
-              <h1 className="font-display text-display text-on-surface tracking-tight leading-tight">
+            <div className="w-full text-center mb-md md:mb-lg">
+              <h1 className="font-display text-headline-lg md:text-display text-on-surface tracking-tight leading-tight">
                 {formattedText}
               </h1>
             </div>

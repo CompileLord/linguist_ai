@@ -4,44 +4,44 @@
 
 @theme inline {
   /* Colors */
-  --color-background: #13121c;
-  --color-on-background: #e5e0ee;
-  --color-surface: #13121c;
-  --color-on-surface: #e5e0ee;
-  --color-on-surface-variant: #c8c4d8;
-  --color-surface-dim: #13121c;
-  --color-surface-bright: #393842;
-  --color-surface-container-lowest: #0e0d16;
-  --color-surface-container-low: #1c1a24;
-  --color-surface-container: #201e28;
-  --color-surface-container-high: #2a2933;
-  --color-surface-container-highest: #35343e;
-  --color-surface-variant: #35343e;
-  --color-inverse-surface: #e5e0ee;
-  --color-inverse-on-surface: #312f39;
+  --color-background: #0A0A0C;
+  --color-on-background: #F5F5F7;
+  --color-surface: #15151A;
+  --color-on-surface: #F5F5F7;
+  --color-on-surface-variant: #9A9AA5;
+  --color-surface-dim: #0A0A0C;
+  --color-surface-bright: #1E1E24;
+  --color-surface-container-lowest: #0A0A0C;
+  --color-surface-container-low: #15151A;
+  --color-surface-container: #15151A;
+  --color-surface-container-high: #1C1C24;
+  --color-surface-container-highest: #1E1E24;
+  --color-surface-variant: #1E1E24;
+  --color-inverse-surface: #F5F5F7;
+  --color-inverse-on-surface: #15151A;
   
-  --color-primary: #c6bfff;
-  --color-on-primary: #2700a0;
-  --color-primary-container: #6e5bff;
-  --color-on-primary-container: #fffeff;
-  --color-inverse-primary: #563fe6;
+  --color-primary: #6E5BFF;
+  --color-on-primary: #FFFFFF;
+  --color-primary-container: #6E5BFF;
+  --color-on-primary-container: #FFFFFF;
+  --color-inverse-primary: #8B7CFF;
   
-  --color-secondary: #c7bfff;
-  --color-on-secondary: #2a039d;
-  --color-secondary-container: #422db2;
-  --color-on-secondary-container: #b4abff;
+  --color-secondary: #8B7CFF;
+  --color-on-secondary: #FFFFFF;
+  --color-secondary-container: #1C1C24;
+  --color-on-secondary-container: #8B7CFF;
   
   --color-tertiary: #ffb688;
   --color-on-tertiary: #512400;
   --color-tertiary-container: #bb5b00;
   --color-on-tertiary-container: #ffffff;
   
-  --color-error: #ffb4ab;
-  --color-on-error: #690005;
-  --color-error-container: #93000a;
-  --color-on-error-container: #ffdad6;
+  --color-error: #FF5C6C;
+  --color-on-error: #FFFFFF;
+  --color-error-container: #FF5C6C;
+  --color-on-error-container: #FFDAD6;
   
-  --color-outline: #928ea1;
+  --color-outline: #2A2A32;
   --color-outline-variant: #474555;
   
   /* Fonts */
@@ -97,9 +97,53 @@
   --radius-card: 14px;
 }
 
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   background-color: var(--color-background);
   color: var(--color-on-background);
+}
+
+/* Minimalistic Custom Scrollbar (Global & Classes) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #2A2A32;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #6E5BFF;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #2A2A32;
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #6E5BFF;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Onboarding Bento Grid Layout from stitch_assets */
@@ -191,6 +235,15 @@ body {
 
 .goal-card.selected .icon-container {
   color: #6E5BFF;
+}
+
+.surface-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-outline);
+}
+
+.glow-accent {
+  box-shadow: 0 0 20px 2px rgba(110, 91, 255, 0.08);
 }
 
 

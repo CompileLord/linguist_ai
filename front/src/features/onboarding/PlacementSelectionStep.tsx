@@ -11,7 +11,7 @@ export function PlacementSelectionStep({ onNext, onSkip, onBack }: Props) {
   const t = useTranslations("Onboarding.PlacementSelection");
 
   return (
-    <div className="w-full max-w-[480px] flex flex-col gap-lg text-center">
+    <div className="w-full max-w-[480px] flex flex-col gap-lg text-center px-sm sm:px-0">
       <h1 className="font-display text-display text-on-surface">
         {t("title")}
       </h1>

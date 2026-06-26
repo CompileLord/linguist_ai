@@ -1,13 +1,31 @@
 "use client";
 
-import { ReactNode } from "react";
-import { Link, usePathname } from "@/i18n/navigation";
+import { ReactNode, useEffect } from "react";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useGetGamificationStatsQuery } from "@/services/dashboardApi";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store/store";
 import CountUp from "react-countup";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { data: gamification, isLoading } = useGetGamificationStatsQuery();
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.replace("/login");
+    }
+  }, [isAuthenticated, router]);
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background text-on-surface">
+        <div className="text-lg animate-pulse">Redirecting to login...</div>
+      </div>
+    );
+  }
 
   const isOnboarding = pathname.startsWith("/onboarding");
 
@@ -58,64 +76,57 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     );
   }
 
+  const getPageTitle = () => {
+    if (pathname.includes("/dashboard")) return "Dashboard";
+    if (pathname.includes("/speaking")) return "AI Speaking";
+    if (pathname.includes("/missions")) return "Missions";
+    if (pathname.includes("/tutor")) return "AI Tutor";
+    if (pathname.includes("/progress")) return "Progress";
+    return "Dashboard";
+  };
+
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: "dashboard" },
-    { href: "/speaking", label: "AI Speaking", icon: "settings_voice" },
-    { href: "/missions", label: "Missions", icon: "explore" },
-    { href: "/tutor", label: "Tutor", icon: "smart_toy" },
-    { href: "/progress", label: "Progress", icon: "leaderboard" },
+    { href: "/dashboard", label: "Missions", icon: "explore" },
+    { href: "/speaking", label: "Tutor", icon: "smart_toy" },
+    { href: "/dashboard", label: "Vocabulary", icon: "translate" },
+    { href: "/dashboard", label: "Progress", icon: "analytics" },
+    { href: "/dashboard", label: "Settings", icon: "settings" },
+  ];
+
+  const mobileNavItems = [
+    { href: "/dashboard", label: "Dashboard", icon: "dashboard" },
+    { href: "/speaking", label: "Speaking", icon: "settings_voice" },
+    { href: "/dashboard", label: "Missions", icon: "explore" },
+    { href: "/dashboard", label: "Progress", icon: "leaderboard" },
   ];
 
   return (
-    <div className="min-h-screen flex flex-col font-body-md text-body-md antialiased selection:bg-primary-container selection:text-on-primary-container bg-background text-on-background pb-16 md:pb-0">
-      {/* TopNavBar */}
-      <nav className="fixed top-0 w-full z-50 bg-[#15151A]/80 backdrop-blur-md border-b border-[#2A2A32] flex justify-between items-center h-16 px-gutter max-w-container-max mx-auto">
-        <div className="flex items-center gap-sm">
+    <div className="min-h-screen flex flex-col font-body-md text-body-md antialiased selection:bg-primary/20 selection:text-primary bg-background text-on-background pb-16 md:pb-0">
+      
+      {/* Global TopNavBar (Mobile Only) */}
+      <nav className="md:hidden fixed top-0 w-full z-50 bg-[#15151A]/80 backdrop-blur-md border-b border-[#2A2A32] flex justify-between items-center h-16 px-gutter max-w-container-max mx-auto">
+        <div className="flex items-center">
           <span className="text-headline-md font-headline-lg text-primary tracking-tight">
             Linguist AI
           </span>
-          <div className="hidden md:flex items-center gap-xs text-on-surface-variant ml-md">
+        </div>
+        <div className="flex items-center gap-sm">
+          <div className="flex items-center gap-xs text-on-surface-variant">
             <span
-              className="material-symbols-outlined text-[#E8B339]"
+              className="material-symbols-outlined text-warning text-lg animate-pulse"
               style={{ fontVariationSettings: "'FILL' 1" }}
             >
               local_fire_department
             </span>
-            <span className="font-label-md text-label-md">
-              {isLoading ? "-" : gamification?.current_streak || 0} Day Streak
+            <span className="font-label-md text-label-md tabular-nums">
+              {isLoading ? "-" : gamification?.current_streak || 0}
             </span>
           </div>
-        </div>
-        <div className="flex items-center gap-md">
-          {/* Global AI Tutor quick-access button */}
-          <Link
-            href="/tutor"
-            className="hidden sm:flex items-center gap-xs bg-primary-container/20 text-primary hover:bg-primary-container/40 px-3 py-1.5 rounded-full transition-colors border border-primary/30"
-          >
-            <span
-              className="material-symbols-outlined text-sm"
-              style={{ fontSize: "18px" }}
-            >
-              smart_toy
-            </span>
-            <span className="font-label-sm text-label-sm font-semibold">
-              Tutor
-            </span>
-          </Link>
-
           <div className="flex items-center gap-xs text-on-surface-variant">
-            <span className="material-symbols-outlined">military_tech</span>
-            <span className="font-label-md text-label-md">
-              {isLoading ? (
-                <span className="inline-block w-8 h-4 bg-surface-container-high animate-pulse rounded"></span>
-              ) : (
-                <CountUp
-                  end={gamification?.total_xp || 0}
-                  duration={1.5}
-                  separator=","
-                />
-              )}{" "}
-              XP
+            <span className="material-symbols-outlined text-primary text-lg">military_tech</span>
+            <span className="font-label-md text-label-md tabular-nums">
+              {isLoading ? "-" : gamification?.total_xp || 0} XP
             </span>
           </div>
           <div className="w-8 h-8 rounded-full border border-[#2A2A32] bg-surface-container-high flex items-center justify-center overflow-hidden">
@@ -126,48 +137,95 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         </div>
       </nav>
 
-      {/* Main Layout */}
-      <div className="flex flex-1 pt-16">
-        {/* SideNavBar (Desktop) */}
-        <aside className="hidden md:flex flex-col py-lg px-sm fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-surface-container-lowest border-r border-[#2A2A32]">
-          <div className="mb-lg px-xs">
-            <h2 className="text-headline-sm font-headline-sm text-primary">
-              Linguist AI
-            </h2>
-            <p className="text-label-md font-label-md text-on-surface-variant mt-base">
-              Mastery Level{" "}
-              {isLoading ? "-" : gamification?.current_game_level || 1}
-            </p>
+      {/* Main Layout Wrapper */}
+      <div className="flex flex-1 pt-16 md:pt-0">
+        
+        {/* SideNavBar (Desktop Only) */}
+        <aside className="hidden md:flex flex-col justify-between py-md px-sm fixed left-0 top-0 h-screen w-64 bg-background border-r border-[#2A2A32] z-20">
+          <div className="flex flex-col gap-lg">
+            <div className="mb-sm px-sm mt-sm">
+              <h1 className="font-display text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-[#8B7CFF] tracking-tight leading-tight mb-1">
+                Linguist AI
+              </h1>
+              <p className="text-on-surface-variant font-body-sm text-xs font-semibold">Premium Tier</p>
+            </div>
+            <nav className="flex flex-col gap-1.5 flex-1">
+              {navItems.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    className={`flex items-center gap-sm px-4 py-2.5 rounded-lg active:scale-[0.98] transition-all duration-150 ${
+                      isActive
+                        ? "bg-surface-bright text-primary font-semibold border-l-2 border-primary"
+                        : "text-on-surface-variant hover:bg-surface-bright/50 hover:text-on-surface"
+                    }`}
+                  >
+                    <span className="material-symbols-outlined">{item.icon}</span>
+                    <span className="text-label-md font-label-md">
+                      {item.label}
+                    </span>
+                  </Link>
+                );
+              })}
+            </nav>
           </div>
-          <nav className="flex flex-col gap-base flex-1">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-sm px-sm py-xs rounded-lg transition-all duration-200 ${
-                    isActive
-                      ? "bg-surface-container-high text-primary font-bold border-l-2 border-primary"
-                      : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
-                  }`}
-                >
-                  <span className="material-symbols-outlined">{item.icon}</span>
-                  <span className="text-label-md font-label-md">
-                    {item.label}
-                  </span>
-                </Link>
-              );
-            })}
-          </nav>
-          <button className="w-full py-xs px-sm bg-primary-container text-on-primary-container rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity cursor-pointer">
-            Start Lesson
-          </button>
+          
+          <div className="px-xs pb-4">
+            <Link
+              href="/speaking"
+              className="block w-full text-center bg-primary hover:bg-primary/95 text-white font-medium py-2.5 px-4 rounded-lg active:scale-[0.96] transition-[transform,background-color] duration-150 shadow-[0_0_12px_rgba(110,91,255,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 text-label-md font-label-md border border-[#8B7CFF]/30 hover:border-[#8B7CFF]/60 cursor-pointer"
+            >
+              New Session
+            </Link>
+          </div>
         </aside>
 
-        {/* Canvas wrapper that pushes content past the fixed sidebar on desktop */}
-        <div className="flex-1 md:pl-64 w-full">
-          <main className="max-w-[1000px] mx-auto w-full pb-16">
+        {/* Content Canvas Area */}
+        <div className="flex-1 md:pl-64 w-full flex flex-col">
+          
+          {/* Inner TopAppBar (Desktop Only, matches mockup) */}
+          <header className="hidden md:flex bg-surface/85 backdrop-blur-md border-b border-[#2A2A32] justify-between items-center w-full h-16 px-xl sticky top-0 z-10 shrink-0">
+            <div className="font-headline-lg text-2xl font-bold text-on-surface tracking-tight">
+              {getPageTitle()}
+            </div>
+            <div className="flex items-center gap-md">
+              {/* Streak */}
+              <div className="flex items-center gap-xs bg-surface-bright border border-[#2A2A32] rounded-full py-1 px-3">
+                <span className="material-symbols-outlined text-[#E8B339] text-lg animate-pulse" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  local_fire_department
+                </span>
+                <span className="font-label-md text-label-md text-on-surface tabular-nums">
+                  {isLoading ? "-" : gamification?.current_streak || 0} Day Streak
+                </span>
+              </div>
+              {/* XP */}
+              <div className="flex items-center gap-xs bg-surface-bright border border-[#2A2A32] rounded-full py-1 px-3">
+                <span className="material-symbols-outlined text-primary text-lg">military_tech</span>
+                <span className="font-label-md text-label-md text-on-surface tabular-nums">
+                  {isLoading ? (
+                    <span className="inline-block w-8 h-4 bg-surface-container-high animate-pulse rounded"></span>
+                  ) : (
+                    <CountUp
+                      end={gamification?.total_xp || 0}
+                      duration={1.5}
+                      separator=","
+                    />
+                  )}{" "}
+                  XP
+                </span>
+              </div>
+              {/* Avatar */}
+              <div className="w-8 h-8 rounded-full border border-[#2A2A32] bg-surface-container-high flex items-center justify-center overflow-hidden hover:border-primary/50 hover:shadow-[0_0_8px_rgba(110,91,255,0.4)] transition-all duration-200 cursor-pointer">
+                <span className="material-symbols-outlined text-on-surface-variant">
+                  person
+                </span>
+              </div>
+            </div>
+          </header>
+
+          <main className="flex-grow p-sm md:p-xl max-w-[1000px] w-full mx-auto pb-24">
             {children}
           </main>
         </div>
@@ -175,11 +233,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
       {/* Mobile Bottom Tab Bar */}
       <nav className="md:hidden fixed bottom-0 w-full z-50 bg-[#15151A]/90 backdrop-blur-md border-t border-[#2A2A32] flex justify-around items-center h-16 pb-safe">
-        {navItems.map((item) => {
+        {mobileNavItems.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link
-              key={item.href}
+              key={item.label}
               href={item.href}
               className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${
                 isActive
@@ -202,18 +260,19 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       </nav>
 
       {/* Bottom Progress Bar Footer (Desktop Only) */}
-      <footer className="hidden md:flex fixed left-[256px] bottom-0 w-[calc(100%-256px)] bg-[#15151A] border-t border-[#2A2A32] z-40 md:pl-64">
-        <div className="max-w-[1000px] w-full mx-auto px-gutter py-sm flex items-center gap-md">
-          <span className="text-label-md font-label-md text-on-surface-variant whitespace-nowrap">
+      <footer className="hidden md:flex fixed bottom-0 left-64 right-0 bg-[#15151A] border-t border-[#2A2A32] z-40">
+        <div className="absolute top-0 left-0 w-full h-[1.5px] bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
+        <div className="max-w-[1000px] mx-auto px-gutter py-sm flex items-center gap-md relative">
+          <span className="text-label-md font-label-md text-on-surface-variant whitespace-nowrap tabular-nums">
             Level {gamification?.current_game_level || 1}
           </span>
-          <div className="flex-1 h-1 bg-[#1C1C24] rounded-full overflow-hidden">
+          <div className="flex-grow h-1.5 bg-background rounded-full overflow-hidden border border-[#2A2A32]">
             <div
-              className="h-full bg-primary-container rounded-full"
+              className="h-full bg-gradient-to-r from-primary to-[#8B7CFF] rounded-full"
               style={{ width: "30%" }}
             ></div>
           </div>
-          <span className="text-label-md font-label-md text-on-surface whitespace-nowrap">
+          <span className="text-label-md font-label-md text-on-surface whitespace-nowrap tabular-nums">
             Level {(gamification?.current_game_level || 1) + 1}
           </span>
         </div>

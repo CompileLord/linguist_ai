@@ -26,7 +26,7 @@ export function SelfLevelSelectionStep({ onComplete, onBack }: Props) {
   };
 
   return (
-    <div className="w-full max-w-[640px] flex flex-col gap-lg text-center px-md">
+    <div className="w-full max-w-[640px] flex flex-col gap-lg text-center px-sm md:px-md overflow-x-hidden">
       <div>
         <h1 className="font-display text-display text-on-surface mb-xs">
           {t("title")}

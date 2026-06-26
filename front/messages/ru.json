@@ -18,6 +18,18 @@
       "submit": "Создать аккаунт",
       "submitting": "Создание...",
       "already_have_account": "Уже есть аккаунт? <login>Войти</login>"
+    },
+    "Login": {
+      "title": "С возвращением",
+      "subtitle": "Войдите, чтобы продолжить занятия",
+      "submit": "Войти",
+      "submitting": "Вход...",
+      "login_google": "Войти через Google",
+      "or": "или",
+      "email": "Электронная почта",
+      "password": "Пароль",
+      "forgot": "Забыли?",
+      "no_account": "Нет аккаунта? <signup>Зарегистрироваться</signup>"
     }
   },
   "Onboarding": {

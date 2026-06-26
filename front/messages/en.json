@@ -18,6 +18,18 @@
       "submit": "Create account",
       "submitting": "Creating account...",
       "already_have_account": "Already have an account? <login>Log in</login>"
+    },
+    "Login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to continue your sessions",
+      "submit": "Continue",
+      "submitting": "Signing in...",
+      "login_google": "Continue with Google",
+      "or": "or",
+      "email": "Email",
+      "password": "Password",
+      "forgot": "Forgot?",
+      "no_account": "Don't have an account? <signup>Sign up</signup>"
     }
   },
   "Onboarding": {

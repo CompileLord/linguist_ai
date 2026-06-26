@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useUpdateGoalsMutation } from "@/services/onboardingApi";
+import { useUpdateGoalsMutation, useUpdateLevelManuallyMutation } from "@/services/onboardingApi";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 
@@ -11,7 +11,10 @@ export function GoalSelectionStep({ onBack }: Props) {
   const router = useRouter();
   const t = useTranslations("Onboarding.GoalSelection");
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
-  const [updateGoals, { isLoading }] = useUpdateGoalsMutation();
+  const [updateGoals, { isLoading: isUpdatingGoals }] = useUpdateGoalsMutation();
+  const [updateLevel, { isLoading: isUpdatingLevel }] = useUpdateLevelManuallyMutation();
+
+  const isLoading = isUpdatingGoals || isUpdatingLevel;
 
   const goals = [
     { id: 'travel', icon: 'flight_takeoff', span: true },
@@ -40,23 +43,29 @@ export function GoalSelectionStep({ onBack }: Props) {
   const handleContinue = async () => {
     if (selectedGoals.length === 0) return;
     try {
+      const selfSelectedLevel = typeof window !== "undefined" ? sessionStorage.getItem("user_selected_level") : null;
+      if (selfSelectedLevel) {
+        await updateLevel(selfSelectedLevel).unwrap();
+        if (typeof window !== "undefined") {
+          sessionStorage.removeItem("user_selected_level");
+        }
+      }
       await updateGoals(selectedGoals).unwrap();
-      // Assume routing to dashboard on success
       router.push("/dashboard");
     } catch (e) {
-      console.error(e);
+      console.error("Failed to complete onboarding setup:", e);
     }
   };
 
 
   return (
-    <div className="max-w-[800px] w-full mx-auto flex flex-col items-center p-md">
-      <div className="text-center mb-xl w-full">
+    <div className="max-w-[800px] w-full mx-auto flex flex-col items-center p-sm md:p-md overflow-x-hidden">
+      <div className="text-center mb-md md:mb-xl w-full">
         <h1 className="font-headline-lg text-headline-lg text-on-surface mb-xs">{t("title")}</h1>
         <p className="font-body-md text-body-md text-[#9A9AA5]">{t("subtitle")}</p>
       </div>
 
-      <div className="bento-grid mb-xl">
+      <div className="bento-grid mb-md md:mb-xl">
         {goals.map((goal) => {
           const isSelected = selectedGoals.includes(goal.id);
           return (
