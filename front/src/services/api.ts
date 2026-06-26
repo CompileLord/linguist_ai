@@ -8,7 +8,10 @@ const baseQuery = fetchBaseQuery({
   baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api',
   prepareHeaders: (headers, { getState }) => {
     // By default, if we have a token in the store, let's use that for authenticated requests
-    const token = (getState() as RootState).auth.token;
+    let token = (getState() as RootState).auth.token;
+    if (!token && typeof window !== "undefined") {
+      token = localStorage.getItem("access_token");
+    }
     if (token) {
       headers.set('authorization', `Bearer ${token}`);
     }

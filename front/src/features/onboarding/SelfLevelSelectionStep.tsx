@@ -101,5 +101,3 @@ export function SelfLevelSelectionStep({ onComplete, onBack }: Props) {
     </div>
   );
 }
-
-
