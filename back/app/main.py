@@ -119,26 +119,10 @@ register_exception_handlers(app)
 
 app.mount("/static", StaticFiles(directory="media"), name="static")
 
-app.include_router(auth.router, include_in_schema=False)
-app.include_router(onboarding.router, include_in_schema=False)
-app.include_router(lessons.router, include_in_schema=False)
-app.include_router(vocabulary.router, include_in_schema=False)
-app.include_router(review.router, include_in_schema=False)
-app.include_router(errors.router, include_in_schema=False)
-app.include_router(tutor.router, include_in_schema=False)
 app.include_router(tutor.ws_router)
-app.include_router(missions.router, include_in_schema=False)
-app.include_router(writing_exam.router, include_in_schema=False)
-app.include_router(listening_exam.router, include_in_schema=False)
-app.include_router(gamification.router, include_in_schema=False)
-app.include_router(achievement.router, include_in_schema=False)
-app.include_router(coach.router, include_in_schema=False)
-app.include_router(coach.admin_router, include_in_schema=False)
-app.include_router(quota.router, include_in_schema=False)
-app.include_router(speaking.router, include_in_schema=False)
 app.include_router(speaking.ws_router)
 
-# Prefix support for all routes to prevent collision with tunnel (e.g. instatunnel) auth paths
+# Register all API routers exactly once under the /api prefix
 app.include_router(auth.router, prefix="/api")
 app.include_router(onboarding.router, prefix="/api")
 app.include_router(lessons.router, prefix="/api")
@@ -155,6 +139,19 @@ app.include_router(coach.router, prefix="/api")
 app.include_router(coach.admin_router, prefix="/api")
 app.include_router(quota.router, prefix="/api")
 app.include_router(speaking.router, prefix="/api")
+
+# Middleware to dynamically rewrite legacy non-prefixed paths (used by tests) to the new /api prefix
+@app.middleware("http")
+async def rewrite_legacy_paths(request, call_next):
+    path = request.scope.get("path", "")
+    legacy_prefixes = (
+        "/auth", "/onboarding", "/lessons", "/vocabulary", "/review", 
+        "/errors", "/tutor", "/missions", "/exams", "/gamification", 
+        "/achievements", "/coach", "/admin", "/quota", "/speaking"
+    )
+    if path.startswith(legacy_prefixes):
+        request.scope["path"] = f"/api{path}"
+    return await call_next(request)
 
 
 
