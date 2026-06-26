@@ -145,7 +145,7 @@ app.include_router(speaking.router, prefix="/api")
 async def rewrite_legacy_paths(request, call_next):
     path = request.scope.get("path", "")
     legacy_prefixes = (
-        "/auth", "/onboarding", "/lessons", "/vocabulary", "/review", 
+        "/auth", "/onboarding", "/profile", "/lessons", "/vocabulary", "/review",
         "/errors", "/tutor", "/missions", "/exams", "/gamification", 
         "/achievements", "/coach", "/admin", "/quota", "/speaking"
     )
