@@ -1,0 +1,193 @@
+{
+  "project": "LinguistAI Frontend",
+  "file": "tasks_1.json",
+  "description": "Roadmap of frontend tasks for Stage 4 (Learning Core) and daily practice features, including lessons content viewer, interactive grammar exercises, vocabulary lookup library, spaced repetition flashcard drills, AI live tutor workspace, and layout routing integrations.",
+  "phases": [
+    {
+      "id": "phase-learning-core",
+      "name": "Core Learning & Practice Module Implementation",
+      "description": "Develop the primary learning engines, dictionary viewers, review drills, and AI tutoring panels using the provided design mockups in stitch_assets.",
+      "modules": [
+        {
+          "id": "mod-lessons",
+          "name": "Personalized Lesson Viewer",
+          "description": "Build layout structures and widgets for rendering generated theory blocks, TTS media assets, and processing multi-step exercises with immediate correction reports.",
+          "tasks": [
+            {
+              "id": "task-frontend-1.1.1",
+              "title": "Implement Lesson View Layout and Theory block",
+              "description": "Create route `/lessons/[lesson_id]/page.tsx` and render the lesson theory page. Parse the lesson content JSON (theory, grammar explanations, usage examples, reading texts) and display it beautifully. Use the HTML structure and styles from `front/stitch_assets/lesson_theory_present_perfect.html` to match the exact design.",
+              "acceptance_criteria": [
+                "Accessing `/lessons/{id}` loads the lesson page layout correctly",
+                "The theory section, explanation blocks, usage examples, and reading text display according to `lesson_theory_present_perfect.html` design",
+                "Integrate standard navigation controls (e.g. Next/Back) to navigate blocks"
+              ],
+              "depends_on": [],
+              "priority": "critical",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-frontend-1.1.2",
+              "title": "Implement Interactive Lesson Exercises",
+              "description": "Build interactive multiple-choice and fill-in-the-gap exercise step-by-step components. Use the design and HTML templates from `front/stitch_assets/grammar_exercise_present_perfect.html`. Incorporate smooth framer-motion transition between steps and render detailed `<ErrorCorrectionAlert />` block on incorrect answers.",
+              "acceptance_criteria": [
+                "Exercise answering form shows questions and choices from the lesson JSON payload",
+                "Framer-motion slide transitions are implemented when switching between exercises",
+                "Wrong answers show immediate inline error correction feedback card with clear explanations"
+              ],
+              "depends_on": [
+                "task-frontend-1.1.1"
+              ],
+              "priority": "critical",
+              "estimated_hours": 5
+            },
+            {
+              "id": "task-frontend-1.1.3",
+              "title": "Integrate Lesson Complete scoring and XP collection",
+              "description": "Hook up the final lesson submission to the API endpoint `POST /api/lessons/{lesson_id}/complete`. Render a lesson completion summary modal showing XP gained, correctness accuracy, and trigger progression animations updating the global header's XP.",
+              "acceptance_criteria": [
+                "Successfully submits completed lesson details to the backend API",
+                "Summary view shows total correct/incorrect counts, accuracy, and XP awarded",
+                "XP counters in the app header and footer progress bars update dynamically upon completion"
+              ],
+              "depends_on": [
+                "task-frontend-1.1.2"
+              ],
+              "priority": "high",
+              "estimated_hours": 3
+            }
+          ]
+        },
+        {
+          "id": "mod-vocabulary",
+          "name": "Vocabulary Library & Audio player",
+          "description": "Develop vocabulary dictionary interfaces supporting CEFR filters, text searching, and Piper TTS pronunciation playback controls.",
+          "tasks": [
+            {
+              "id": "task-frontend-1.2.1",
+              "title": "Implement Vocabulary Library Search & Filters",
+              "description": "Create route `/vocabulary/page.tsx`. Integrate with `GET /api/vocabulary` and `GET /api/vocabulary/user` to list the user's vocabulary words. Create search bars and filter selectors for CEFR levels (A1 to C2) based on the visual design in `front/stitch_assets/vocabulary_list.html`.",
+              "acceptance_criteria": [
+                "Vocabulary page lists all words in a responsive list/grid matching the mockup",
+                "Users can filter words by difficulty level pills (A1-C2) and search via input text",
+                "Integrate pagination or infinite scroll for larger dictionaries"
+              ],
+              "depends_on": [],
+              "priority": "high",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-frontend-1.2.2",
+              "title": "Integrate TTS Pronunciation Audio playback",
+              "description": "Implement Piper TTS playback for vocabulary words. When clicking the volume/pronunciation button on a vocabulary word card, load and play the audio url. Ensure multiple play triggers do not overlap by locking controls during active audio playback.",
+              "acceptance_criteria": [
+                "Volume icon plays word audio returned from the API",
+                "Active audio blocks concurrent requests or safely stops previous playback to avoid audio overlap"
+              ],
+              "depends_on": [
+                "task-frontend-1.2.1"
+              ],
+              "priority": "medium",
+              "estimated_hours": 2
+            }
+          ]
+        },
+        {
+          "id": "mod-spaced-repetition",
+          "name": "Spaced Repetition Flashcards",
+          "description": "Build spacing review queue, card flipping visuals, swiping gestures, and gamified progress milestones.",
+          "tasks": [
+            {
+              "id": "task-frontend-1.3.1",
+              "title": "Implement Spaced Repetition Review Flashcard interface",
+              "description": "Create route `/review/page.tsx` for spaced repetition review sessions. Use the design and layouts from `front/stitch_assets/review_session.html`. Render review cards with swipe animations (`framer-motion`), flip actions to reveal translations/explanations, and keyboard shortcuts (1-5/space).",
+              "acceptance_criteria": [
+                "Review screen fetches active queue using `GET /api/review/queue` and displays them as flashcards",
+                "Cards show front side (studied word/phrase) and flip to back side (translation, examples) upon click",
+                "Action buttons submit quality rating scores (0-5) to `POST /api/review/{item_id}/respond` and advance the queue"
+              ],
+              "depends_on": [
+                "task-frontend-1.2.2"
+              ],
+              "priority": "high",
+              "estimated_hours": 5
+            },
+            {
+              "id": "task-frontend-1.3.2",
+              "title": "Implement Review Success Summary and Flashcard Badge popup",
+              "description": "Build review queue completion / summary screens showing review statistics. Render the vocabulary flashcard mastery celebration popup when a user unlocks a milestone or clears their queue, using the design from `front/stitch_assets/vocabulary_flashcard_achievement.html`.",
+              "acceptance_criteria": [
+                "Exhausting the review queue redirects to a success screen detailing stats",
+                "Celebration popup renders badge details and XP animations matching the design"
+              ],
+              "depends_on": [
+                "task-frontend-1.3.1"
+              ],
+              "priority": "medium",
+              "estimated_hours": 3
+            }
+          ]
+        },
+        {
+          "id": "mod-tutor",
+          "name": "AI Live Chat Tutor",
+          "description": "Design interactive chatbot chat rooms, loading logs, and sending messages over persistent WebSocket tunnels with text streaming output.",
+          "tasks": [
+            {
+              "id": "task-frontend-1.4.1",
+              "title": "Implement AI Tutor Chat Workspace and History panel",
+              "description": "Create route `/tutor/page.tsx`. Use the layout and visual structure in `front/stitch_assets/ai_tutor_panel.html`. Render a sidebar of past chat sessions (fetching `GET /api/tutor/sessions`) and a primary messaging thread displaying chat log histories (fetching `GET /api/tutor/sessions/{id}/messages`).",
+              "acceptance_criteria": [
+                "Tutor workspace renders past sessions list and active thread layout correctly",
+                "Selecting a tutor session loads its respective conversation message logs",
+                "Clicking 'New Session' triggers session creation and initializes a blank thread"
+              ],
+              "depends_on": [],
+              "priority": "high",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-frontend-1.4.2",
+              "title": "Integrate WebSocket for real-time AI Tutor chat streaming",
+              "description": "Establish real-time WebSocket messaging connecting to `/ws/tutor/{session_id}`. Handle user message submission, append message bubbles instantly, and render incoming text chunk updates incrementally (streaming) into the AI message bubble. Handle automatic window scrolling.",
+              "acceptance_criteria": [
+                "WebSocket connection is opened and authenticated with JWT upon session start",
+                "Submitting a message shows the user bubble immediately and streams the AI response smoothly",
+                "Auto-scroller maintains focus on the bottom of the dialogue stream during active transmission"
+              ],
+              "depends_on": [
+                "task-frontend-1.4.1"
+              ],
+              "priority": "critical",
+              "estimated_hours": 4
+            }
+          ]
+        },
+        {
+          "id": "mod-layout-nav",
+          "name": "Navigation & Shell Routing Layout",
+          "description": "Hook up layout links, active page indicators, and ensure consistent routing paths across desktop and mobile screens.",
+          "tasks": [
+            {
+              "id": "task-frontend-1.5.1",
+              "title": "Update App Shell Navigation Links to active routes",
+              "description": "Update navigation links inside the app shell layout (`front/src/app/[locale]/(app)/layout.tsx`) for sidebar (desktop) and bottom bar (mobile) to point to the newly implemented routes: `/dashboard`, `/missions`, `/tutor`, `/vocabulary`, `/progress`, and `/settings` instead of the placeholder path `/dashboard`.",
+              "acceptance_criteria": [
+                "All sidebar menu links and mobile bottom buttons route the browser to their corresponding subfolders",
+                "Active page indicators are visually accurate based on current pathname matches"
+              ],
+              "depends_on": [
+                "task-frontend-1.1.1",
+                "task-frontend-1.2.1",
+                "task-frontend-1.3.1",
+                "task-frontend-1.4.1"
+              ],
+              "priority": "medium",
+              "estimated_hours": 2
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

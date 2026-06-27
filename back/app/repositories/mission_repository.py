@@ -73,6 +73,72 @@ class MissionRepository(AbstractMissionRepository):
         )
         return result.scalar() or 0
 
+    async def list_available_with_user_stats(
+        self,
+        user_id: uuid.UUID,
+        cefr_level: str,
+        related_goal: Optional[str] = None,
+        skip: int = 0,
+        limit: int = 100
+    ) -> List[dict]:
+        """
+        OPTIMIZED: Fetch missions with user completion stats in a single query.
+        
+        Fixes N+1 query problem by using a subquery to get best scores
+        and completion status in one database roundtrip.
+        
+        Returns list of dicts with keys: mission, best_score, completed
+        """
+        level_map = {"A1": 1, "A2": 2, "B1": 3, "B2": 4, "C1": 5, "C2": 6}
+        user_val = level_map.get(cefr_level, 1)
+        allowed_levels = [lvl for lvl, val in level_map.items() if val <= user_val]
+        
+        # Subquery to find best score per mission for the user
+        stats_subq = (
+            select(
+                UserMissionAttempt.mission_id,
+                func.max(UserMissionAttempt.score).label("best_score"),
+                func.count(UserMissionAttempt.id).label("attempt_count")
+            )
+            .filter(
+                and_(
+                    UserMissionAttempt.user_id == user_id,
+                    UserMissionAttempt.status == "completed"
+                )
+            )
+            .group_by(UserMissionAttempt.mission_id)
+            .subquery()
+        )
+        
+        # Main query with left join to stats
+        stmt = (
+            select(Mission, stats_subq.c.best_score, stats_subq.c.attempt_count)
+            .outerjoin(stats_subq, Mission.id == stats_subq.c.mission_id)
+            .filter(
+                and_(
+                    Mission.is_active == True,
+                    Mission.cefr_level_min.in_(allowed_levels)
+                )
+            )
+        )
+        
+        if related_goal:
+            stmt = stmt.filter(Mission.related_goal == related_goal)
+            
+        stmt = stmt.order_by(Mission.difficulty_rating.asc()).offset(skip).limit(limit)
+        
+        result = await self._session.execute(stmt)
+        rows = result.all()
+        
+        return [
+            {
+                "mission": row[0],
+                "best_score": row[1],
+                "completed": row[2] is not None and row[2] > 0
+            }
+            for row in rows
+        ]
+
 class MissionAttemptRepository(AbstractMissionAttemptRepository):
     async def get_by_id(self, id: uuid.UUID) -> Optional[UserMissionAttempt]:
         result = await self._session.execute(select(UserMissionAttempt).filter(UserMissionAttempt.id == id))

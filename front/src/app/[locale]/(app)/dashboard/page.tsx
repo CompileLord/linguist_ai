@@ -3,8 +3,10 @@
 import { useGetNextLessonQuery, useGetRecentActivityQuery } from "@/services/dashboardApi";
 import { useGetReviewStatsQuery } from "@/services/reviewApi";
 import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 
 export default function DashboardPage() {
+  const t = useTranslations("Dashboard");
   const { data: nextLesson, isLoading: isLoadingLesson } = useGetNextLessonQuery();
   const { data: reviewStats, isLoading: isLoadingReview } = useGetReviewStatsQuery();
   const { data: recentActivity, isLoading: isLoadingActivity } = useGetRecentActivityQuery();
@@ -37,33 +39,35 @@ export default function DashboardPage() {
             <>
               <div className="relative z-10">
                 <span className="inline-block px-2.5 py-1 bg-[#1E1E24] text-on-surface-variant rounded text-code-sm font-code-sm mb-sm border border-[#2A2A32]">
-                  {nextLesson?.isReady ? "Continue Learning" : "Generate Next Lesson"}
+                  {nextLesson ? t("continue_learning") : t("generate_next_lesson")}
                 </span>
                 <h1 className="text-display font-display text-on-surface mb-xs tracking-tight text-balance">
-                  {nextLesson?.topic || "No pending lessons"}
+                  {nextLesson?.topic || t("no_pending_lessons")}
                 </h1>
                 <p className="text-body-lg font-body-lg text-on-surface-variant mb-lg text-pretty">
-                  {nextLesson?.moduleName || "Select a new module to start"}
+                  {nextLesson
+                    ? `${t("level")} ${nextLesson.cefr_level} - ${nextLesson.title || nextLesson.topic}`
+                    : t("select_new_module")}
                 </p>
               </div>
               <div className="relative z-10 mt-auto">
                 <div className="flex justify-between items-end gap-md">
-                  {nextLesson?.isReady && (
+                  {nextLesson && (
                     <div className="flex-1 max-w-sm pb-1">
                       <div className="flex justify-between text-label-md font-label-md text-on-surface-variant mb-1.5 font-medium">
-                        <span>Progress</span>
-                        <span className="tabular-nums">{nextLesson.progressPercent}%</span>
+                        <span>{t("ready")}</span>
+                        <span className="tabular-nums">100%</span>
                       </div>
                       <div className="h-1.5 w-full bg-[#1E1E24] rounded-full overflow-hidden border border-[#2A2A32]">
                         <div 
                           className="h-full bg-gradient-to-r from-primary to-[#8B7CFF] rounded-full" 
-                          style={{ width: `${nextLesson.progressPercent}%` }}
+                          style={{ width: "100%" }}
                         ></div>
                       </div>
                     </div>
                   )}
                   <button className="bg-primary hover:bg-primary/95 text-white px-md py-sm rounded-lg font-medium active:scale-[0.96] transition-[transform,background-color,border-color,box-shadow] duration-150 shadow-[0_0_12px_rgba(110,91,255,0.25)] border border-[#8B7CFF]/30 hover:border-[#8B7CFF]/60 flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ml-auto cursor-pointer">
-                    <span>{nextLesson?.isReady ? "Continue" : "Generate"}</span>
+                    <span>{nextLesson ? t("continue") : t("generate")}</span>
                     <span className="material-symbols-outlined text-sm font-bold">arrow_forward</span>
                   </button>
                 </div>
@@ -162,7 +166,7 @@ export default function DashboardPage() {
       {/* Recent Activity List */}
       <div className="surface-card rounded-xl overflow-hidden shadow-lg border border-outline">
         <div className="p-sm border-b border-[#2A2A32] bg-[#1E1E24]/30">
-          <h3 className="text-label-md font-label-md text-on-surface font-semibold">Recent Activity</h3>
+          <h3 className="text-label-md font-label-md text-on-surface font-semibold">{t("recent_activity")}</h3>
         </div>
         <div className="flex flex-col">
           {isLoadingActivity ? (
@@ -181,21 +185,21 @@ export default function DashboardPage() {
           ) : recentActivity && recentActivity.length > 0 ? (
             recentActivity.map((activity, i, arr) => (
               <div 
-                key={activity.id} 
+                key={activity.achievement_id} 
                 className={`flex items-center justify-between p-sm ${
                   i < arr.length - 1 ? 'border-b border-[#2A2A32]' : ''
                 } hover:bg-[#1E1E24]/20 active:scale-[0.99] transition-[transform,background-color] duration-150 cursor-pointer group`}
               >
                 <div className="flex items-center gap-sm">
                   <span className="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors block">
-                    {activity.icon === 'workspace_premium' ? 'military_tech' : 'chat_bubble'}
+                    workspace_premium
                   </span>
                   <div>
                     <p className="text-body-sm font-body-sm text-on-surface font-medium">{activity.title}</p>
-                    <p className="text-code-sm font-code-sm text-on-surface-variant mt-0.5">{activity.subtitle}</p>
+                    <p className="text-code-sm font-code-sm text-on-surface-variant mt-0.5">{activity.description}</p>
                   </div>
                 </div>
-                <span className="text-code-sm font-code-sm text-primary tabular-nums font-semibold">{activity.xp}</span>
+                <span className="text-code-sm font-code-sm text-primary tabular-nums font-semibold">+100 XP</span>
               </div>
             ))
           ) : (

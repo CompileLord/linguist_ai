@@ -1,0 +1,203 @@
+{
+  "project": "LinguistAI Frontend",
+  "file": "tasks_2.json",
+  "description": "Roadmap of frontend tasks for Stage 5 (Advanced assessments, gamification, and landing modules), including Real World Missions, AI Writing Exams, AI Listening Exams, Achievements library, Progress dashboard, AI Coach report reader, and public landing page with custom shader backgrounds.",
+  "phases": [
+    {
+      "id": "phase-assessments-achievements",
+      "name": "Advanced Simulations, Assessments, and Gamification Features",
+      "description": "Develop high-fidelity interactive exam suites, simulated real-world speaking simulations, badge collections, analytics reporting dashboards, and the public landing page.",
+      "modules": [
+        {
+          "id": "mod-missions",
+          "name": "Real World Missions Simulator",
+          "description": "Build mission selection hubs, active roleplay dialogues interfaces, and detailed scoring performance rubrics.",
+          "tasks": [
+            {
+              "id": "task-frontend-2.1.1",
+              "title": "Implement Real World Missions Hub page",
+              "description": "Create route `/missions/page.tsx`. Use the mockup design from `front/stitch_assets/real_world_missions.html`. Fetch the list of available missions using `GET /api/missions` (passing filters like related learning goals). Renders available scenarios (restaurant ordering, job interviews, booking tickets) in card grids, filtering by minimum CEFR levels.",
+              "acceptance_criteria": [
+                "Missions list displays scenario details, difficulty level, and goals compatibility",
+                "Available missions are clickable, routing to the active simulation room"
+              ],
+              "depends_on": [],
+              "priority": "high",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-frontend-2.1.2",
+              "title": "Implement Active Mission simulation page",
+              "description": "Create route `/missions/[id]/page.tsx` for playing a mission. Use the design from `front/stitch_assets/active_mission_restaurant_roleplay.html`. Initiate session via `POST /api/missions/{id}/start` and connect to the streaming dialogue WebSocket. Integrate audio recording (Google Cloud STT on backend) or text messaging.",
+              "acceptance_criteria": [
+                "Clicking start mission loads the simulator layout with user avatar and the AI partner avatar",
+                "WebSocket session initiates successfully, sending and receiving dialogues",
+                "Renders initial scenario instruction bubbles dynamically"
+              ],
+              "depends_on": [
+                "task-frontend-2.1.1"
+              ],
+              "priority": "critical",
+              "estimated_hours": 5
+            },
+            {
+              "id": "task-frontend-2.1.3",
+              "title": "Implement Mission completion rubric page",
+              "description": "Handle mission completion by posting the final transcripts to `POST /api/missions/{id}/complete`. Renders structured feedback detailing task accomplishment, correctness scoring, XP earned, vocabulary corrections, and suggested phrasing based on the design `front/stitch_assets/mission_feedback_restaurant_roleplay.html`.",
+              "acceptance_criteria": [
+                "Completing the mission closes the active chat session and triggers the evaluation request",
+                "Displays final assessment rubric details, including score cards and syntax correction bubbles"
+              ],
+              "depends_on": [
+                "task-frontend-2.1.2"
+              ],
+              "priority": "high",
+              "estimated_hours": 4
+            }
+          ]
+        },
+        {
+          "id": "mod-writing-exams",
+          "name": "AI Writing Exam Workspace",
+          "description": "Construct essay textareas with word counters and structured feedback reports analyzing vocabulary, cohesion, and spelling suggestions.",
+          "tasks": [
+            {
+              "id": "task-frontend-2.2.1",
+              "title": "Implement Writing Exam Essay submission workspace",
+              "description": "Create route `/exams/writing/page.tsx` for taking writing assessments. Fetch essay prompt dynamically via `GET /api/exams/writing/prompt`. Use the design `front/stitch_assets/writing_exam_essay_submission.html` to build a clean rich textarea input with essay criteria details, instructions, and character counting.",
+              "acceptance_criteria": [
+                "Retrieves and displays the writing prompt matching the user's goals",
+                "Rich textarea includes word and character counters",
+                "Submit action sends essay to the backend API"
+              ],
+              "depends_on": [],
+              "priority": "high",
+              "estimated_hours": 3
+            },
+            {
+              "id": "task-frontend-2.2.2",
+              "title": "Implement Writing Exam Results feedback screen",
+              "description": "Post essay text to `POST /api/exams/writing/submit` and display the generated evaluation JSON results. Renders overall score, score breakdowns per criteria (grammar, vocabulary, cohesion, style) and highlights grammar mistakes inline matching the design `front/stitch_assets/writing_exam_results_ai_feedback.html`.",
+              "acceptance_criteria": [
+                "Correctly processes the grading payload from the exam API",
+                "Renders score breakdown graphs or percentage blocks matching the design",
+                "Highlights sentences containing grammatical/stylistic suggestions"
+              ],
+              "depends_on": [
+                "task-frontend-2.2.1"
+              ],
+              "priority": "high",
+              "estimated_hours": 4
+            }
+          ]
+        },
+        {
+          "id": "mod-listening-exams",
+          "name": "AI Listening Exam Player",
+          "description": "Build voice playback audio nodes, dynamic MCQ questionnaires, and post-exam script transcripts overlays.",
+          "tasks": [
+            {
+              "id": "task-frontend-2.3.1",
+              "title": "Implement Listening Exam audio player & questions questionnaire",
+              "description": "Create route `/exams/listening/[id]/page.tsx` for listening assessments. Retrieve audio link and questions list via `GET /api/exams/listening/{id}/audio`. Build audio controller with custom wave playback design (referencing `front/stitch_assets/listening_exam_audio_playback_animated.html`) and list multiple choice questions. Hide the script transcript text block during playback.",
+              "acceptance_criteria": [
+                "Audio element plays Piper TTS speech file with visual feedback",
+                "Hides the text script until the assessment form has been successfully completed and submitted",
+                "Multiple choice form answers are recorded"
+              ],
+              "depends_on": [],
+              "priority": "high",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-frontend-2.3.2",
+              "title": "Implement Listening Exam results and text transcript view",
+              "description": "Submit answers to `POST /api/exams/listening/{id}/submit` to retrieve choice evaluation. Retrieve scripts transcript via `GET /api/exams/listening/{id}/transcript` and display alongside correctness feedback for post-exam self-review.",
+              "acceptance_criteria": [
+                "Submits completed options to the server, displaying results correctly",
+                "Unlocks and displays script transcription with translation highlights for study"
+              ],
+              "depends_on": [
+                "task-frontend-2.3.1"
+              ],
+              "priority": "medium",
+              "estimated_hours": 3
+            }
+          ]
+        },
+        {
+          "id": "mod-achievements",
+          "name": "Achievements Badge Library",
+          "description": "Integrate badge achievements library to display system milestone locks and progression criteria.",
+          "tasks": [
+            {
+              "id": "task-frontend-2.4.1",
+              "title": "Implement Achievements Library page",
+              "description": "Create route `/achievements/page.tsx`. Use the mockup design from `front/stitch_assets/achievements_library.html`. Fetch badges list via `GET /api/achievements/all` and user unlock times via `GET /api/achievements/user`. Renders unlocked badges with full color and locked badges in grayscale with tooltips.",
+              "acceptance_criteria": [
+                "Achievements page correctly parses system achievements and highlights unlocked achievements",
+                "Hovering or clicking a badge reveals details: name, requirements description, and unlock status"
+              ],
+              "depends_on": [],
+              "priority": "medium",
+              "estimated_hours": 3
+            }
+          ]
+        },
+        {
+          "id": "mod-progress-coach",
+          "name": "Progress Analytics & AI Coach Report Reader",
+          "description": "Create charts representing user learning metrics, streaks, daily goals, and render generated weekly reports from the AI Coach.",
+          "tasks": [
+            {
+              "id": "task-frontend-2.5.1",
+              "title": "Implement Progress & Profile Dashboard",
+              "description": "Create route `/progress/page.tsx` (or `/profile/page.tsx`). Use the mockup layout from `front/stitch_assets/linguist_ai_progress_profile.html`. Display progression trackers (XP milestone progress bar, streak calendar, CEFR level assessment chart, unlocked achievements summary) and lists historical AI Coach weekly reports.",
+              "acceptance_criteria": [
+                "Displays cumulative XP gauges, streak calendars, and CEFR stats summary",
+                "Renders paginated list of historical coach reports"
+              ],
+              "depends_on": [],
+              "priority": "high",
+              "estimated_hours": 4
+            },
+            {
+              "id": "task-frontend-2.5.2",
+              "title": "Implement Weekly Coaching Report details reader view",
+              "description": "Create route to read a detailed weekly coach report. Retrieve latest report via `GET /api/coach/reports/latest` or report details using `/api/coach/reports/{id}`. Use the styling and structure from `front/stitch_assets/coaching_reports.html` to render Strengths, Weaknesses, Recommendations, and a recommended schedule planner.",
+              "acceptance_criteria": [
+                "Coaching report reader displays strengths, weaknesses, and clear recommendations list",
+                "Renders weekly study calendar recommended plan matching the design"
+              ],
+              "depends_on": [
+                "task-frontend-2.5.1"
+              ],
+              "priority": "medium",
+              "estimated_hours": 3
+            }
+          ]
+        },
+        {
+          "id": "mod-public-landing",
+          "name": "Public Landing Homepage & Visual Shaders",
+          "description": "Build high-impact marketing welcome pages showcasing features and custom background shader animations.",
+          "tasks": [
+            {
+              "id": "task-frontend-2.6.1",
+              "title": "Implement Public Marketing Homepage with Shader visualization",
+              "description": "Create the public marketing page at `/landing` (and route root `/` to it for unauthenticated visitors) using the mockup from `front/stitch_assets/landing.html`. Implement the visual shader canvas background effect (from `front/stitch_assets/shader.html`) to give a state-of-the-art interactive vibe. Show features grid, CEFR level tables, customer testimonials, and direct auth call-to-action buttons.",
+              "acceptance_criteria": [
+                "Unauthenticated users hitting `/` or `/landing` view the marketing page",
+                "WebGL or CSS shader canvas renders smooth animated background effect",
+                "Fully responsive layout matching the high-fidelity mock design"
+              ],
+              "depends_on": [],
+              "priority": "medium",
+              "estimated_hours": 5
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

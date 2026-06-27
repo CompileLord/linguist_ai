@@ -93,5 +93,35 @@
         "daily_communication": "Daily Communication"
       }
     }
+  },
+  "Lessons": {
+    "title": "Lesson Theory",
+    "next": "Next",
+    "continue": "Continue",
+    "check": "Check",
+    "incorrect": "Incorrect",
+    "correct": "Correct",
+    "explanation": "Explanation",
+    "theory": "Theory",
+    "vocabulary": "Vocabulary",
+    "exercises": "Exercises",
+    "quiz": "Quiz",
+    "complete": "Complete",
+    "xp_earned": "XP Earned",
+    "level_up": "Level Up!",
+    "accuracy": "Accuracy",
+    "finish": "Finish Lesson",
+    "back": "Back"
+  },
+  "Dashboard": {
+    "continue_learning": "Continue Learning",
+    "generate_next_lesson": "Generate Next Lesson",
+    "level": "Level",
+    "no_pending_lessons": "No pending lessons",
+    "select_new_module": "Select a new module to continue",
+    "ready": "Ready",
+    "continue": "Continue",
+    "generate": "Generate",
+    "recent_activity": "Recent Activity"
   }
 }

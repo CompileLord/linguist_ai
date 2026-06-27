@@ -93,5 +93,35 @@
         "daily_communication": "Ежедневное общение"
       }
     }
+  },
+  "Lessons": {
+    "title": "Теория урока",
+    "next": "Далее",
+    "continue": "Продолжить",
+    "check": "Проверить",
+    "incorrect": "Неверно",
+    "correct": "Верно",
+    "explanation": "Объяснение",
+    "theory": "Теория",
+    "vocabulary": "Словарь",
+    "exercises": "Упражнения",
+    "quiz": "Тест",
+    "complete": "Завершено",
+    "xp_earned": "Получено опыта",
+    "level_up": "Новый уровень!",
+    "accuracy": "Точность",
+    "finish": "Завершить урок",
+    "back": "Назад"
+  },
+  "Dashboard": {
+    "continue_learning": "Продолжить обучение",
+    "generate_next_lesson": "Создать следующий урок",
+    "level": "Уровень",
+    "no_pending_lessons": "Нет текущих уроков",
+    "select_new_module": "Выберите новый модуль, чтобы продолжить",
+    "ready": "Готовность",
+    "continue": "Продолжить",
+    "generate": "Создать",
+    "recent_activity": "Последние действия"
   }
 }

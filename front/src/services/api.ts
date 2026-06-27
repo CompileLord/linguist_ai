@@ -1,13 +1,13 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { RootState } from '../store/store';
-import { logout } from '../store/authSlice';
-
+import { logout, setCredentials } from '../store/authSlice';
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
 
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
 const baseQuery = fetchBaseQuery({
-  baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api',
+  baseUrl: BASE_URL,
   prepareHeaders: (headers, { getState }) => {
-    // By default, if we have a token in the store, let's use that for authenticated requests
     let token = (getState() as RootState).auth.token;
     if (!token && typeof window !== "undefined") {
       token = localStorage.getItem("access_token");
@@ -24,11 +24,37 @@ const baseQueryWithReauth: BaseQueryFn<
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
-  const result = await baseQuery(args, api, extraOptions);
+  let result = await baseQuery(args, api, extraOptions);
 
   if (result.error && result.error.status === 401) {
-    // Unauthenticated, logout user and redirect
-    api.dispatch(logout());
+    // Try refresh
+    const refreshToken = typeof window !== "undefined" ? localStorage.getItem("refresh_token") : null;
+    if (refreshToken) {
+      const refreshResult = await baseQuery(
+        { url: '/auth/refresh', method: 'POST', body: { refresh_token: refreshToken } },
+        api,
+        extraOptions
+      );
+      if (refreshResult.data) {
+        const data = refreshResult.data as any;
+        const state = api.getState() as RootState;
+        api.dispatch(setCredentials({
+          token: data.access_token,
+          refreshToken: data.refresh_token,
+          user: state.auth.user ?? {
+            id: data.user?.id ?? '',
+            username: data.user?.full_name ?? data.user?.email ?? 'User',
+            ui_language: state.auth.user?.ui_language ?? 'en',
+          },
+        }));
+        // Retry original query with new token
+        result = await baseQuery(args, api, extraOptions);
+      } else {
+        api.dispatch(logout());
+      }
+    } else {
+      api.dispatch(logout());
+    }
   }
   return result;
 };

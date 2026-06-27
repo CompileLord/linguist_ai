@@ -74,6 +74,12 @@ class TextToSpeechService:
         voice_name: Optional[str] = None,
         speaking_rate: float = 1.0
     ) -> bytes:
+        """
+        Synthesize speech from text.
+        
+        FIXED: Offloads blocking I/O operations to thread pool to avoid
+        blocking the async event loop.
+        """
         clean_text = text.strip()
         if clean_text.startswith("<speak>") and clean_text.endswith("</speak>"):
             clean_text = clean_text[7:-8].strip()
@@ -92,19 +98,28 @@ class TextToSpeechService:
             
             voice = _voice_cache[model_path_str]
             
-            import io
-            import wave
-            
-            wav_io = io.BytesIO()
-            with wave.open(wav_io, "wb") as wav_file:
-                voice.synthesize_wav(clean_text, wav_file)
-            
-            return wav_io.getvalue()
+            # Offload blocking synthesis to thread pool
+            audio_bytes = await asyncio.to_thread(self._synthesize_blocking, voice, clean_text)
+            return audio_bytes
         except Exception as e:
             raise ExternalServiceException(
                 detail=f"TTS synthesis failed: {str(e)}",
                 error_code="TTS_SYNTHESIS_ERROR"
             )
+
+    @staticmethod
+    def _synthesize_blocking(voice, text: str) -> bytes:
+        """
+        Blocking synthesis operation - called in thread pool.
+        """
+        import io
+        import wave
+        
+        wav_io = io.BytesIO()
+        with wave.open(wav_io, "wb") as wav_file:
+            voice.synthesize_wav(text, wav_file)
+        
+        return wav_io.getvalue()
 
     async def synthesize_and_store(
         self,

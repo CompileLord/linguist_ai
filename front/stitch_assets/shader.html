@@ -83,30 +83,23 @@ float snoise(vec2 v) {
 
 void main() {
     vec2 uv = (gl_FragCoord.xy * 2.0 - u_resolution.xy) / min(u_resolution.y, u_resolution.x);
-    
-    // Create a central orb shape
     float dist = length(uv);
+    float pulse = 0.55 + 0.05 * sin(u_time * 0.8);
     
-    // Animate the radius and deformation
+    // Strict circle boundary with tight mask fade (smooth border glow)
+    float mask = smoothstep(pulse, pulse - 0.05, dist);
+    
     float noise = snoise(uv * 1.5 + u_time * 0.4);
-    float pulse = 0.5 + 0.05 * sin(u_time * 0.8);
-    float radius = pulse + noise * 0.1;
-    
-    // Create the gradient mask
-    float mask = smoothstep(radius, radius - 0.4, dist);
-    
-    // Define the premium colors based on the design system
     vec3 colorA = vec3(0.43, 0.36, 1.0); // #6E5BFF
     vec3 colorB = vec3(0.55, 0.49, 1.0); // #8B7CFF
     
     // Dynamic color shifting
     vec3 color = mix(colorA, colorB, noise * 0.5 + 0.5);
     
-    // Add inner glow
-    float innerGlow = smoothstep(radius - 0.2, radius, dist);
-    color += colorB * innerGlow * 0.3;
+    // Smooth inner glow transition
+    float innerGlow = smoothstep(pulse - 0.15, pulse, dist);
+    color += colorB * innerGlow * 0.35;
     
-    // Apply mask and transparency
     gl_FragColor = vec4(color, mask * 0.9);
 }`;
   function cs(type, src) {

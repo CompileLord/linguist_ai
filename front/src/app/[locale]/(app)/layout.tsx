@@ -10,14 +10,25 @@ import CountUp from "react-countup";
 export default function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: gamification, isLoading } = useGetGamificationStatsQuery();
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const isInitialized = useSelector((state: RootState) => state.auth.isInitialized);
+  const { data: gamification, isLoading } = useGetGamificationStatsQuery(undefined, {
+    skip: !isAuthenticated,
+  });
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (isInitialized && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isAuthenticated, router]);
+  }, [isInitialized, isAuthenticated, router]);
+
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background text-on-surface">
+        <div className="text-lg animate-pulse">Initializing session...</div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
@@ -79,26 +90,33 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const getPageTitle = () => {
     if (pathname.includes("/dashboard")) return "Dashboard";
     if (pathname.includes("/speaking")) return "AI Speaking";
+    if (pathname.includes("/feedback")) return "Mission Feedback";
     if (pathname.includes("/missions")) return "Missions";
     if (pathname.includes("/tutor")) return "AI Tutor";
-    if (pathname.includes("/progress")) return "Progress";
+    if (pathname.includes("/coach")) return "AI Coach Reports";
+    if (pathname.includes("/progress")) return "Progress & Profile";
+    if (pathname.includes("/achievements")) return "Achievements & Badges";
+    if (pathname.includes("/exams/writing/results")) return "Writing Results";
+    if (pathname.includes("/exams/writing")) return "Writing Exam";
+    if (pathname.includes("/exams/listening")) return "Listening Exam";
+    if (pathname.includes("/lessons")) return "Lesson";
     return "Dashboard";
   };
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: "dashboard" },
-    { href: "/dashboard", label: "Missions", icon: "explore" },
-    { href: "/speaking", label: "Tutor", icon: "smart_toy" },
-    { href: "/dashboard", label: "Vocabulary", icon: "translate" },
-    { href: "/dashboard", label: "Progress", icon: "analytics" },
-    { href: "/dashboard", label: "Settings", icon: "settings" },
+    { href: "/missions", label: "Missions", icon: "explore" },
+    { href: "/tutor", label: "Tutor", icon: "smart_toy" },
+    { href: "/vocabulary", label: "Vocabulary", icon: "translate" },
+    { href: "/progress", label: "Progress", icon: "analytics" },
+    { href: "/settings", label: "Settings", icon: "settings" },
   ];
 
   const mobileNavItems = [
     { href: "/dashboard", label: "Dashboard", icon: "dashboard" },
     { href: "/speaking", label: "Speaking", icon: "settings_voice" },
-    { href: "/dashboard", label: "Missions", icon: "explore" },
-    { href: "/dashboard", label: "Progress", icon: "leaderboard" },
+    { href: "/tutor", label: "Tutor", icon: "smart_toy" },
+    { href: "/progress", label: "Progress", icon: "leaderboard" },
   ];
 
   return (
@@ -269,7 +287,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <div className="flex-grow h-1.5 bg-background rounded-full overflow-hidden border border-[#2A2A32]">
             <div
               className="h-full bg-gradient-to-r from-primary to-[#8B7CFF] rounded-full"
-              style={{ width: "30%" }}
+              style={{ width: `${gamification?.level_progress_percentage ?? 30}%` }}
             ></div>
           </div>
           <span className="text-label-md font-label-md text-on-surface whitespace-nowrap tabular-nums">

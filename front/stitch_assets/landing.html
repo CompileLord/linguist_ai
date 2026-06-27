@@ -1,0 +1,2484 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Linguist AI - AI-Native Language Learning SaaS Platform</title>
+  
+  <!-- CSS & Fonts -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            background: "#050507",
+            surface: "#0F0F14",
+            "surface-raised": "#161620",
+            outline: "#1E1E26",
+            "outline-variant": "#2D2D3E",
+            primary: "#6E5BFF",
+            secondary: "#8B7CFF",
+            "on-surface": "#F5F5F7",
+            "on-surface-variant": "#9A9AA5",
+            "text-tertiary": "#62626C",
+            accent: "#6E5BFF",
+            "accent-glow": "#8B7CFF",
+            success: "#3DD68C",
+            warning: "#E8B339",
+            error: "#FF5C6C"
+          },
+          fontFamily: {
+            display: ["Hanken Grotesk", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            code: ["Geist", "monospace"]
+          },
+          borderRadius: {
+            "DEFAULT": "8px",
+            "md": "8px",
+            "lg": "12px",
+            "xl": "16px",
+            "2xl": "24px",
+            "3xl": "32px",
+            "full": "9999px"
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #050507;
+      color: #F5F5F7;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+    
+    .font-display {
+      font-family: 'Hanken Grotesk', sans-serif;
+    }
+    
+    .font-code {
+      font-family: 'Geist', monospace;
+    }
+
+    .surface-card {
+      background-color: #0F0F14;
+      border: 1px solid #1E1E26;
+      position: relative;
+    }
+    
+    .glow-accent {
+      box-shadow: 0 0 40px -5px rgba(110, 91, 255, 0.08);
+    }
+
+    .glow-purple {
+      background: radial-gradient(circle, rgba(110,91,255,0.15) 0%, rgba(0,0,0,0) 70%);
+    }
+
+    /* Grid layout backgrounds */
+    .grid-lines {
+      background-size: 40px 40px;
+      background-image: 
+        linear-gradient(to right, rgba(110, 91, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(110, 91, 255, 0.03) 1px, transparent 1px);
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1E1E26;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #6E5BFF;
+    }
+
+    /* Pulse animation for AI orb */
+    @keyframes orb-pulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 40px 10px rgba(110, 91, 255, 0.15), inset 0 0 20px rgba(139, 124, 255, 0.2);
+        opacity: 0.8;
+      }
+      50% {
+        transform: scale(1.08);
+        box-shadow: 0 0 60px 25px rgba(110, 91, 255, 0.35), inset 0 0 30px rgba(139, 124, 255, 0.4);
+        opacity: 1;
+      }
+    }
+    .voice-orb {
+      animation: orb-pulse 3s infinite ease-in-out;
+    }
+
+    /* Living Accent Line */
+    @keyframes accent-pulse {
+      0%, 100% { opacity: 0.4; transform: scaleX(0.9); }
+      50% { opacity: 1; transform: scaleX(1); }
+    }
+    .living-accent-line {
+      animation: accent-pulse 3s infinite ease-in-out;
+    }
+    
+    .hide-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    .hide-scroll {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Gradient borders on cards */
+    .grad-border::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1.5px;
+      background: linear-gradient(to bottom right, rgba(110,91,255,0.3), transparent 60%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    /* Scanning bar effect */
+    @keyframes scan-bar {
+      0% { top: -10%; }
+      100% { top: 110%; }
+    }
+    .scanner-line {
+      animation: scan-bar 4s infinite linear;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-background text-on-surface antialiased flex flex-col selection:bg-primary/20 selection:text-primary grid-lines">
+
+  <!-- Interactive Geometric Line Field Background -->
+  <canvas id="interactive-mesh-canvas" class="fixed inset-0 w-full h-full pointer-events-none" style="z-index: -1;"></canvas>
+
+  <!-- Fixed Top Navigation Bar -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-[#0F0F14]/75 backdrop-blur-xl border-b border-outline">
+    <div class="max-w-[1440px] mx-auto px-6 md:px-12 h-20 flex justify-between items-center">
+      <!-- Logo -->
+      <a href="#" class="flex items-center gap-3 group">
+        <div class="relative w-9 h-9 rounded-xl bg-gradient-to-tr from-primary to-secondary flex items-center justify-center text-white font-bold font-display shadow-[0_0_20px_rgba(110,91,255,0.4)]">
+          <span class="z-10">L</span>
+          <div class="absolute inset-0.5 rounded-[10px] bg-background"></div>
+          <span class="absolute z-10 text-transparent bg-clip-text bg-gradient-to-r from-white to-[#c6bfff]">L</span>
+        </div>
+        <span class="font-display text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary tracking-tight">Linguist <span class="text-white">AI</span></span>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <div class="hidden lg:flex items-center gap-8 text-on-surface-variant font-medium text-xs uppercase tracking-wider font-code">
+        <a href="#pipeline" class="hover:text-primary transition-colors" data-t="nav_pipeline">Pipeline</a>
+        <a href="#features" class="hover:text-primary transition-colors" data-t="nav_features">Features</a>
+        <a href="#interactive-hub" class="hover:text-primary transition-colors" data-t="nav_demo">Interactive Hub</a>
+        <a href="#placement" class="hover:text-primary transition-colors" data-t="nav_placement">Diagnostic</a>
+        <a href="#quotas" class="hover:text-primary transition-colors" data-t="nav_quotas">Limits</a>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-4">
+        <!-- Language Switcher -->
+        <div class="relative inline-block text-left" id="langDropdownContainer">
+          <button type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-outline bg-surface hover:bg-surface-raised text-xs font-semibold font-code text-on-surface transition-colors focus:outline-none" id="langBtn">
+            <span class="material-symbols-outlined text-sm">language</span>
+            <span id="currentLangName">English</span>
+            <span class="material-symbols-outlined text-xs">keyboard_arrow_down</span>
+          </button>
+          
+          <div class="hidden absolute right-0 mt-2 w-36 rounded-lg border border-outline bg-surface-raised shadow-xl z-50 overflow-hidden" id="langMenu">
+            <div class="py-1">
+              <button onclick="switchLang('en')" class="w-full text-left px-4 py-2 text-xs font-code text-on-surface hover:bg-primary/10 hover:text-primary transition-colors">English (EN)</button>
+              <button onclick="switchLang('ru')" class="w-full text-left px-4 py-2 text-xs font-code text-on-surface hover:bg-primary/10 hover:text-primary transition-colors">Русский (RU)</button>
+              <button onclick="switchLang('tg')" class="w-full text-left px-4 py-2 text-xs font-code text-on-surface hover:bg-primary/10 hover:text-primary transition-colors">Тоҷикӣ (TG)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Auth CTAs -->
+        <a href="linguist_ai_login.html" class="hidden sm:inline-block px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider font-code text-on-surface-variant hover:text-on-surface transition-all" data-t="nav_login">Log In</a>
+        <a href="linguist_ai_registration.html" class="px-5 py-2.5 rounded-lg bg-primary hover:bg-primary/95 text-white text-xs font-bold uppercase tracking-wider font-code shadow-[0_0_20px_rgba(110,91,255,0.3)] border border-[#8B7CFF]/20 transition-all duration-150 active:scale-[0.98]" data-t="nav_register">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="relative pt-44 pb-24 px-6 overflow-hidden max-w-[1440px] mx-auto w-full">
+    <!-- WebGL Ambient Shader Glow (from shader.html) -->
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 -z-10 w-[100%] max-w-[800px] h-[550px] pointer-events-none overflow-hidden blur-[60px] opacity-75 transform -translate-y-12">
+      <canvas id="shader-canvas-ANIMATION_29" style="display:block;width:100%;height:100%"></canvas>
+    </div>
+    
+    <div class="text-center max-w-4xl mx-auto flex flex-col items-center">
+      <!-- Tag -->
+      <div class="inline-flex items-center gap-2 px-3 py-1 bg-[#161620] border border-outline text-[#c6bfff] rounded-lg text-[10px] font-bold font-code uppercase tracking-widest mb-8">
+        <span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>
+        <span data-t="hero_badge">SaaS MVP Launch</span>
+      </div>
+
+      <!-- Main Headline -->
+      <h1 class="font-display text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.05] mb-8 max-w-4xl text-balance" data-t="hero_title">
+        The Generative AI <br class="hidden sm:inline" />Language Platform
+      </h1>
+
+      <!-- Description -->
+      <p class="text-on-surface-variant text-base sm:text-lg md:text-xl font-normal leading-relaxed max-w-2xl mb-12 text-pretty" data-t="hero_desc">
+        Ditch static courses. Linguist AI compiles personalized lessons, custom databases, and real-time voice sessions dynamically using Vertex AI—engineered to map perfectly to your goals, timezone, and error logs.
+      </p>
+
+      <!-- CTAs -->
+      <div class="flex flex-col sm:flex-row gap-4 mb-20 justify-center w-full sm:w-auto relative z-10">
+        <a href="linguist_ai_registration.html" class="px-8 py-4 rounded-lg bg-primary hover:bg-primary/95 text-white font-bold uppercase tracking-wider font-code text-xs shadow-[0_0_24px_rgba(110,91,255,0.4)] border border-[#8B7CFF]/30 transition-all duration-150 active:scale-[0.98] text-center" data-t="cta_register">
+          Start Onboarding - Free
+        </a>
+        <a href="#placement" class="px-8 py-4 rounded-lg border border-outline hover:border-primary/50 hover:bg-surface-raised/30 text-on-surface font-bold uppercase tracking-wider font-code text-xs transition-all text-center" data-t="cta_test">
+          Try Interactive Diagnostic
+        </a>
+      </div>
+    </div>
+
+    <!-- Hero Mockup Showcase with Glowing Neon border -->
+    <div class="relative max-w-5xl mx-auto surface-card rounded-2xl overflow-hidden border border-outline shadow-2xl glow-accent mt-8 group grad-border">
+      <!-- Living Accent Line -->
+      <div class="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent living-accent-line"></div>
+      
+      <!-- Top header of mockup -->
+      <div class="bg-surface border-b border-outline px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-error/30"></div>
+          <div class="w-2.5 h-2.5 rounded-full bg-warning/30"></div>
+          <div class="w-2.5 h-2.5 rounded-full bg-success/30"></div>
+          <span class="text-[10px] font-code text-text-tertiary ml-2">linguist-ai-app-dashboard.html</span>
+        </div>
+        <div class="flex items-center gap-4 text-[10px] font-code text-on-surface-variant">
+          <span class="flex items-center gap-1"><span class="material-symbols-outlined text-warning text-sm" style="font-variation-settings: 'FILL' 1">local_fire_department</span> <span class="font-bold text-on-surface">7 Day</span> Streak</span>
+          <span class="flex items-center gap-1"><span class="material-symbols-outlined text-primary text-sm">military_tech</span> <span class="font-bold text-on-surface">1,250</span> XP</span>
+        </div>
+      </div>
+
+      <!-- Grid mockup screen -->
+      <div class="p-6 md:p-8 bg-background grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Main Panel -->
+        <div class="md:col-span-2 space-y-6">
+          <!-- Lesson Card -->
+          <div class="surface-card rounded-xl p-6 relative overflow-hidden flex flex-col justify-between min-h-[220px] border border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-transparent">
+            <div>
+              <div class="flex justify-between items-start mb-3">
+                <span class="inline-block px-2.5 py-0.5 bg-surface-raised border border-outline rounded text-[9px] font-code text-[#c6bfff] uppercase tracking-wider font-bold" data-t="mock_cur_module">Active Module</span>
+                <span class="text-[10px] font-code text-on-surface-variant flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span> Live Generation</span>
+              </div>
+              <h3 class="text-3xl font-bold font-display text-white mb-1">Past Tense Mastery</h3>
+              <p class="text-xs text-on-surface-variant">Module 4: Irregular Verbs in Narrative Writing</p>
+            </div>
+            <div class="mt-auto flex items-center justify-between gap-4">
+              <div class="flex-grow max-w-xs">
+                <div class="flex justify-between text-[10px] font-code text-on-surface-variant mb-1 font-bold">
+                  <span data-t="mock_progress">Module Progress</span>
+                  <span>65%</span>
+                </div>
+                <div class="h-1.5 bg-surface-raised border border-outline rounded-full overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-primary to-secondary rounded-full" style="width: 65%"></div>
+                </div>
+              </div>
+              <button class="px-4 py-2.5 bg-primary hover:bg-primary/90 text-white rounded-lg text-xs font-bold uppercase tracking-wider font-code border border-[#8B7CFF]/20 flex items-center gap-1 transition-all">
+                <span data-t="mock_continue">Continue</span>
+                <span class="material-symbols-outlined text-xs">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Actions Row -->
+          <div>
+            <h4 class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider font-code mb-3" data-t="mock_quick">AI Action Suite</h4>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div class="surface-card p-3 rounded-lg border border-outline flex items-center gap-2 hover:border-primary/40 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-primary text-base">settings_voice</span>
+                <span class="text-xs font-medium font-display text-white">Speaking</span>
+              </div>
+              <div class="surface-card p-3 rounded-lg border border-outline flex items-center gap-2 hover:border-primary/40 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-secondary text-base">smart_toy</span>
+                <span class="text-xs font-medium font-display text-white">AI Tutor</span>
+              </div>
+              <div class="surface-card p-3 rounded-lg border border-outline flex items-center gap-2 hover:border-primary/40 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-success text-base">explore</span>
+                <span class="text-xs font-medium font-display text-white">Missions</span>
+              </div>
+              <div class="surface-card p-3 rounded-lg border border-outline flex items-center gap-2 hover:border-primary/40 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-warning text-base">workspace_premium</span>
+                <span class="text-xs font-medium font-display text-white">Exams</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar Panel -->
+        <div class="space-y-6">
+          <!-- Review Queue -->
+          <div class="surface-card rounded-xl p-5 border border-outline">
+            <div class="flex justify-between items-center mb-4">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-warning text-lg">psychology</span>
+                <span class="text-[9px] font-bold text-on-surface-variant uppercase tracking-wider font-code" data-t="mock_review_title">Spaced Repetition</span>
+              </div>
+              <span class="w-2 h-2 rounded-full bg-warning animate-pulse"></span>
+            </div>
+            <div class="mb-4">
+              <h4 class="text-xl font-bold font-display text-white tracking-tight">52 Words & Rules</h4>
+              <p class="text-xs text-on-surface-variant mt-1" data-t="mock_review_desc">Due today for review based on your previous errors.</p>
+            </div>
+            <button class="w-full py-2 bg-surface-raised border border-outline hover:border-primary/50 text-[10px] font-bold uppercase tracking-wider font-code rounded-lg transition-all" data-t="mock_review_btn">
+              Start Review Session
+            </button>
+          </div>
+
+          <!-- Coach Banner -->
+          <div class="surface-card rounded-xl p-4 border border-outline flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+              <span class="material-symbols-outlined text-base">chat_bubble</span>
+            </div>
+            <div>
+              <h5 class="text-xs font-bold text-white" data-t="mock_coach_title">AI Coach Report Ready</h5>
+              <p class="text-[9px] text-on-surface-variant font-code mt-0.5" data-t="mock_coach_desc">Reviewing your B1 grammar accuracy patterns.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dynamic Content Compilation Pipeline Section -->
+  <section class="py-24 px-6 max-w-[1440px] mx-auto w-full border-t border-outline/30" id="pipeline">
+    <div class="text-center max-w-3xl mx-auto mb-20">
+      <div class="inline-block px-3.5 py-1 bg-primary/10 border border-primary/20 text-[#c6bfff] rounded-lg text-[9px] font-bold font-code uppercase tracking-widest mb-4">
+        Under the Hood
+      </div>
+      <h2 class="font-display text-3xl sm:text-5xl font-bold text-white tracking-tight mb-4" data-t="pipe_title">
+        The AI Content Compilation Pipeline
+      </h2>
+      <p class="text-on-surface-variant text-base" data-t="pipe_subtitle">
+        Linguist AI doesn't load files. Watch how Vertex AI orchestrates and compiles lessons in real time based on your target profiles.
+      </p>
+    </div>
+
+    <!-- Pipeline flowchart diagram -->
+    <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6 relative">
+      <!-- Dotted Line connector desktop -->
+      <div class="hidden md:block absolute top-12 left-6 right-6 h-0.5 border-t-2 border-dashed border-outline/40 -z-10"></div>
+      
+      <!-- Step 1 -->
+      <div class="surface-card rounded-xl p-6 border border-outline hover:border-primary/40 transition-all flex flex-col justify-between min-h-[180px] group">
+        <div class="space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-surface-raised border border-outline flex items-center justify-center text-primary font-code font-bold group-hover:border-primary/50 transition-colors">01</div>
+          <div>
+            <h4 class="text-sm font-bold text-white font-display">Target Context Context</h4>
+            <p class="text-[11px] text-on-surface-variant mt-1 leading-relaxed">Aggregates CEFR level, daily goal setting, active language, and logged error tags from DB.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="surface-card rounded-xl p-6 border border-outline hover:border-primary/40 transition-all flex flex-col justify-between min-h-[180px] group">
+        <div class="space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-surface-raised border border-outline flex items-center justify-center text-secondary font-code font-bold group-hover:border-secondary/50 transition-colors">02</div>
+          <div>
+            <h4 class="text-sm font-bold text-white font-display">LLM Prompt Engine</h4>
+            <p class="text-[11px] text-on-surface-variant mt-1 leading-relaxed">Injects metrics into system rules prompts, prioritizing vocabulary based on user goals.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="surface-card rounded-xl p-6 border border-outline hover:border-primary/40 transition-all flex flex-col justify-between min-h-[180px] group">
+        <div class="space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-surface-raised border border-outline flex items-center justify-center text-[#3DD68C] font-code font-bold group-hover:border-[#3DD68C]/50 transition-colors">03</div>
+          <div>
+            <h4 class="text-sm font-bold text-white font-display">JSON validation</h4>
+            <p class="text-[11px] text-on-surface-variant mt-1 leading-relaxed">Vertex AI enforces JSON structures using Pydantic models to prevent formatting drops.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="surface-card rounded-xl p-6 border border-outline hover:border-primary/40 transition-all flex flex-col justify-between min-h-[180px] group">
+        <div class="space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-surface-raised border border-outline flex items-center justify-center text-warning font-code font-bold group-hover:border-warning/50 transition-colors">04</div>
+          <div>
+            <h4 class="text-sm font-bold text-white font-display">Dynamic Compile</h4>
+            <p class="text-[11px] text-on-surface-variant mt-1 leading-relaxed">Deploys content blocks, schedules review queues, and registers error correction mappings.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Experience Hub Section -->
+  <section class="py-24 px-6 max-w-[1440px] mx-auto w-full border-t border-outline/30" id="interactive-hub">
+    <div class="text-center max-w-3xl mx-auto mb-16">
+      <div class="inline-block px-3.5 py-1 bg-primary/10 border border-primary/20 text-[#c6bfff] rounded-lg text-[9px] font-bold font-code uppercase tracking-widest mb-4">
+        Sandbox environment
+      </div>
+      <h2 class="font-display text-3xl sm:text-5xl font-bold text-white tracking-tight mb-4" data-t="hub_title">
+        The 14-Module Personalized Learning Architecture
+      </h2>
+      <p class="text-on-surface-variant text-base" data-t="hub_subtitle">
+        Click the tabs below to interact with real screen mockups and understand the core features of the system.
+      </p>
+    </div>
+
+    <!-- Tabs Container -->
+    <div class="max-w-5xl mx-auto flex flex-col">
+      <!-- Tabs header scroll -->
+      <div class="flex gap-2 overflow-x-auto hide-scroll pb-3 mb-6 border-b border-outline font-code">
+        <button onclick="switchTab(0)" class="tab-btn px-4 py-2 border-b-2 border-primary font-semibold text-xs text-primary flex items-center gap-2 whitespace-nowrap active:scale-[0.98]" id="tab-btn-0">
+          <span class="material-symbols-outlined text-lg">auto_awesome</span>
+          <span data-t="tab_lesson">Lesson Generator</span>
+        </button>
+        <button onclick="switchTab(1)" class="tab-btn px-4 py-2 border-b-2 border-transparent font-medium text-xs text-on-surface-variant hover:text-on-surface flex items-center gap-2 whitespace-nowrap active:scale-[0.98]" id="tab-btn-1">
+          <span class="material-symbols-outlined text-lg">smart_toy</span>
+          <span data-t="tab_tutor">AI Live Tutor</span>
+        </button>
+        <button onclick="switchTab(2)" class="tab-btn px-4 py-2 border-b-2 border-transparent font-medium text-xs text-on-surface-variant hover:text-on-surface flex items-center gap-2 whitespace-nowrap active:scale-[0.98]" id="tab-btn-2">
+          <span class="material-symbols-outlined text-lg">settings_voice</span>
+          <span data-t="tab_speaking">Voice Speaking</span>
+        </button>
+        <button onclick="switchTab(3)" class="tab-btn px-4 py-2 border-b-2 border-transparent font-medium text-xs text-on-surface-variant hover:text-on-surface flex items-center gap-2 whitespace-nowrap active:scale-[0.98]" id="tab-btn-3">
+          <span class="material-symbols-outlined text-lg">rate_review</span>
+          <span data-t="tab_exams">Writing Exams</span>
+        </button>
+        <button onclick="switchTab(4)" class="tab-btn px-4 py-2 border-b-2 border-transparent font-medium text-xs text-on-surface-variant hover:text-on-surface flex items-center gap-2 whitespace-nowrap active:scale-[0.98]" id="tab-btn-4">
+          <span class="material-symbols-outlined text-lg">analytics</span>
+          <span data-t="tab_coach">AI Coach Report</span>
+        </button>
+      </div>
+
+      <!-- Tab Content Area (Interactive Screens) -->
+      <div class="relative bg-surface rounded-2xl border border-outline min-h-[480px] overflow-hidden p-6 md:p-8 flex flex-col justify-between glow-accent transition-all duration-300 grad-border">
+        
+        <!-- Interactive Tab 0: Lesson Generator -->
+        <div class="tab-content flex flex-col md:flex-row gap-8 h-full" id="tab-content-0">
+          <div class="flex-1 flex flex-col justify-between space-y-6">
+            <div>
+              <span class="text-[10px] font-bold text-primary uppercase tracking-wider font-code mb-2 block" data-t="tab0_tag">Module 3.4</span>
+              <h3 class="text-2xl font-bold font-display text-white mb-3" data-t="tab0_title">Generative AI Lessons</h3>
+              <p class="text-on-surface-variant text-sm leading-relaxed" data-t="tab0_desc">
+                Vertex AI builds lessons individually for you in JSON format. It translates explanation theory into your selected UI language (Tajik, Russian, or English), creates custom exercises, and sets up a customized curriculum.
+              </p>
+            </div>
+            
+            <div class="space-y-3">
+              <h4 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider font-code" data-t="tab0_spec_title">Lesson Structure:</h4>
+              <div class="grid grid-cols-2 gap-2 text-xs font-code">
+                <div class="flex items-center gap-2 text-on-surface"><span class="w-1.5 h-1.5 rounded-full bg-success"></span> Theory explanation</div>
+                <div class="flex items-center gap-2 text-on-surface"><span class="w-1.5 h-1.5 rounded-full bg-success"></span> 10-15 Vocabulary items</div>
+                <div class="flex items-center gap-2 text-on-surface"><span class="w-1.5 h-1.5 rounded-full bg-success"></span> 8-10 Adaptive Exercises</div>
+                <div class="flex items-center gap-2 text-on-surface"><span class="w-1.5 h-1.5 rounded-full bg-success"></span> Final quiz & audio script</div>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-outline/50 flex items-center justify-between">
+              <span class="text-[10px] font-code text-text-tertiary">Powered by gemini-2.5-flash</span>
+              <button onclick="simulateLessonGen()" class="px-4 py-2 bg-primary/10 border border-primary/30 hover:border-primary text-primary hover:bg-primary/20 transition-all text-xs font-bold uppercase tracking-wider font-code rounded-lg" data-t="tab0_btn">
+                Simulate Lesson Generation
+              </button>
+            </div>
+          </div>
+          
+          <div class="flex-1 bg-background rounded-xl border border-outline p-5 flex flex-col justify-between relative overflow-hidden min-h-[300px]" id="lessonMockContainer">
+            <!-- Simulated Loading / Line State -->
+            <div class="absolute top-0 left-0 w-full h-[2.5px] bg-gradient-to-r from-transparent via-primary to-transparent hidden" id="lessonGlowLine"></div>
+            
+            <!-- Default Static Lesson View -->
+            <div class="space-y-4" id="lessonStaticView">
+              <div class="flex justify-between items-center">
+                <span class="text-[10px] font-code text-success px-2 py-0.5 bg-success/10 border border-success/20 rounded">Ready</span>
+                <span class="text-[10px] font-code text-on-surface-variant">Estimated time: 15m</span>
+              </div>
+              <div>
+                <h4 class="text-lg font-bold text-white font-display" id="lessonTopic">Present Perfect Tense</h4>
+                <p class="text-xs text-on-surface-variant mt-1" id="lessonDesc">Learn to explain past life experiences with active consequences.</p>
+              </div>
+              <div class="space-y-2 pt-2">
+                <div class="p-3 bg-surface border border-outline rounded-lg flex justify-between items-center">
+                  <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-primary text-base">import_contacts</span>
+                    <span class="text-xs font-medium" data-t="mock_theory">Grammar Theory & Notes</span>
+                  </div>
+                  <span class="material-symbols-outlined text-xs text-on-surface-variant">arrow_forward_ios</span>
+                </div>
+                <div class="p-3 bg-surface border border-outline rounded-lg flex justify-between items-center">
+                  <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-secondary text-base">translate</span>
+                    <span class="text-xs font-medium" data-t="mock_words_learned">15 Core Words to Study</span>
+                  </div>
+                  <span class="material-symbols-outlined text-xs text-on-surface-variant">arrow_forward_ios</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Lesson Simulation Loading View -->
+            <div class="hidden flex-col items-center justify-center h-full space-y-4 py-8" id="lessonLoadingView">
+              <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+              <div class="text-center space-y-1">
+                <p class="text-xs font-code font-bold text-primary" data-t="sim_gen_status">GENERATING CONTENT...</p>
+                <p class="text-[10px] text-on-surface-variant" data-t="sim_gen_sub">Vertex AI compiling rules, grammar & audio scripts</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Tab 1: AI Live Tutor -->
+        <div class="tab-content hidden flex-col md:flex-row gap-8 h-full" id="tab-content-1">
+          <div class="flex-1 flex flex-col justify-between space-y-6">
+            <div>
+              <span class="text-[10px] font-bold text-primary uppercase tracking-wider font-code mb-2 block" data-t="tab1_tag">Module 3.7</span>
+              <h3 class="text-2xl font-bold font-display text-white mb-3" data-t="tab1_title">Interactive AI Tutor Chat</h3>
+              <p class="text-on-surface-variant text-sm leading-relaxed" data-t="tab1_desc">
+                Access a streaming WebSocket chat anytime. Confused by grammar? Click a quick-prompt chip below to ask, or test a custom query. The AI knows your proficiency level, UI language, and active curriculum topic.
+              </p>
+            </div>
+            
+            <div class="space-y-3">
+              <h4 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider font-code" data-t="tab1_prompt_title">Click to ask tutor:</h4>
+              <div class="flex flex-wrap gap-2">
+                <button onclick="askTutor('explain')" class="px-2.5 py-1.5 bg-surface-raised border border-outline hover:border-primary/50 text-xs rounded-lg transition-colors text-on-surface-variant hover:text-on-surface" data-t="tab1_chip_explain">Explain Present Perfect</button>
+                <button onclick="askTutor('diff')" class="px-2.5 py-1.5 bg-surface-raised border border-outline hover:border-primary/50 text-xs rounded-lg transition-colors text-on-surface-variant hover:text-on-surface" data-t="tab1_chip_diff">Past Simple vs Present Perfect</button>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-outline/50 flex items-center justify-between">
+              <span class="text-[10px] font-code text-text-tertiary">Real-time WebSocket streaming</span>
+              <span class="text-xs font-medium text-primary flex items-center gap-1 font-code">
+                <span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span> Live Connection
+              </span>
+            </div>
+          </div>
+          
+          <div class="flex-1 bg-background rounded-xl border border-outline p-4 flex flex-col justify-between min-h-[300px]">
+            <!-- Chat Log -->
+            <div class="flex-grow space-y-4 overflow-y-auto max-h-[220px] pr-1 hide-scroll text-xs" id="chatContainer">
+              <div class="space-y-1">
+                <div class="text-[10px] font-bold text-primary font-code">Linguist AI Tutor</div>
+                <div class="text-on-surface leading-relaxed border-l border-primary/20 pl-3 py-0.5">
+                  Hello! I'm your AI Language Tutor. You are studying Present Perfect. How can I help you master it today?
+                </div>
+              </div>
+            </div>
+
+            <!-- Typing indicator -->
+            <div class="hidden items-center gap-2 mb-2" id="chatTyping">
+              <div class="flex gap-1">
+                <span class="w-1 h-1 bg-primary rounded-full animate-bounce" style="animation-delay: 0.1s"></span>
+                <span class="w-1 h-1 bg-primary rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
+                <span class="w-1 h-1 bg-primary rounded-full animate-bounce" style="animation-delay: 0.3s"></span>
+              </div>
+              <span class="text-[9px] text-text-tertiary font-code">Tutor is typing...</span>
+            </div>
+            
+            <!-- Chat Input box -->
+            <div class="mt-4 pt-3 border-t border-outline/50 flex gap-2">
+              <input type="text" id="chatInput" placeholder="Ask anything about English..." class="flex-grow bg-surface border border-outline rounded-lg px-3 py-2 text-xs text-on-surface focus:outline-none focus:border-primary placeholder:text-text-tertiary" />
+              <button onclick="sendChatMessage()" class="bg-primary hover:bg-primary/95 text-white px-3 py-2 rounded-lg text-xs font-semibold border border-[#8B7CFF]/20 flex items-center justify-center active:scale-95 transition-all">
+                <span class="material-symbols-outlined text-sm">send</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Tab 2: AI Voice Speaking -->
+        <div class="tab-content hidden flex-col md:flex-row gap-8 h-full" id="tab-content-2">
+          <div class="flex-1 flex flex-col justify-between space-y-6">
+            <div>
+              <span class="text-[10px] font-bold text-primary uppercase tracking-wider font-code mb-2 block" data-t="tab2_tag">Module 3.10 / 11</span>
+              <h3 class="text-2xl font-bold font-display text-white mb-3" data-t="tab2_title">Voice Speaking Mode</h3>
+              <p class="text-on-surface-variant text-sm leading-relaxed" data-t="tab2_desc">
+                Talk to the AI in real time using your voice. The system utilizes real-time Speech-to-Text and TTS models. To control infrastructure expenses, free accounts have a daily limit of 5 minutes.
+              </p>
+            </div>
+            
+            <div class="space-y-2 p-3 bg-background border border-outline rounded-lg">
+              <div class="flex justify-between items-center text-xs font-semibold text-on-surface">
+                <span data-t="tab2_quota_label">Daily Speaking Quota</span>
+                <span class="text-warning font-code" id="timerQuotaText">5:00 remaining</span>
+              </div>
+              <div class="h-1 bg-surface rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-primary to-warning rounded-full" style="width: 100%" id="timerQuotaBar"></div>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-outline/50 flex items-center justify-between">
+              <span class="text-[10px] font-code text-text-tertiary">5 mins daily speaking is free</span>
+              <button onclick="toggleVoiceSession()" class="px-4 py-2 bg-primary hover:bg-primary/90 text-white text-xs font-bold uppercase tracking-wider font-code rounded-lg border border-[#8B7CFF]/20 flex items-center gap-1.5 transition-all shadow-[0_0_12px_rgba(110,91,255,0.2)]" id="voiceToggleBtn">
+                <span class="material-symbols-outlined text-sm">mic</span>
+                <span data-t="tab2_btn_start">Start Session</span>
+              </button>
+            </div>
+          </div>
+          
+          <div class="flex-1 bg-background rounded-xl border border-outline p-6 flex flex-col items-center justify-center text-center min-h-[300px] relative overflow-hidden">
+            <!-- Living Accent Orb -->
+            <div class="w-32 h-32 rounded-full bg-gradient-to-br from-primary via-secondary to-accent-glow flex items-center justify-center opacity-40 blur-md pointer-events-none absolute voice-orb" id="voiceVisualizer" style="display: none;"></div>
+            
+            <!-- Dynamic Canvas Waveform -->
+            <canvas id="waveformCanvas" class="absolute inset-0 w-full h-full pointer-events-none hidden"></canvas>
+
+            <div class="relative z-10 space-y-4">
+              <div class="w-20 h-20 rounded-full border border-outline bg-surface flex items-center justify-center mx-auto text-on-surface-variant group-hover:border-primary transition-all duration-300" id="micIconBox">
+                <span class="material-symbols-outlined text-3xl font-light" id="micStatusSymbol">mic_off</span>
+              </div>
+              <div>
+                <h4 class="text-sm font-bold text-white font-display" id="voiceStatusTitle" data-t="voice_inactive">Session Offline</h4>
+                <p class="text-xs text-on-surface-variant mt-1" id="voiceStatusSub" data-t="voice_inactive_sub">Click Start Session to activate your microphone</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Tab 3: Writing Exams -->
+        <div class="tab-content hidden flex-col md:flex-row gap-8 h-full" id="tab-content-3">
+          <div class="flex-1 flex flex-col justify-between space-y-6">
+            <div>
+              <span class="text-[10px] font-bold text-primary uppercase tracking-wider font-code mb-2 block" data-t="tab3_tag">Module 3.9</span>
+              <h3 class="text-2xl font-bold font-display text-white mb-3" data-t="tab3_title">AI Writing Grading & Diff</h3>
+              <p class="text-on-surface-variant text-sm leading-relaxed" data-t="tab3_desc">
+                Submit essays or tasks (IELTS/TOEFL standard). The AI evaluates your writing against grammar, vocabulary, text cohesion, and naturalness. Corrected errors are displayed as interactive code diffs with explanatory comments.
+              </p>
+            </div>
+            
+            <div class="space-y-2">
+              <h4 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider font-code" data-t="tab3_score_label">Grading metrics visual:</h4>
+              <div class="space-y-1.5 text-[11px]">
+                <div>
+                  <div class="flex justify-between mb-0.5 text-on-surface-variant"><span>Grammar Accuracy</span><span class="font-code text-on-surface font-semibold">B2 (7.5)</span></div>
+                  <div class="h-1 bg-surface-raised border border-outline rounded-full overflow-hidden"><div class="h-full bg-primary" style="width: 75%"></div></div>
+                </div>
+                <div>
+                  <div class="flex justify-between mb-0.5 text-on-surface-variant"><span>Vocabulary Variety</span><span class="font-code text-on-surface font-semibold">B1 (6.0)</span></div>
+                  <div class="h-1 bg-surface-raised border border-outline rounded-full overflow-hidden"><div class="h-full bg-primary" style="width: 60%"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-outline/50 flex items-center justify-between">
+              <span class="text-[10px] font-code text-text-tertiary">Powered by gemini-2.5-pro</span>
+              <button onclick="triggerWritingFeedback()" class="px-4 py-2 bg-primary/10 border border-primary/30 hover:border-primary text-primary hover:bg-primary/20 transition-all text-xs font-bold uppercase tracking-wider font-code rounded-lg" data-t="tab3_btn">
+                Simulate AI Evaluation
+              </button>
+            </div>
+          </div>
+          
+          <div class="flex-1 bg-background rounded-xl border border-outline p-5 flex flex-col justify-between min-h-[300px] text-xs">
+            <div class="space-y-4" id="writingMockView">
+              <div>
+                <span class="text-[10px] font-code text-on-surface-variant uppercase tracking-wider block mb-1">Assigned Prompt:</span>
+                <p class="font-semibold text-white" data-t="mock_prompt_text">"Describe your memorable travel experience."</p>
+              </div>
+              
+              <div class="p-3 bg-surface border border-outline rounded-lg space-y-1">
+                <span class="text-[9px] font-code text-text-tertiary">User Submission:</span>
+                <p class="text-on-surface text-[11px] leading-relaxed italic" id="submittedEssay">"Yesterday, I have gone to the shop and I saw a nice shoes. I bought it."</p>
+              </div>
+              
+              <div class="p-3 bg-primary/5 border border-primary/20 rounded-lg space-y-2 hidden" id="writingFeedbackBox">
+                <span class="text-[9px] font-code text-primary font-bold uppercase tracking-wider">AI Coach Correction Diff:</span>
+                <div class="font-code text-[10px] space-y-1 leading-relaxed">
+                  <div class="text-error flex items-center gap-1.5"><span class="material-symbols-outlined text-[10px]">remove</span> Yesterday, <del class="line-through">I have gone</del> to the...</div>
+                  <div class="text-success flex items-center gap-1.5"><span class="material-symbols-outlined text-[10px]">add</span> Yesterday, <ins class="no-underline font-bold">I went</ins> to the...</div>
+                </div>
+                <div class="pt-1.5 border-t border-outline/30 text-[10px] text-on-surface-variant" data-t="mock_error_explain">
+                  <strong>Explanation:</strong> Use Past Simple instead of Present Perfect when stating a specific past time reference ("Yesterday").
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Tab 4: AI Coach Report -->
+        <div class="tab-content hidden flex-col md:flex-row gap-8 h-full" id="tab-content-4">
+          <div class="flex-1 flex flex-col justify-between space-y-6">
+            <div>
+              <span class="text-[10px] font-bold text-primary uppercase tracking-wider font-code mb-2 block" data-t="tab4_tag">Module 3.14</span>
+              <h3 class="text-2xl font-bold font-display text-white mb-3" data-t="tab4_title">Weekly Coach Reports</h3>
+              <p class="text-on-surface-variant text-sm leading-relaxed" data-t="tab4_desc">
+                Once a week, the system gathers your study data (completed lessons, diagnostic scores, errors logs) and generates a friendly progress summary. It notes your improvements and targets specific weaknesses.
+              </p>
+            </div>
+            
+            <div class="space-y-2 text-xs font-code text-on-surface-variant">
+              <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-sm">trending_up</span> Tracks dynamic CEFR progression</div>
+              <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-sm">rule</span> Counts aggregated error repeats</div>
+            </div>
+
+            <div class="pt-4 border-t border-outline/50 flex items-center justify-between">
+              <span class="text-[10px] font-code text-text-tertiary">Uses gemini-2.5-pro</span>
+              <span class="text-xs font-medium text-success flex items-center gap-1 font-code font-code">
+                <span class="material-symbols-outlined text-xs">verified</span> Generated Weekly
+              </span>
+            </div>
+          </div>
+          
+          <div class="flex-1 bg-background rounded-xl border border-outline p-5 flex flex-col justify-between min-h-[300px] text-xs">
+            <div class="space-y-4">
+              <div class="flex justify-between items-center border-b border-outline pb-2">
+                <div>
+                  <h4 class="font-bold text-white font-display" data-t="mock_coach_hdr">Weekly Progress Letter</h4>
+                  <span class="text-[9px] text-text-tertiary font-code">June 20 - June 26, 2026</span>
+                </div>
+                <span class="text-[9px] font-code bg-primary/10 border border-primary/20 text-primary px-2 py-0.5 rounded">Pro Report</span>
+              </div>
+              
+              <div class="space-y-3 font-body text-xs text-on-surface-variant leading-relaxed">
+                <p data-t="mock_coach_body">
+                  "Hi! This week you completed <strong>6 lessons</strong> and earned <strong>350 XP</strong>. Your speaking practice shows high conversational flow in work scenarios. 
+                </p>
+                <div class="p-2.5 bg-surface-raised border border-outline rounded-lg">
+                  <span class="font-semibold text-warning block mb-1 text-[11px]" data-t="mock_coach_focus">Critical Target for next week:</span>
+                  <span data-t="mock_coach_focus_desc"> confocal confusion of Past Simple vs Present Perfect. Confirmed by 3 errors logged in your writing exam. We added 2 specific review topics.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Diagnostic Placement Test Section (Terminal Style) -->
+  <section class="py-24 px-6 max-w-[1440px] mx-auto w-full border-t border-outline/30 bg-[#0F0F14]/20" id="placement">
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-12 max-w-5xl mx-auto items-center">
+      
+      <!-- Copy info -->
+      <div class="lg:col-span-2 space-y-6">
+        <div class="inline-block px-3.5 py-1 bg-success/10 border border-success/20 text-success rounded-lg text-xs font-semibold font-code uppercase tracking-wider">
+          <span data-t="test_badge">Diagnostic Module</span>
+        </div>
+        <h2 class="font-display text-3xl sm:text-5xl font-bold text-white tracking-tight leading-[1.1]" data-t="test_title">
+          Establish Your Real CEFR Level in 3 Questions
+        </h2>
+        <p class="text-on-surface-variant text-sm sm:text-base leading-relaxed" data-t="test_desc">
+          Linguist AI determines your level without stressful exams. Test the mini placement simulator on the right to see how the system registers answers, corrects errors, and updates your profile parameters.
+        </p>
+        <div class="space-y-3 text-xs font-code text-on-surface-variant pt-2">
+          <div class="flex items-center gap-2"><span class="material-symbols-outlined text-success text-sm">check_circle</span> Adaptive logic (adjusts question difficulty)</div>
+          <div class="flex items-center gap-2"><span class="material-symbols-outlined text-success text-sm">check_circle</span> Instant errors grading & notes</div>
+          <div class="flex items-center gap-2"><span class="material-symbols-outlined text-success text-sm">check_circle</span> Sets initial goal parameters</div>
+        </div>
+      </div>
+
+      <!-- Playable Simulator (Terminal UI) -->
+      <div class="lg:col-span-3 surface-card rounded-2xl p-6 md:p-8 border border-outline glow-accent flex flex-col justify-between min-h-[400px] grad-border" id="testBox">
+        <div class="flex justify-between items-center border-b border-outline pb-4 mb-4">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+            <span class="text-xs font-bold text-primary uppercase font-code" id="questionNumText">Question 1 of 3</span>
+          </div>
+          <span class="text-[10px] font-code text-text-tertiary" id="questionDifficulty">Difficulty: A2</span>
+        </div>
+
+        <!-- Question content -->
+        <div class="flex-grow space-y-6" id="testContent">
+          <h3 class="text-lg font-bold font-display text-white" id="questionText">"I ___ to Paris last summer."</h3>
+          
+          <div class="space-y-2.5" id="optionsContainer">
+            <!-- Option 1 -->
+            <button onclick="selectOption(0)" class="w-full p-4 bg-surface-raised border border-outline hover:border-primary/40 rounded-lg text-left text-xs font-medium transition-all duration-150 flex justify-between items-center group active:scale-[0.99]" id="opt-0">
+              <span>have gone</span>
+              <span class="material-symbols-outlined text-sm text-text-tertiary group-hover:text-primary">arrow_forward</span>
+            </button>
+            <!-- Option 2 -->
+            <button onclick="selectOption(1)" class="w-full p-4 bg-surface-raised border border-outline hover:border-primary/40 rounded-lg text-left text-xs font-medium transition-all duration-150 flex justify-between items-center group active:scale-[0.99]" id="opt-1">
+              <span>went</span>
+              <span class="material-symbols-outlined text-sm text-text-tertiary group-hover:text-primary">arrow_forward</span>
+            </button>
+            <!-- Option 3 -->
+            <button onclick="selectOption(2)" class="w-full p-4 bg-surface-raised border border-outline hover:border-primary/40 rounded-lg text-left text-xs font-medium transition-all duration-150 flex justify-between items-center group active:scale-[0.99]" id="opt-2">
+              <span>go</span>
+              <span class="material-symbols-outlined text-sm text-text-tertiary group-hover:text-primary">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Action / Explanation footer -->
+        <div class="mt-6 pt-4 border-t border-outline flex justify-between items-center font-code">
+          <p class="text-[10px] text-on-surface-variant max-w-[200px]" id="testTip">Select an option to test your grammar level.</p>
+          <button onclick="nextQuestion()" class="px-5 py-2 bg-primary hover:bg-primary/95 text-white text-xs font-bold uppercase tracking-wider rounded-lg border border-[#8B7CFF]/20 active:scale-[0.98] transition-all disabled:opacity-30" id="testNextBtn" disabled>
+            Next
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Technical Playground Code Section (Developer Focus) -->
+  <section class="py-24 px-6 max-w-[1440px] mx-auto w-full border-t border-outline/30" id="tech-specs">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-5xl mx-auto items-center">
+      
+      <!-- Info -->
+      <div class="space-y-6">
+        <div class="inline-block px-3.5 py-1 bg-primary/10 border border-primary/20 text-[#c6bfff] rounded-lg text-xs font-semibold font-code uppercase tracking-wider">
+          API Explorer
+        </div>
+        <h2 class="font-display text-3xl sm:text-5xl font-bold text-white tracking-tight leading-[1.1]">
+          Type-Safe Structured Output
+        </h2>
+        <p class="text-on-surface-variant text-sm sm:text-base leading-relaxed">
+          Our backend communicates via JSON schemas. Vertex AI models generate strict, predefined objects corresponding to your active study layout. Select a structure block to view the live JSON response payload.
+        </p>
+
+        <div class="flex flex-wrap gap-2 pt-2">
+          <button onclick="loadJsonSpec('lesson')" class="json-spec-btn px-3 py-1.5 bg-surface border border-primary text-primary text-xs font-semibold font-code rounded-lg transition-colors" id="json-btn-lesson">lesson_schema.json</button>
+          <button onclick="loadJsonSpec('vocab')" class="json-spec-btn px-3 py-1.5 bg-surface border border-outline text-on-surface-variant hover:text-on-surface text-xs font-semibold font-code rounded-lg transition-colors" id="json-btn-vocab">vocab_list.json</button>
+          <button onclick="loadJsonSpec('feedback')" class="json-spec-btn px-3 py-1.5 bg-surface border border-outline text-on-surface-variant hover:text-on-surface text-xs font-semibold font-code rounded-lg transition-colors" id="json-btn-feedback">exam_grading.json</button>
+        </div>
+      </div>
+
+      <!-- JSON Viewer -->
+      <div class="surface-card rounded-2xl border border-outline p-5 font-code text-xs relative overflow-hidden min-h-[320px] grad-border flex flex-col">
+        <div class="flex justify-between items-center border-b border-outline pb-3 mb-3 text-[10px] text-text-tertiary">
+          <div class="flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+            <span>200 OK</span>
+          </div>
+          <span>application/json</span>
+        </div>
+        <pre class="flex-grow overflow-x-auto text-[11px] text-on-surface-variant leading-relaxed select-text no-scrollbar whitespace-pre" id="jsonDisplay">
+{
+  "topic": "Present Perfect",
+  "level": "B1",
+  "theory": "Use have/has + V3 for actions connected to the present.",
+  "exercises": [
+    {
+      "question": "She ___ finished her work.",
+      "options": ["have", "has", "is"],
+      "correct": 1
+    }
+  ]
+}
+        </pre>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Limits & Quotas Section -->
+  <section class="py-24 px-6 max-w-[1440px] mx-auto w-full border-t border-outline/30" id="quotas">
+    <div class="text-center max-w-2xl mx-auto mb-20">
+      <div class="inline-block px-3.5 py-1 bg-primary/10 border border-primary/20 text-[#c6bfff] rounded-lg text-[9px] font-bold font-code uppercase tracking-widest mb-4">
+        Infrastructure Limits
+      </div>
+      <h2 class="font-display text-3xl sm:text-5xl font-bold text-white tracking-tight mb-4" data-t="quota_title">
+        Transparent Pricing & Infrastructure Quotas
+      </h2>
+      <p class="text-on-surface-variant text-base" data-t="quota_subtitle">
+        Linguist AI is free forever at launch. Because real-time Speech-to-Text and LLM reasoning are computationally expensive, we enforce fair usage limits.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+      
+      <!-- Feature Card 1 -->
+      <div class="surface-card rounded-xl p-6 border border-outline flex flex-col justify-between h-76 hover:border-primary/40 transition-colors">
+        <div class="space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined">settings_voice</span>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold font-display text-white" data-t="quota_f1_title">AI Live Speaking</h3>
+            <p class="text-xs text-on-surface-variant mt-2 leading-relaxed" data-t="quota_f1_desc">Real-time oral chat sessions using voice audio Streaming STT & local Piper Text-to-Speech synthesis.</p>
+          </div>
+        </div>
+        <div class="flex items-end justify-between border-t border-outline/50 pt-4 mt-4">
+          <span class="text-[10px] font-code text-text-tertiary">Daily Limit</span>
+          <span class="text-xs font-bold text-warning font-code">5 Minutes / Day</span>
+        </div>
+      </div>
+
+      <!-- Feature Card 2 -->
+      <div class="surface-card rounded-xl p-6 border border-outline flex flex-col justify-between h-76 hover:border-primary/40 transition-colors">
+        <div class="space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-secondary/10 border border-secondary/20 flex items-center justify-center text-secondary">
+            <span class="material-symbols-outlined">smart_toy</span>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold font-display text-white" data-t="quota_f2_title">AI Live Tutor</h3>
+            <p class="text-xs text-on-surface-variant mt-2 leading-relaxed" data-t="quota_f2_desc">Streaming text dialogue explaining grammar, generating quick exercises, and clarifying study concerns.</p>
+          </div>
+        </div>
+        <div class="flex items-end justify-between border-t border-outline/50 pt-4 mt-4">
+          <span class="text-[10px] font-code text-text-tertiary">Daily Limit</span>
+          <span class="text-xs font-bold text-primary font-code">50 Messages / Day</span>
+        </div>
+      </div>
+
+      <!-- Feature Card 3 -->
+      <div class="surface-card rounded-xl p-6 border border-outline flex flex-col justify-between h-76 border-primary/30 shadow-[0_0_16px_rgba(110,91,255,0.06)] relative overflow-hidden hover:border-primary/40 transition-colors">
+        <div class="absolute top-0 right-0 bg-primary text-white text-[9px] font-bold font-code px-3 py-1 uppercase rounded-bl-lg tracking-wider" data-t="quota_f3_badge">Free Tier</div>
+        <div class="space-y-4">
+          <div class="w-10 h-10 rounded-lg bg-success/10 border border-success/20 flex items-center justify-center text-success">
+            <span class="material-symbols-outlined">auto_stories</span>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold font-display text-white" data-t="quota_f3_title">Lessons & Exams</h3>
+            <p class="text-xs text-on-surface-variant mt-2 leading-relaxed" data-t="quota_f3_desc">Custom curriculum generation, listening exams, writing essays, spaced repetition, and achievements awards.</p>
+          </div>
+        </div>
+        <div class="flex items-end justify-between border-t border-outline/50 pt-4 mt-4">
+          <span class="text-[10px] font-code text-text-tertiary">Daily Limit</span>
+          <span class="text-xs font-bold text-success font-code">10 Lessons / Day</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Comparison Section: AI-Native vs Traditional -->
+  <section class="py-24 px-6 max-w-[1440px] mx-auto w-full border-t border-outline/30 bg-[#0F0F14]/10">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center max-w-2xl mx-auto mb-20">
+        <div class="inline-block px-3.5 py-1 bg-primary/10 border border-primary/20 text-[#c6bfff] rounded-lg text-[9px] font-bold font-code uppercase tracking-widest mb-4">
+          Comparison Metrics
+        </div>
+        <h2 class="font-display text-3xl sm:text-5xl font-bold text-white tracking-tight mb-4" data-t="comp_title">
+          How Linguist AI Compares
+        </h2>
+        <p class="text-on-surface-variant text-base" data-t="comp_subtitle">
+          Traditional platforms use static pre-recorded paths. Linguist AI builds curriculum in real-time around your exact error patterns.
+        </p>
+      </div>
+
+      <div class="border border-outline rounded-2xl overflow-hidden shadow-xl">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-surface border-b border-outline">
+              <th class="p-5 md:p-6 text-sm font-bold text-white font-display" data-t="comp_tbl_col1">Features</th>
+              <th class="p-5 md:p-6 text-sm font-bold text-text-tertiary font-display">Duolingo / Babbel</th>
+              <th class="p-5 md:p-6 text-sm font-bold text-primary font-display flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-base">verified</span> Linguist AI
+              </th>
+            </tr>
+          </thead>
+          <tbody class="text-xs text-on-surface-variant">
+            <tr class="border-b border-outline hover:bg-surface-raised/20 transition-colors">
+              <td class="p-5 md:p-6 font-semibold text-white" data-t="comp_tbl_f1">Learning Path</td>
+              <td class="p-5 md:p-6" data-t="comp_tbl_f1_old">Static predetermined trees</td>
+              <td class="p-5 md:p-6 text-white font-semibold flex items-center gap-1.5"><span class="material-symbols-outlined text-success text-base">check_circle</span> <span data-t="comp_tbl_f1_ai">Dynamic context generator</span></td>
+            </tr>
+            <tr class="border-b border-outline hover:bg-surface-raised/20 transition-colors">
+              <td class="p-5 md:p-6 font-semibold text-white" data-t="comp_tbl_f2">Vocabulary Context</td>
+              <td class="p-5 md:p-6" data-t="comp_tbl_f2_old">Generic examples ("apple", "boy")</td>
+              <td class="p-5 md:p-6 text-white font-semibold flex items-center gap-1.5"><span class="material-symbols-outlined text-success text-base">check_circle</span> <span data-t="comp_tbl_f2_ai">Adapted to your goals (Work, IELTS)</span></td>
+            </tr>
+            <tr class="border-b border-outline hover:bg-surface-raised/20 transition-colors">
+              <td class="p-5 md:p-6 font-semibold text-white" data-t="comp_tbl_f3">Error Analysis</td>
+              <td class="p-5 md:p-6" data-t="comp_tbl_f3_old">Repeat same exercise later</td>
+              <td class="p-5 md:p-6 text-white font-semibold flex items-center gap-1.5"><span class="material-symbols-outlined text-success text-base">check_circle</span> <span data-t="comp_tbl_f3_ai">Error Correction Database + AI Coach</span></td>
+            </tr>
+            <tr class="hover:bg-surface-raised/20 transition-colors">
+              <td class="p-5 md:p-6 font-semibold text-white" data-t="comp_tbl_f4">Voice Dialogue</td>
+              <td class="p-5 md:p-6" data-t="comp_tbl_f4_old">Compare reading to static audio</td>
+              <td class="p-5 md:p-6 text-white font-semibold flex items-center gap-1.5"><span class="material-symbols-outlined text-success text-base">check_circle</span> <span data-t="comp_tbl_f4_ai">5m real-time daily speaking conversation</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Banner -->
+  <section class="py-24 px-6 max-w-[1440px] mx-auto w-full text-center relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent"></div>
+    <div class="max-w-4xl mx-auto space-y-6 relative z-10">
+      <h2 class="font-display text-4xl sm:text-5xl font-bold text-white tracking-tight" data-t="banner_title">
+        Ready to Build Your AI Learning Path?
+      </h2>
+      <p class="text-on-surface-variant text-base max-w-xl mx-auto leading-relaxed animate-pulse" data-t="banner_desc">
+        Take your English to the next level today. It takes less than 5 minutes to complete the onboarding placement test.
+      </p>
+      <div class="pt-4">
+        <a href="linguist_ai_registration.html" class="inline-block px-8 py-4 rounded-lg bg-primary hover:bg-primary/95 text-white font-bold uppercase tracking-wider font-code text-xs shadow-[0_0_24px_rgba(110,91,255,0.4)] border border-[#8B7CFF]/30 transition-all active:scale-[0.98]" data-t="banner_btn">
+          Get Started For Free
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="mt-auto bg-surface border-t border-outline py-12 px-6">
+    <div class="max-w-[1440px] mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+      <div class="flex items-center gap-3">
+        <div class="w-6 h-6 rounded-lg bg-gradient-to-tr from-primary to-secondary flex items-center justify-center text-white font-bold text-[10px] font-display">L</div>
+        <span class="font-display text-base font-bold text-white tracking-tight">Linguist AI</span>
+        <span class="text-xs text-text-tertiary font-code ml-2">© 2026</span>
+      </div>
+
+      <!-- Specs badges -->
+      <div class="flex flex-wrap gap-3 items-center justify-center text-[10px] font-code text-on-surface-variant">
+        <span class="px-2.5 py-0.5 bg-background border border-outline rounded">FastAPI (Python)</span>
+        <span class="px-2.5 py-0.5 bg-background border border-outline rounded">Next.js (React)</span>
+        <span class="px-2.5 py-0.5 bg-background border border-outline rounded">Vertex AI</span>
+        <span class="px-2.5 py-0.5 bg-background border border-outline rounded">Piper TTS</span>
+      </div>
+
+      <div class="text-xs text-on-surface-variant flex gap-6 font-medium font-code">
+        <a href="#" class="hover:text-primary transition-colors" data-t="foot_terms">Terms</a>
+        <a href="#" class="hover:text-primary transition-colors" data-t="foot_privacy">Privacy</a>
+        <a href="#" class="hover:text-primary transition-colors" data-t="foot_support">Support</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Script for interactivity & translations -->
+  <script>
+    // JSON specs database
+    const jsonSpecs = {
+      lesson: `{
+  "topic": "Present Perfect",
+  "level": "B1",
+  "theory": "Use have/has + V3 for actions connected to the present.",
+  "exercises": [
+    {
+      "question": "She ___ finished her work.",
+      "options": ["have", "has", "is"],
+      "correct": 1
+    }
+  ]
+}`,
+      vocab: `{
+  "words": [
+    {
+      "word": "crucial",
+      "translation": "жизненно важный",
+      "transcription": "/ˈkruːʃl/",
+      "context": "This step is crucial for success."
+    },
+    {
+      "word": "mitigate",
+      "translation": "смягчать",
+      "transcription": "/ˈmɪtɪɡeɪt/",
+      "context": "We need to mitigate infrastructure risks."
+    }
+  ]
+}`,
+      feedback: `{
+  "submission_id": "essay_8842",
+  "scores": {
+    "grammar": 7.5,
+    "vocabulary": 6.0,
+    "cohesion": 7.0
+  },
+  "overall_score": 6.8,
+  "corrections": [
+    {
+      "index": 12,
+      "original": "Yesterday, I have gone to Paris.",
+      "correction": "Yesterday, I went to Paris.",
+      "explanation": "Past Simple required for specified past times."
+    }
+  ]
+}`
+    };
+
+    function loadJsonSpec(type) {
+      // Toggle button states
+      document.querySelectorAll('.json-spec-btn').forEach(btn => {
+        btn.classList.remove('border-primary', 'text-primary');
+        btn.classList.add('border-outline', 'text-on-surface-variant');
+      });
+      document.getElementById(`json-btn-${type}`).classList.add('border-primary', 'text-primary');
+      document.getElementById(`json-btn-${type}`).classList.remove('border-outline', 'text-on-surface-variant');
+
+      // Update text
+      document.getElementById('jsonDisplay').innerText = jsonSpecs[type];
+    }
+
+    // Lang translations dictionary
+    const tDict = {
+      en: {
+        nav_pipeline: "Pipeline",
+        nav_features: "Features",
+        nav_demo: "Interactive Hub",
+        nav_placement: "Diagnostic",
+        nav_quotas: "Limits",
+        nav_login: "Log In",
+        nav_register: "Get Started",
+        
+        hero_badge: "SaaS MVP Launch",
+        hero_title: "The Generative AI <br class=\"hidden sm:inline\" />Language Platform",
+        hero_desc: "Ditch static courses. Linguist AI compiles personalized lessons, custom databases, and real-time voice sessions dynamically using Vertex AI—engineered to map perfectly to your goals, timezone, and error logs.",
+        cta_register: "Start Onboarding - Free",
+        cta_test: "Try Interactive Diagnostic",
+
+        mock_cur_module: "Active Module",
+        mock_progress: "Module Progress",
+        mock_continue: "Continue",
+        mock_quick: "AI Action Suite",
+        mock_review_title: "Spaced Repetition",
+        mock_review_desc: "Due today for review based on your previous errors.",
+        mock_review_btn: "Start Review Session",
+        mock_coach_title: "AI Coach Report Ready",
+        mock_coach_desc: "Reviewing your B1 grammar accuracy patterns.",
+
+        hub_title: "The 14-Module Personalized Learning Architecture",
+        hub_subtitle: "Click the tabs below to interact with real screen mockups and understand the core features of the system.",
+        tab_lesson: "Lesson Generator",
+        tab_tutor: "AI Live Tutor",
+        tab_speaking: "Voice Speaking",
+        tab_exams: "Writing Exams",
+        tab_coach: "AI Coach Report",
+
+        tab0_tag: "Module 3.4",
+        tab0_title: "Generative AI Lessons",
+        tab0_desc: "Vertex AI builds lessons individually for you in JSON format. It translates explanation theory into your selected UI language (Tajik, Russian, or English), creates custom exercises, and sets up a customized curriculum.",
+        tab0_spec_title: "Lesson Structure:",
+        tab0_btn: "Simulate Lesson Generation",
+        mock_theory: "Grammar Theory & Notes",
+        mock_words_learned: "15 Core Words to Study",
+        sim_gen_status: "GENERATING CONTENT...",
+        sim_gen_sub: "Vertex AI compiling rules, grammar & audio scripts",
+
+        tab1_tag: "Module 3.7",
+        tab1_title: "Interactive AI Tutor Chat",
+        tab1_desc: "Access a streaming WebSocket chat anytime. Confused by grammar? Click a quick-prompt chip below to ask, or test a custom query. The AI knows your proficiency level, UI language, and active curriculum topic.",
+        tab1_prompt_title: "Click to ask tutor:",
+        tab1_chip_explain: "Explain Present Perfect",
+        tab1_chip_diff: "Past Simple vs Present Perfect",
+
+        tab2_tag: "Module 3.10 / 11",
+        tab2_title: "Voice Speaking Mode",
+        tab2_desc: "Talk to the AI in real time using your voice. The system utilizes real-time Speech-to-Text and TTS models. To control infrastructure expenses, free accounts have a daily limit of 5 minutes.",
+        tab2_quota_label: "Daily Speaking Quota",
+        tab2_btn_start: "Start Session",
+        voice_inactive: "Session Offline",
+        voice_inactive_sub: "Click Start Session to activate your microphone",
+
+        tab3_tag: "Module 3.9",
+        tab3_title: "AI Writing Grading & Diff",
+        tab3_desc: "Submit essays or tasks (IELTS/TOEFL standard). The AI evaluates your writing against grammar, vocabulary, text cohesion, and naturalness. Corrected errors are displayed as interactive code diffs with explanatory comments.",
+        tab3_score_label: "Grading metrics visual:",
+        tab3_btn: "Simulate AI Evaluation",
+        mock_prompt_text: "\"Describe your memorable travel experience.\"",
+        mock_error_explain: "<strong>Explanation:</strong> Use Past Simple instead of Present Perfect when stating a specific past time reference (\"Yesterday\").",
+
+        tab4_tag: "Module 3.14",
+        tab4_title: "Weekly Coach Reports",
+        tab4_desc: "Once a week, the system gathers your study data (completed lessons, diagnostic scores, errors logs) and generates a friendly progress summary. It notes your improvements and targets specific weaknesses.",
+        mock_coach_hdr: "Weekly Progress Letter",
+        mock_coach_body: "\"Hi! This week you completed <strong>6 lessons</strong> and earned <strong>350 XP</strong>. Your speaking practice shows high conversational flow in work scenarios.",
+        mock_coach_focus: "Critical Target for next week:",
+        mock_coach_focus_desc: " confocal confusion of Past Simple vs Present Perfect. Confirmed by 3 errors logged in your writing exam. We added 2 specific review topics.",
+
+        test_badge: "Diagnostic Module",
+        test_title: "Establish Your Real CEFR Level in 3 Questions",
+        test_desc: "Linguist AI determines your level without stressful exams. Test the mini placement simulator on the right to see how the system registers answers, corrects errors, and updates your profile parameters.",
+        quota_title: "Transparent Pricing & Infrastructure Quotas",
+        quota_subtitle: "Linguist AI is free forever at launch. Because real-time Speech-to-Text and LLM reasoning are computationally expensive, we enforce fair usage limits.",
+        quota_f1_title: "AI Live Speaking",
+        quota_f1_desc: "Real-time oral chat sessions using voice audio Streaming STT & local Piper Text-to-Speech synthesis.",
+        quota_f2_title: "AI Live Tutor",
+        quota_f2_desc: "Streaming text dialogue explaining grammar, generating quick exercises, and clarifying study concerns.",
+        quota_f3_badge: "Free Tier",
+        quota_f3_title: "Lessons & Exams",
+        quota_f3_desc: "Custom curriculum generation, listening exams, writing essays, spaced repetition, and achievements awards.",
+
+        comp_title: "How Linguist AI Compares",
+        comp_subtitle: "Traditional platforms use static pre-recorded paths. Linguist AI builds curriculum in real-time around your exact error patterns.",
+        comp_tbl_col1: "Features",
+        comp_tbl_f1: "Learning Path",
+        comp_tbl_f1_old: "Static predetermined trees",
+        comp_tbl_f1_ai: "Dynamic context generator",
+        comp_tbl_f2: "Vocabulary Context",
+        comp_tbl_f2_old: "Generic examples (\"apple\", \"boy\")",
+        comp_tbl_f2_ai: "Adapted to your goals (Work, IELTS)",
+        comp_tbl_f3: "Error Analysis",
+        comp_tbl_f3_old: "Repeat same exercise later",
+        comp_tbl_f3_ai: "Error Correction Database + AI Coach",
+        comp_tbl_f4: "Voice Dialogue",
+        comp_tbl_f4_old: "Compare reading to static audio",
+        comp_tbl_f4_ai: "5m real-time daily speaking conversation",
+
+        banner_title: "Ready to Build Your AI Learning Path?",
+        banner_desc: "Take your English to the next level today. It takes less than 5 minutes to complete the onboarding placement test.",
+        banner_btn: "Get Started For Free",
+        foot_terms: "Terms",
+        foot_privacy: "Privacy",
+        foot_support: "Support"
+      },
+      ru: {
+        nav_pipeline: "Конвейер",
+        nav_features: "Возможности",
+        nav_demo: "Демо-хаб",
+        nav_placement: "Тест",
+        nav_quotas: "Лимиты",
+        nav_login: "Войти",
+        nav_register: "Регистрация",
+        
+        hero_badge: "Запуск SaaS MVP",
+        hero_title: "Генеративная ИИ-платформа <br class=\"hidden sm:inline\" />для изучения языков",
+        hero_desc: "Забудьте о статичных курсах. Linguist AI динамически компилирует персонализированные уроки, пользовательские базы данных и голосовые сессии с помощью Vertex AI—идеально подстраиваясь под ваши цели и историю ошибок.",
+        cta_register: "Начать бесплатно",
+        cta_test: "Пройти тест сатха",
+
+        mock_cur_module: "Активный модуль",
+        mock_progress: "Прогресс модуля",
+        mock_continue: "Продолжить",
+        mock_quick: "ИИ инструменты",
+        mock_review_title: "Интервальное повторение",
+        mock_review_desc: "Карточек к повторению сегодня на основе прошлых ошибок.",
+        mock_review_btn: "Начать повторение",
+        mock_coach_title: "Отчет ИИ-тренера готов",
+        mock_coach_desc: "Анализ точности грамматики уровня B1.",
+
+        hub_title: "14-модульная архитектура персонализации",
+        hub_subtitle: "Нажимайте вкладки ниже, чтобы просмотреть реальные макеты экранов и функции системы.",
+        tab_lesson: "Генератор уроков",
+        tab_tutor: "ИИ Репетитор",
+        tab_speaking: "Голосовая сессия",
+        tab_exams: "Письменный экзамен",
+        tab_coach: "ИИ-Тренер",
+
+        tab0_tag: "Модуль 3.4",
+        tab0_title: "Генерация уроков ИИ",
+        tab0_desc: "Vertex AI компилирует уроки в формате JSON. Система переводит теорию на выбранный вами язык интерфейса (таджикский, русский или английский), создает упражнения и строит учебный путь.",
+        tab0_spec_title: "Структура урока:",
+        tab0_btn: "Имитировать генерацию",
+        mock_theory: "Теория грамматики и заметки",
+        mock_words_learned: "15 слов для изучения",
+        sim_gen_status: "ГЕНЕРАЦИЯ УРОКА...",
+        sim_gen_sub: "ИИ Vertex собирает правила, тексты и аудиоскрипты",
+
+        tab1_tag: "Модуль 3.7",
+        tab1_title: "Чат с ИИ Репетитором",
+        tab1_desc: "Чат на базе WebSocket доступен в любое время. Запутались в правилах? Нажмите подсказку ниже или отправьте свой вопрос. ИИ учитывает ваш уровень и активную тему.",
+        tab1_prompt_title: "Быстрый вопрос репетитору:",
+        tab1_chip_explain: "Объясни Present Perfect",
+        tab1_chip_diff: "Разница Past Simple и Present Perfect",
+
+        tab2_tag: "Модули 3.10 / 11",
+        tab2_title: "Голосовая практика с ИИ",
+        tab2_desc: "Общайтесь с ИИ голосом в реальном времени. Система использует Speech-to-Text и локальный Piper TTS. Для экономии ресурсов на бесплатном тарифе доступно 5 минут в день.",
+        tab2_quota_label: "Дневной лимит разговора",
+        tab2_btn_start: "Начать сессию",
+        voice_inactive: "Сессия оффлайн",
+        voice_inactive_sub: "Нажмите Начать сессию, чтобы активировать микрофон",
+
+        tab3_tag: "Модуль 3.9",
+        tab3_title: "Письменные экзамены и Diff",
+        tab3_desc: "Пишите эссе по стандартам IELTS/TOEFL. ИИ оценивает текст по критериям грамматики, словарного запаса, связности. Исправления отображаются как diff-разметка с пояснениями.",
+        tab3_score_label: "Визуализация оценок:",
+        tab3_btn: "Имитировать оценку ИИ",
+        mock_prompt_text: "\"Опишите вашу запоминающуюся поездку.\"",
+        mock_error_explain: "<strong>Пояснение:</strong> Используйте Past Simple вместо Present Perfect при указании конкретного времени в прошлом (\"Yesterday\").",
+
+        tab4_tag: "Модуль 3.14",
+        tab4_title: "Еженедельные отчеты тренера",
+        tab4_desc: "Каждую неделю система собирает данные (пройденные уроки, баллы тестов, журнал ошибок) и генерирует отчет. Он подчеркивает успехи и выявляет пробелы.",
+        mock_coach_hdr: "Еженедельный отчет прогресса",
+        mock_coach_body: "\"Привет! На этой неделе вы завершили <strong>6 уроков</strong> и получили <strong>350 XP</strong>. В разговорах вы демонстрируете отличную беглость.",
+        mock_coach_focus: "Фокус на следующую неделю:",
+        mock_coach_focus_desc: " путаница между Past Simple и Present Perfect. Зафиксировано 3 ошибки в эссе. Мы добавили 2 темы для повторения.",
+
+        test_badge: "Диагностический модуль",
+        test_title: "Определите свой уровень CEFR за 3 вопроса",
+        test_desc: "Linguist AI определяет ваш уровень без стрессовых экзаменов. Пройдите мини-тест справа, чтобы увидеть, как система регистрирует ответы, ошибки и профиль.",
+        quota_title: "Прозрачные тарифы и лимиты",
+        quota_subtitle: "Linguist AI бесплатен при запуске. Поскольку голосовые сессии и вычисления ИИ стоят дорого, мы вводим разумные квоты.",
+        quota_f1_title: "ИИ Голосовой чат",
+        quota_f1_desc: "Сессии разговора с ИИ в реальном времени с распознаванием речи и локальным синтезом Piper TTS.",
+        quota_f2_title: "ИИ Репетитор",
+        quota_f2_desc: "Текстовый диалог для объяснения грамматики, генерации упражнений и ответов на вопросы.",
+        quota_f3_badge: "Бесплатно",
+        quota_f3_title: "Уроки и экзамены",
+        quota_f3_desc: "Генерация курсов, аудирование, оценка эссе, интервальное повторение и достижения.",
+
+        comp_title: "Сравнение с аналогами",
+        comp_subtitle: "Обычные платформы используют готовые статичные пути. Linguist AI строит уроки динамически вокруг ваших реальных ошибок.",
+        comp_tbl_col1: "Функции",
+        comp_tbl_f1: "Учебный путь",
+        comp_tbl_f1_old: "Шаблонное статичное дерево",
+        comp_tbl_f1_ai: "Динамическая генерация контекста",
+        comp_tbl_f2: "Словарный запас",
+        comp_tbl_f2_old: "Базовые примеры (\"яблоко\", \"мальчик\")",
+        comp_tbl_f2_ai: "Адаптирован под ваши цели (Работа, IELTS)",
+        comp_tbl_f3: "Анализ ошибок",
+        comp_tbl_f3_old: "Повторение тех же вопросов позже",
+        comp_tbl_f3_ai: "База данных ошибок + ИИ-Тренер",
+        comp_tbl_f4: "Разговорный чат",
+        comp_tbl_f4_old: "Чтение текста под готовую запись",
+        comp_tbl_f4_ai: "5 минут реального диалога с ИИ ежедневно",
+
+        banner_title: "Готовы создать свой путь обучения?",
+        banner_desc: "Поднимите свой английский на новый уровень сегодня. Прохождение стартового теста займет не более 5 минут.",
+        banner_btn: "Начать бесплатно",
+        foot_terms: "Условия",
+        foot_privacy: "Конфиденциальность",
+        foot_support: "Поддержка"
+      },
+      tg: {
+        nav_pipeline: "Қубур",
+        nav_features: "Имкониятҳо",
+        nav_demo: "Демо-ҳаб",
+        nav_placement: "Санҷиш",
+        nav_quotas: "Лимитҳо",
+        nav_login: "Воридшавӣ",
+        nav_register: "Бақайдгирӣ",
+        
+        hero_badge: "Оғози SaaS MVP",
+        hero_title: "Платформаи тавлидии ЗС <br class=\"hidden sm:inline\" />барои омӯзиши забонҳо",
+        hero_desc: "Курсҳои статикиро тарк кунед. Linguist AI дарсҳои фардӣ, пойгоҳи додаҳои фармоишӣ ва сессияҳои овозиро бо истифода аз Vertex AI тавлид мекунад—ки бо ҳадафҳо, минтақаи вақт ва хатогиҳои шумо мутобиқ карда шудаанд.",
+        cta_register: "Оғоз ба таври ройгон",
+        cta_test: "Санҷиши сатҳ",
+
+        mock_cur_module: "Модули фаъол",
+        mock_progress: "Пешрафти модул",
+        mock_continue: "Идома додан",
+        mock_quick: "Абзорҳои зеҳни сунъӣ",
+        mock_review_title: "Такрори фосилавии луғат",
+        mock_review_desc: "Калимаҳо барои такрор дар асоси хатогиҳои гузаштаи шумо.",
+        mock_review_btn: "Оғози такрор",
+        mock_coach_title: "Ҳисоботи мураббии ЗС омода аст",
+        mock_coach_desc: "Анализи дақиқии грамматикаи сатҳи B1.",
+
+        hub_title: "Меъмории фардикунонии омӯзиш аз 14 модул",
+        hub_subtitle: "Барои дидани тарҳи экранҳо ва фаҳмидани функсияҳои система варақҳои зерро клик кунед.",
+        tab_lesson: "Генератори дарсҳо",
+        tab_tutor: "Мураббии ЗС",
+        tab_speaking: "Гуфтугӯи овозӣ",
+        tab_exams: "Имтиҳони хаттӣ",
+        tab_coach: "Мураббии ЗС",
+
+        tab0_tag: "Модули 3.4",
+        tab0_title: "Дарсҳои тавлидшудаи ЗС",
+        tab0_desc: "Vertex AI дарсҳоро ба таври инфиродӣ дар формати JSON месозад. Он назарияи шарҳро ба забони интихобкардаи шумо (тоҷикӣ, русӣ ё англисӣ) тарҷума карда, машқҳои махсус ва барномаи таълимӣ омода мекунад.",
+        tab0_spec_title: "Сохтори дарс:",
+        tab0_btn: "Имитатсияи сохтани дарс",
+        mock_theory: "Назарияи грамматика ва қайдҳо",
+        mock_words_learned: "15 калима барои омӯзиш",
+        sim_gen_status: "ТАСНИФИ ДАРС...",
+        sim_gen_sub: "Зеҳни сунъии Vertex қоидаҳо, матнҳо ва аудиоҳоро ҷамъ меорад",
+
+        tab1_tag: "Модули 3.7",
+        tab1_title: "Чати мураббии ЗС",
+        tab1_desc: "Чати фаврӣ бо WebSocket дар ҳар вақт дастрас аст. Дар грамматика ошуфта шудед? Аз тугмаҳои зер истифода баред ё саволи худро нависед. ЗС сатҳ ва мавзӯи дарсро ба назар мегирад.",
+        tab1_prompt_title: "Саволи зуд ба мураббӣ:",
+        tab1_chip_explain: "Present Perfect-ро шарҳ деҳ",
+        tab1_chip_diff: "Фарқи Past Simple ва Present Perfect",
+
+        tab2_tag: "Модулҳои 3.10 / 11",
+        tab2_title: "Амалияи овозӣ бо ЗС",
+        tab2_desc: "Бо овоз дар вақти воқеӣ бо ЗС муошират кунед. Система моделҳои овозхонии STT ва Piper TTS-ро истифода мебарад. Барои сарфаи хароҷот, дар тарифи ройгон рӯзона 5 дақиқа дода мешавад.",
+        tab2_quota_label: "Лимити рӯзонаи гуфтугӯ",
+        tab2_btn_start: "Оғози сессия",
+        voice_inactive: "Сессия хомӯш аст",
+        voice_inactive_sub: "Барои фаъол кардани микрофон тугмаи оғозро пахш кунед",
+
+        tab3_tag: "Модули 3.9",
+        tab3_title: "Имтиҳонҳои хаттӣ ва Diff",
+        tab3_desc: "Эссеҳоро мутобиқи стандартҳои IELTS/TOEFL нависед. ЗС матнро аз рӯи қоидаҳо, захираи калимаҳо ва пайвастагӣ арзёбӣ мекунад. Хатогиҳо ҳамчун diff бо эзоҳҳо нишон дода мешаванд.",
+        tab3_score_label: "Визуализатсияи баҳоҳо:",
+        tab3_btn: "Имитатсияи баҳодиҳии ЗС",
+        mock_prompt_text: "\"Сафари фаромӯшнашавандаи худро тасвир кунед.\"",
+        mock_error_explain: "<strong>Шарҳ:</strong> Ҳангоми зикри вақти мушаххас дар гузашта (\"Yesterday\") ба ҷои Present Perfect аз Past Simple истифода баред.",
+
+        tab4_tag: "Модули 3.14",
+        tab4_title: "Ҳисоботи ҳафтаинаи мураббӣ",
+        tab4_desc: "Ҳар ҳафта система маълумоти омӯзиши шуморо (дарсҳо, баҳоҳо, хатогиҳо) ҷамъ оварда, ҳисобот омода мекунад. Он пешрафт ва камбудиҳоро нишон медиҳад.",
+        mock_coach_hdr: "Ҳисоботи ҳафтаинаи пешрафт",
+        mock_coach_body: "\"Салом! Ин ҳафта шумо <strong>6 дарсро</strong> иҷро кардед ва <strong>350 XP</strong> гирифтед. Дар гуфтугӯ равонии хуб нишон медиҳед.",
+        mock_coach_focus: "Фокус барои ҳафтаи оянда:",
+        mock_coach_focus_desc: " ошуфтагӣ байни Past Simple ва Present Perfect. 3 хато дар эссе сабт шуд. Мо 2 мавзӯъ барои такрор илова кардем.",
+
+        test_badge: "Модули санҷишӣ",
+        test_title: "Сатҳи воқеии CEFR-ро дар 3 савол муайян кунед",
+        test_desc: "Linguist AI сатҳи шуморо бе имтиҳонҳои стрессӣ муайян мекунад. Санҷиши хурдро дар тарафи рост гузаред, то бубинед, ки чӣ гуна хатогиҳо сабт мешаванд.",
+        quota_title: "Нархгузории шаффоф ва лимитҳо",
+        quota_subtitle: "Linguist AI ҳангоми оғоз ройгон аст. Азбаски сессияҳои овозӣ ва ҳисобҳои ЗС гарон ҳастанд, мо лимитҳо ҷорӣ мекунем.",
+        quota_f1_title: "Чати овозии ЗС",
+        quota_f1_desc: "Муоширати овозӣ дар вақти воқеӣ бо шинохти овоз ва синтези овозии Piper TTS.",
+        quota_f2_title: "Мураббии ЗС",
+        quota_f2_desc: "Муоширати матнӣ барои шарҳи грамматика, тавлиди машқҳо ва ҷавоби саволҳо.",
+        quota_f3_badge: "Ройгон",
+        quota_f3_title: "Дарсҳо ва Имтиҳонҳо",
+        quota_f3_desc: "Тавлиди дарсҳо, имтиҳонҳои шунавоӣ, арзёбии эссе, такрори фосилавӣ ва дастовардҳо.",
+
+        comp_title: "Муқоиса бо дигарон",
+        comp_subtitle: "Платформаҳои оддӣ роҳҳои статикии тайёрро истифода мебаранд. Linguist AI дарсҳоро дар асоси хатогиҳои воқеии шумо месозад.",
+        comp_tbl_col1: "Имкониятҳо",
+        comp_tbl_f1: "Роҳи омӯзиш",
+        comp_tbl_f1_old: "Дарахти статикии қолабӣ",
+        comp_tbl_f1_ai: "Тавлиди динамикии контекст",
+        comp_tbl_f2: "Захираи калимаҳо",
+        comp_tbl_f2_old: "Мисолҳои оддӣ (\"себ\", \"писар\")",
+        comp_tbl_f2_ai: "Мутобиқ ба ҳадафҳо (Кор, IELTS)",
+        comp_tbl_f3: "Таҳлили хатогиҳо",
+        comp_tbl_f3_old: "Такрори ҳамон саволҳо дертар",
+        comp_tbl_f3_ai: "Махзани хатогиҳо + Мураббии ЗС",
+        comp_tbl_f4: "Муоширати овозӣ",
+        comp_tbl_f4_old: "Муқоисаи хониш бо сабти тайёр",
+        comp_tbl_f4_ai: "5 дақиқа муоширати воқеӣ бо ЗС рӯзона",
+
+        banner_title: "Ба сохтани роҳи омӯзишии худ омодаед?",
+        banner_desc: "Забони англисии худро имрӯз ба сатҳи нав бардоред. Гузаштани санҷиши аввалия то 5 дақиқа вақт мегирад.",
+        banner_btn: "Оғоз ба таври ройгон",
+        foot_terms: "Шартҳо",
+        foot_privacy: "Махфият",
+        foot_support: "Дастгирӣ"
+      }
+    };
+
+    // State parameters
+    let currentLang = 'en';
+
+    // UI Translation Handler
+    function switchLang(langCode) {
+      currentLang = langCode;
+      
+      // Update display name
+      const langNames = { en: "English", ru: "Русский", tg: "Тоҷикӣ" };
+      document.getElementById('currentLangName').innerText = langNames[langCode];
+      
+      // Apply translation to all tags marked with data-t
+      document.querySelectorAll('[data-t]').forEach(el => {
+        const key = el.getAttribute('data-t');
+        if (tDict[langCode] && tDict[langCode][key]) {
+          el.innerHTML = tDict[langCode][key];
+        }
+      });
+
+      // Reload active placement test questions in selected language context
+      loadDiagnosticQuestion();
+      
+      // Close dropdown
+      document.getElementById('langMenu').classList.add('hidden');
+    }
+
+    // Toggle lang dropdown
+    document.getElementById('langBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('langMenu').classList.toggle('hidden');
+    });
+    
+    document.addEventListener('click', () => {
+      document.getElementById('langMenu').classList.add('hidden');
+    });
+
+    // Tab Switcher
+    let activeTabIdx = 0;
+    function switchTab(idx) {
+      activeTabIdx = idx;
+      
+      // Hide all content tabs
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      // Remove active button styles
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('border-primary', 'text-primary');
+        btn.classList.add('border-transparent', 'text-on-surface-variant');
+      });
+
+      // Show active content tab
+      document.getElementById(`tab-content-${idx}`).classList.remove('hidden');
+      document.getElementById(`tab-content-${idx}`).classList.add('flex');
+      
+      // Add active styles to button
+      const activeBtn = document.getElementById(`tab-btn-${idx}`);
+      activeBtn.classList.add('border-primary', 'text-primary');
+      activeBtn.classList.remove('border-transparent', 'text-on-surface-variant');
+
+      // Stop canvas animation if leaving voice tab
+      if (idx !== 2) {
+        stopWaveformAnimation();
+      } else if (isVoiceActive) {
+        startWaveformAnimation();
+      }
+    }
+
+    // Tab 0 Simulation (Lesson Gen)
+    function simulateLessonGen() {
+      const staticView = document.getElementById('lessonStaticView');
+      const loadingView = document.getElementById('lessonLoadingView');
+      const glowLine = document.getElementById('lessonGlowLine');
+      
+      staticView.classList.add('hidden');
+      loadingView.classList.remove('hidden');
+      loadingView.classList.add('flex');
+      glowLine.classList.remove('hidden');
+
+      setTimeout(() => {
+        loadingView.classList.add('hidden');
+        loadingView.classList.remove('flex');
+        staticView.classList.remove('hidden');
+        glowLine.classList.add('hidden');
+
+        // Randomly toggle between Present Perfect and past passive for visual difference
+        const topic = document.getElementById('lessonTopic');
+        const desc = document.getElementById('lessonDesc');
+        if (topic.innerText.includes('Present Perfect')) {
+          topic.innerText = 'Past Passive Constructions';
+          desc.innerText = 'Generate custom syntax for highlighting historical events.';
+        } else {
+          topic.innerText = 'Present Perfect Tense';
+          desc.innerText = 'Learn to explain past life experiences with active consequences.';
+        }
+      }, 2000);
+    }
+
+    // Tab 1 Simulation (Chat Tutor)
+    const mockTutorReplies = {
+      explain: "The Present Perfect is formed using 'have/has + past participle'. We use it to connect the past and the present. For example: 'I have lost my key' (I lost it in the past, and I don't have it now).",
+      diff: "Use Past Simple for completed actions at a finished time in the past ('I went to Paris in 2024'). Use Present Perfect for unfinished actions or actions with a direct effect on the present ('I have been to Paris twice').",
+      custom: "Interesting question! Let's break that grammar rule down. In this context, the verb action remains incomplete, so we apply the continuous structure."
+    };
+
+    function askTutor(type) {
+      const chatContainer = document.getElementById('chatContainer');
+      const typingIndicator = document.getElementById('chatTyping');
+      
+      // Add user message
+      const userText = type === 'explain' ? "Can you explain the Present Perfect?" : "What is the difference between Past Simple and Present Perfect?";
+      const userMsgHtml = `
+        <div class="space-y-1 text-right">
+          <div class="text-[10px] font-bold text-secondary font-code">You</div>
+          <div class="bg-surface-raised border border-outline rounded-lg p-2 inline-block text-left text-on-surface">
+            ${userText}
+          </div>
+        </div>
+      `;
+      chatContainer.insertAdjacentHTML('beforeend', userMsgHtml);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      // Show typing indicator
+      typingIndicator.classList.remove('hidden');
+      typingIndicator.classList.add('flex');
+
+      setTimeout(() => {
+        typingIndicator.classList.add('hidden');
+        typingIndicator.classList.remove('flex');
+
+        // Add tutor reply
+        const replyText = mockTutorReplies[type];
+        const tutorMsgHtml = `
+          <div class="space-y-1">
+            <div class="text-[10px] font-bold text-primary font-code">Linguist AI Tutor</div>
+            <div class="text-on-surface leading-relaxed border-l border-primary/20 pl-3 py-0.5">
+              ${replyText}
+            </div>
+          </div>
+        `;
+        chatContainer.insertAdjacentHTML('beforeend', tutorMsgHtml);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }, 1500);
+    }
+
+    function sendChatMessage() {
+      const input = document.getElementById('chatInput');
+      const val = input.value.trim();
+      if (!val) return;
+
+      const chatContainer = document.getElementById('chatContainer');
+      const typingIndicator = document.getElementById('chatTyping');
+
+      // Add user custom message
+      const userMsgHtml = `
+        <div class="space-y-1 text-right">
+          <div class="text-[10px] font-bold text-secondary font-code">You</div>
+          <div class="bg-surface-raised border border-outline rounded-lg p-2 inline-block text-left text-on-surface">
+            ${val}
+          </div>
+        </div>
+      `;
+      chatContainer.insertAdjacentHTML('beforeend', userMsgHtml);
+      input.value = '';
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      // Show typing
+      typingIndicator.classList.remove('hidden');
+      typingIndicator.classList.add('flex');
+
+      setTimeout(() => {
+        typingIndicator.classList.add('hidden');
+        typingIndicator.classList.remove('flex');
+
+        // Reply
+        const tutorMsgHtml = `
+          <div class="space-y-1">
+            <div class="text-[10px] font-bold text-primary font-code">Linguist AI Tutor</div>
+            <div class="text-on-surface leading-relaxed border-l border-primary/20 pl-3 py-0.5">
+              ${mockTutorReplies.custom}
+            </div>
+          </div>
+        `;
+        chatContainer.insertAdjacentHTML('beforeend', tutorMsgHtml);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }, 1500);
+    }
+
+    // Tab 2 Simulation (Voice Speaking & Canvas Waveform Animation)
+    let isVoiceActive = false;
+    let voiceTimer = null;
+    let secondsLeft = 300; // 5 mins
+    let canvasAnimId = null;
+
+    function toggleVoiceSession() {
+      const btn = document.getElementById('voiceToggleBtn');
+      const statusTitle = document.getElementById('voiceStatusTitle');
+      const statusSub = document.getElementById('voiceStatusSub');
+      const micSymbol = document.getElementById('micStatusSymbol');
+      const micBox = document.getElementById('micIconBox');
+      const visualizer = document.getElementById('voiceVisualizer');
+      const canvas = document.getElementById('waveformCanvas');
+
+      isVoiceActive = !isVoiceActive;
+
+      if (isVoiceActive) {
+        // Start simulated session
+        btn.innerHTML = `<span class="material-symbols-outlined text-sm">mic_off</span><span>Stop Session</span>`;
+        btn.classList.replace('bg-primary', 'bg-error');
+        statusTitle.innerText = "Session Active";
+        statusTitle.classList.add('text-primary');
+        statusSub.innerText = "Listening... Speak now";
+        micSymbol.innerText = "mic";
+        micBox.classList.replace('text-on-surface-variant', 'text-primary');
+        micBox.classList.add('border-primary');
+        visualizer.style.display = "block";
+        canvas.classList.remove('hidden');
+
+        // Start HTML5 Canvas animation
+        startWaveformAnimation();
+
+        // Start countdown
+        voiceTimer = setInterval(() => {
+          secondsLeft--;
+          if (secondsLeft <= 0) {
+            clearInterval(voiceTimer);
+            toggleVoiceSession();
+          }
+          // Format minutes
+          const mins = Math.floor(secondsLeft / 60);
+          const secs = secondsLeft % 60;
+          document.getElementById('timerQuotaText').innerText = `${mins}:${secs < 10 ? '0' : ''}${secs} remaining`;
+          document.getElementById('timerQuotaBar').style.width = `${(secondsLeft / 300) * 100}%`;
+        }, 1000);
+      } else {
+        // Stop session
+        btn.innerHTML = `<span class="material-symbols-outlined text-sm">mic</span><span>Start Session</span>`;
+        btn.classList.replace('bg-error', 'bg-primary');
+        statusTitle.innerText = "Session Offline";
+        statusTitle.classList.remove('text-primary');
+        statusSub.innerText = "Click Start Session to activate your microphone";
+        micSymbol.innerText = "mic_off";
+        micBox.classList.replace('text-primary', 'text-on-surface-variant');
+        micBox.classList.remove('border-primary');
+        visualizer.style.display = "none";
+        canvas.classList.add('hidden');
+        
+        stopWaveformAnimation();
+        clearInterval(voiceTimer);
+      }
+    }
+
+    function startWaveformAnimation() {
+      const canvas = document.getElementById('waveformCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+
+      let offset = 0;
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = 'rgba(139, 124, 255, 0.4)';
+        
+        // Draw primary wave
+        ctx.beginPath();
+        for (let x = 0; x < canvas.width; x++) {
+          const y = canvas.height / 2 + Math.sin(x * 0.015 + offset) * 30 * Math.sin(x * 0.005);
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // Draw secondary wave
+        ctx.strokeStyle = 'rgba(110, 91, 255, 0.2)';
+        ctx.beginPath();
+        for (let x = 0; x < canvas.width; x++) {
+          const y = canvas.height / 2 + Math.sin(x * 0.02 - offset) * 20 * Math.cos(x * 0.003);
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        offset += 0.08;
+        canvasAnimId = requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    function stopWaveformAnimation() {
+      if (canvasAnimId) {
+        cancelAnimationFrame(canvasAnimId);
+        canvasAnimId = null;
+      }
+    }
+
+    // Tab 3 Simulation (Writing Diff)
+    function triggerWritingFeedback() {
+      const fbBox = document.getElementById('writingFeedbackBox');
+      fbBox.classList.toggle('hidden');
+    }
+
+
+    // ==========================================
+    // INTERACTIVE PLACEMENT TEST SIMULATOR DATA
+    // ==========================================
+    const testQuestions = {
+      en: [
+        {
+          q: "Choose the correct sentence:",
+          opts: [
+            "A) I have gone to Paris last summer.",
+            "B) I went to Paris last summer.",
+            "C) I have go to Paris last summer."
+          ],
+          correct: 1,
+          diff: "A2",
+          tip: "Use simple past for finished times ('last summer')."
+        },
+        {
+          q: "Complete: If it ___ tomorrow, we won't go to the park.",
+          opts: [
+            "A) will rain",
+            "B) rain",
+            "C) rains"
+          ],
+          correct: 2,
+          diff: "B1",
+          tip: "Conditional clause type 1 uses Present Simple after 'if'."
+        },
+        {
+          q: "Find the synonym of 'Crucial':",
+          opts: [
+            "A) Tiny",
+            "B) Vital",
+            "C) Unnecessary"
+          ],
+          correct: 1,
+          diff: "B2",
+          tip: "'Crucial' means extremely important or vital."
+        }
+      ],
+      ru: [
+        {
+          q: "Выберите правильное предложение:",
+          opts: [
+            "A) I have gone to Paris last summer.",
+            "B) I went to Paris last summer.",
+            "C) I have go to Paris last summer."
+          ],
+          correct: 1,
+          diff: "A2",
+          tip: "Используйте Past Simple для завершенного времени ('last summer')."
+        },
+        {
+          q: "Заполните пропуск: If it ___ tomorrow, we won't go to the park.",
+          opts: [
+            "A) will rain",
+            "B) rain",
+            "C) rains"
+          ],
+          correct: 2,
+          diff: "B1",
+          tip: "В условных предложениях первого типа после 'if' используется Present Simple."
+        },
+        {
+          q: "Найдите синоним слова 'Crucial':",
+          opts: [
+            "A) Tiny (Крошечный)",
+            "B) Vital (Жизненно важный)",
+            "C) Unnecessary (Ненужный)"
+          ],
+          correct: 1,
+          diff: "B2",
+          tip: "'Crucial' означает крайне важный, критический или жизненно важный."
+        }
+      ],
+      tg: [
+        {
+          q: "Ҷумлаи дурустро интихоб кунед:",
+          opts: [
+            "A) I have gone to Paris last summer.",
+            "B) I went to Paris last summer.",
+            "C) I have go to Paris last summer."
+          ],
+          correct: 1,
+          diff: "A2",
+          tip: "Барои вақти гузаштаи мушаххас ('last summer') Past Simple истифода баред."
+        },
+        {
+          q: "Ҷойи холиро пур кунед: If it ___ tomorrow, we won't go to the park.",
+          opts: [
+            "A) will rain",
+            "B) rain",
+            "C) rains"
+          ],
+          correct: 2,
+          diff: "B1",
+          tip: "Дар ҷумлаҳои шартии намуди 1 пас аз 'if' замони ҳозираи оддӣ (Present Simple) меояд."
+        },
+        {
+          q: "Синоними калимаи 'Crucial'-ро ёбед:",
+          opts: [
+            "A) Tiny (Хурдакак)",
+            "B) Vital (Муҳимтарин)",
+            "C) Unnecessary (Немодар)"
+          ],
+          correct: 1,
+          diff: "B2",
+          tip: "'Crucial' маънои хеле муҳим ё ҳаётиро дорад."
+        }
+      ]
+    };
+
+    let testStepIdx = 0;
+    let selectedOptionIdx = null;
+    let score = 0;
+
+    function loadDiagnosticQuestion() {
+      // If completed, show results
+      if (testStepIdx >= 3) {
+        showTestResults();
+        return;
+      }
+
+      const qData = testQuestions[currentLang][testStepIdx];
+      
+      document.getElementById('questionNumText').innerText = `Question ${testStepIdx + 1} of 3`;
+      document.getElementById('questionDifficulty').innerText = `Difficulty: ${qData.diff}`;
+      document.getElementById('questionText').innerText = qData.q;
+      document.getElementById('testTip').innerText = qData.tip;
+
+      // Re-enable button
+      const nextBtn = document.getElementById('testNextBtn');
+      nextBtn.disabled = true;
+      selectedOptionIdx = null;
+
+      // Build options UI
+      const container = document.getElementById('optionsContainer');
+      container.innerHTML = '';
+      
+      qData.opts.forEach((opt, idx) => {
+        const btnHtml = `
+          <button onclick="selectOption(${idx})" class="w-full p-4 bg-surface-raised border border-outline hover:border-primary/40 rounded-lg text-left text-xs font-medium transition-all duration-150 flex justify-between items-center group active:scale-[0.99]" id="opt-${idx}">
+            <span>${opt}</span>
+            <span class="material-symbols-outlined text-sm text-text-tertiary group-hover:text-primary" id="opt-arrow-${idx}">arrow_forward</span>
+          </button>
+        `;
+        container.insertAdjacentHTML('beforeend', btnHtml);
+      });
+    }
+
+    function selectOption(idx) {
+      if (selectedOptionIdx !== null) return; // Prevent double selecting
+      selectedOptionIdx = idx;
+
+      const qData = testQuestions[currentLang][testStepIdx];
+      const correctIdx = qData.correct;
+      const nextBtn = document.getElementById('testNextBtn');
+      
+      const optBtn = document.getElementById(`opt-${idx}`);
+      const arrow = document.getElementById(`opt-arrow-${idx}`);
+
+      if (idx === correctIdx) {
+        // Correct answer selection
+        optBtn.classList.replace('border-outline', 'border-success');
+        optBtn.classList.add('bg-success/5');
+        arrow.innerText = 'check';
+        arrow.classList.replace('text-text-tertiary', 'text-success');
+        score++;
+      } else {
+        // Wrong answer selection
+        optBtn.classList.replace('border-outline', 'border-error');
+        optBtn.classList.add('bg-error/5');
+        arrow.innerText = 'close';
+        arrow.classList.replace('text-text-tertiary', 'text-error');
+
+        // Highlight correct option as well
+        const correctBtn = document.getElementById(`opt-${correctIdx}`);
+        const correctArrow = document.getElementById(`opt-arrow-${correctIdx}`);
+        correctBtn.classList.replace('border-outline', 'border-success');
+        correctBtn.classList.add('bg-success/5');
+        correctArrow.innerText = 'check';
+        correctArrow.classList.replace('text-text-tertiary', 'text-success');
+      }
+
+      nextBtn.disabled = false;
+    }
+
+    function nextQuestion() {
+      testStepIdx++;
+      loadDiagnosticQuestion();
+    }
+
+    function showTestResults() {
+      const box = document.getElementById('testBox');
+      
+      let cefr = 'A2';
+      let title = 'Elementary';
+      let desc = 'You understand basic grammar patterns. We will start your training at A2 to reinforce structures.';
+      
+      if (score === 2) {
+        cefr = 'B1';
+        title = 'Intermediate';
+        desc = 'You have a stable grasp of core concepts. You are ready to build dynamic work & travel dialogues.';
+      } else if (score === 3) {
+        cefr = 'B2';
+        title = 'Upper Intermediate';
+        desc = 'Excellent! You express thoughts comfortably. We will prioritize advanced nuances and writing exams.';
+      } else if (score === 0) {
+        cefr = 'A1';
+        title = 'Beginner';
+        desc = 'Welcome! We will guide you from the fundamentals with translations in your native language.';
+      }
+
+      const ruLabels = {
+        title: "Результаты теста",
+        btn: "Зарегистрироваться с уровнем "
+      };
+      const tgLabels = {
+        title: "Натиҷаи санҷиш",
+        btn: "Бақайдгирӣ бо сатҳи "
+      };
+      const enLabels = {
+        title: "Evaluation Result",
+        btn: "Register with "
+      };
+
+      let lbl = enLabels;
+      if (currentLang === 'ru') lbl = ruLabels;
+      if (currentLang === 'tg') lbl = tgLabels;
+
+      box.innerHTML = `
+        <div class="text-center py-6 space-y-6 flex flex-col justify-between items-center h-full">
+          <div>
+            <span class="text-xs font-bold text-success uppercase font-code tracking-wider">${lbl.title}</span>
+            <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center text-white text-3xl font-extrabold font-display mx-auto mt-4 shadow-xl glow-accent-strong">${cefr}</div>
+          </div>
+          
+          <div class="max-w-md mx-auto space-y-2">
+            <h3 class="text-lg font-bold font-display text-white">${title} level established</h3>
+            <p class="text-xs text-on-surface-variant leading-relaxed">${desc}</p>
+          </div>
+          
+          <a href="linguist_ai_registration.html?level=${cefr}" class="px-6 py-2.5 bg-primary hover:bg-primary/95 text-white font-medium text-xs rounded-lg border border-[#8B7CFF]/30 active:scale-95 transition-all text-center">
+            ${lbl.btn} ${cefr}
+          </a>
+        </div>
+      `;
+    }
+
+    // Initialize placement test
+    loadDiagnosticQuestion();
+
+    // WebGL Shader logic from shader.html
+    (function() {
+      const canvas = document.getElementById('shader-canvas-ANIMATION_29');
+      if (!canvas) return;
+
+      function syncSize() {
+        const w = canvas.clientWidth  || 800;
+        const h = canvas.clientHeight || 550;
+        if (canvas.width !== w || canvas.height !== h) {
+          canvas.width  = w;
+          canvas.height = h;
+        }
+      }
+      if (typeof ResizeObserver !== 'undefined') {
+        new ResizeObserver(syncSize).observe(canvas);
+      }
+      syncSize();
+
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (!gl) return;
+      
+      const vs = `attribute vec2 a_position;
+varying vec2 v_texCoord;
+void main() {
+  v_texCoord = a_position * 0.5 + 0.5;
+  gl_Position = vec4(a_position, 0.0, 1.0);
+}`;
+
+      const fs = `precision highp float;
+varying vec2 v_texCoord;
+uniform float u_time;
+uniform vec2 u_resolution;
+uniform vec2 u_mouse;
+
+vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+
+float snoise(vec2 v) {
+    const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+    vec2 i  = floor(v + dot(v, C.yy) );
+    vec2 x0 = v -   i + dot(i, C.xx);
+    vec2 i1;
+    i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+    vec4 x12 = x0.xyxy + C.xxzz;
+    x12.xy -= i1;
+    i = mod289(i);
+    vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+    vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+    m = m*m ;
+    m = m*m ;
+    vec3 x = 2.0 * fract(p * C.www) - 1.0;
+    vec3 h = abs(x) - 0.5;
+    vec3 a0 = x - floor(x + 0.5);
+    m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+    vec3 g;
+    g.x  = a0.x  * x0.x  + h.x  * x0.y;
+    g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+    return 130.0 * dot(m, g);
+}
+
+void main() {
+    vec2 uv = (gl_FragCoord.xy * 2.0 - u_resolution.xy) / min(u_resolution.y, u_resolution.x);
+    float dist = length(uv);
+    float pulse = 0.55 + 0.05 * sin(u_time * 0.8);
+    // Strict circle boundary with tight mask fade (smooth border glow)
+    float mask = smoothstep(pulse, pulse - 0.05, dist);
+    
+    float noise = snoise(uv * 1.5 + u_time * 0.4);
+    vec3 colorA = vec3(0.43, 0.36, 1.0); // #6E5BFF
+    vec3 colorB = vec3(0.55, 0.49, 1.0); // #8B7CFF
+    vec3 color = mix(colorA, colorB, noise * 0.5 + 0.5);
+    float innerGlow = smoothstep(pulse - 0.15, pulse, dist);
+    color += colorB * innerGlow * 0.35;
+    gl_FragColor = vec4(color, mask * 0.9);
+}`;
+
+      function cs(type, src) {
+        const s = gl.createShader(type);
+        gl.shaderSource(s, src);
+        gl.compileShader(s);
+        return s;
+      }
+      const prog = gl.createProgram();
+      gl.attachShader(prog, cs(gl.VERTEX_SHADER, vs));
+      gl.attachShader(prog, cs(gl.FRAGMENT_SHADER, fs));
+      gl.linkProgram(prog);
+      gl.useProgram(prog);
+      const buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+      const pos = gl.getAttribLocation(prog, 'a_position');
+      gl.enableVertexAttribArray(pos);
+      gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+      const uTime = gl.getUniformLocation(prog, 'u_time');
+      const uRes = gl.getUniformLocation(prog, 'u_resolution');
+      const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+
+      let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+      window.addEventListener('mousemove', (event) => {
+        const rect = canvas.getBoundingClientRect();
+        if (rect.width && rect.height) {
+          const nx = (event.clientX - rect.left) / rect.width;
+          const ny = 1.0 - (event.clientY - rect.top) / rect.height;
+          mouse.x = nx * canvas.width;
+          mouse.y = ny * canvas.height;
+        }
+      });
+
+      function render(t) {
+        if (typeof ResizeObserver === 'undefined') syncSize();
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        if (uTime) gl.uniform1f(uTime, t * 0.001);
+        if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height);
+        if (uMouse) gl.uniform2f(uMouse, mouse.x, mouse.y);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        requestAnimationFrame(render);
+      }
+      render(0);
+    })();
+
+    // Interactive Geometric RGB Particle Background Script
+    (function() {
+      const canvas = document.getElementById('interactive-mesh-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      // Hyper-customizable CONFIG object
+      const CONFIG = {
+        maxParticlesDesktop: 380,  // Dynamic particle count between 150-600
+        maxParticlesMobile: 120,   // Reduced particle count for mobile efficiency
+        connectionDist: 105,       // Maximum distance to connect nearby particles
+        mouseRadius: 180,          // Radius of cursor influence
+        mouseForce: 0.65,          // Strength of mouse pull/push
+        springStrength: 0.012,     // Pull force back to autonomous path
+        friction: 0.88,            // Friction/damping (smooth sliding, no jitter)
+        noiseSpeed: 0.00025,       // Speed of 2D noise flow field
+        noiseScale: 0.003,         // Scale of noise grid
+        driftStrength: 0.38,       // Drift speed under noise influence
+        interactionMode: 'attract', // 'attract' to follow cursor, 'repel' to push away
+        
+        // Dark-background friendly palette: low opacity whites/grays + cyan/blue accents
+        colors: {
+          whites: [
+            'rgba(240, 240, 245, opacity)',
+            'rgba(200, 205, 220, opacity)',
+            'rgba(160, 165, 180, opacity)'
+          ],
+          accents: [
+            'rgba(0, 220, 255, opacity)',   // Neon Cyan
+            'rgba(100, 180, 255, opacity)', // Soft Blue
+            'rgba(110, 91, 255, opacity)'   // Indigo/Purple (Google Antigravity theme)
+          ],
+          accentRatio: 0.38 // 38% accents, 62% whites/grays
+        }
+      };
+
+      // High-performance 2D Value Noise Generator (lightweight, no external dependency)
+      const Noise2D = (function() {
+        const size = 256;
+        const mask = size - 1;
+        const p = new Uint8Array(size * 2);
+        const values = new Float32Array(size);
+        
+        // Seed the lookup tables
+        for (let i = 0; i < size; i++) {
+          p[i] = p[i + size] = Math.floor(Math.random() * size);
+          values[i] = Math.random() * 2 - 1;
+        }
+        
+        function fade(t) { return t * t * (3 - 2 * t); }
+        function lerp(t, a, b) { return a + t * (b - a); }
+
+        return function(x, y) {
+          const xi = Math.floor(x) & mask;
+          const yi = Math.floor(y) & mask;
+          const xf = x - Math.floor(x);
+          const yf = y - Math.floor(y);
+
+          const u = fade(xf);
+          const v = fade(yf);
+
+          const aa = p[p[xi] + yi];
+          const ab = p[p[xi] + yi + 1];
+          const ba = p[p[xi + 1] + yi];
+          const bb = p[p[xi + 1] + yi + 1];
+
+          const n00 = values[aa & mask];
+          const n10 = values[ba & mask];
+          const n01 = values[ab & mask];
+          const n11 = values[bb & mask];
+
+          return lerp(v, lerp(u, n00, n10), lerp(u, n01, n11));
+        };
+      })();
+
+      let particles = [];
+      let mouse = { x: null, y: null, targetX: null, targetY: null };
+      let width = 0;
+      let height = 0;
+      let animationId = null;
+
+      function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        initParticles();
+      }
+
+      window.addEventListener('resize', resize);
+
+      class Particle {
+        constructor() {
+          // Spawn inside screen coordinates
+          this.baseX = Math.random() * width;
+          this.baseY = Math.random() * height;
+          this.x = this.baseX;
+          this.y = this.baseY;
+          
+          this.vx = 0;
+          this.vy = 0;
+          
+          // Seed values for unique noise paths
+          this.noiseSeedX = Math.random() * 10000;
+          this.noiseSeedY = Math.random() * 10000;
+
+          // Rotation & Spin
+          this.angle = Math.random() * Math.PI * 2;
+          this.spinSpeed = (Math.random() - 0.5) * 0.015;
+
+          // Geometric scale details
+          this.size = Math.random() * 2.2 + 1.6;
+          this.lineWidth = Math.random() * 0.4 + 0.6; // Thin stroke width
+          
+          // Breathing scale animation variables
+          this.breathingOffset = Math.random() * Math.PI * 2;
+          this.breathingSpeed = Math.random() * 0.008 + 0.004;
+
+          // Select color from palette
+          const isAccent = Math.random() < CONFIG.colors.accentRatio;
+          const colorList = isAccent ? CONFIG.colors.accents : CONFIG.colors.whites;
+          this.colorTemplate = colorList[Math.floor(Math.random() * colorList.length)];
+          
+          // Select geometric form
+          const shapes = ['circle', 'square', 'triangle', 'cross', 'line'];
+          this.shape = shapes[Math.floor(Math.random() * shapes.length)];
+        }
+
+        update(time) {
+          // 1. Organic autonomous movement (Value Noise-driven floating)
+          const nx = Noise2D(this.noiseSeedX + time * CONFIG.noiseSpeed, this.noiseSeedY) * CONFIG.driftStrength;
+          const ny = Noise2D(this.noiseSeedX, this.noiseSeedY + time * CONFIG.noiseSpeed) * CONFIG.driftStrength;
+          
+          this.baseX += nx;
+          this.baseY += ny;
+
+          // Screen wrapping for base anchors
+          if (this.baseX < -40) this.baseX = width + 40;
+          if (this.baseX > width + 40) this.baseX = -40;
+          if (this.baseY < -40) this.baseY = height + 40;
+          if (this.baseY > height + 40) this.baseY = -40;
+
+          // Rotate
+          this.angle += this.spinSpeed;
+
+          // 2. Physics simulation (Spring back + mouse interaction)
+          const fx_spring = (this.baseX - this.x) * CONFIG.springStrength;
+          const fy_spring = (this.baseY - this.y) * CONFIG.springStrength;
+
+          let fx_mouse = 0;
+          let fy_mouse = 0;
+
+          if (mouse.x !== null && mouse.y !== null) {
+            const dx = mouse.x - this.x;
+            const dy = mouse.y - this.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < CONFIG.mouseRadius && dist > 1) {
+              const normDist = dist / CONFIG.mouseRadius;
+              const influence = (1 - normDist) * (1 - normDist); // Quadratic ease-out falloff
+              const force = influence * CONFIG.mouseForce;
+              const angleToMouse = Math.atan2(dy, dx);
+
+              if (CONFIG.interactionMode === 'attract') {
+                // Gravity / flow toward cursor
+                fx_mouse = Math.cos(angleToMouse) * force;
+                fy_mouse = Math.sin(angleToMouse) * force;
+                
+                // Add a subtle orbital flow / swirl to look organic
+                const swirlForce = force * 0.4;
+                fx_mouse += -Math.sin(angleToMouse) * swirlForce;
+                fy_mouse += Math.cos(angleToMouse) * swirlForce;
+              } else {
+                // Repel away from cursor
+                fx_mouse = -Math.cos(angleToMouse) * force;
+                fy_mouse = -Math.sin(angleToMouse) * force;
+              }
+            }
+          }
+
+          // Apply forces to velocity
+          this.vx += fx_spring + fx_mouse;
+          this.vy += fy_spring + fy_mouse;
+
+          // Velocity friction damping
+          this.vx *= CONFIG.friction;
+          this.vy *= CONFIG.friction;
+
+          // Update position
+          this.x += this.vx;
+          this.y += this.vy;
+        }
+
+        draw(time) {
+          // Dynamic breathing size shift
+          const breath = Math.sin(time * this.breathingSpeed + this.breathingOffset) * 0.2 + 1.0;
+          const size = this.size * breath;
+
+          // Opacities for the dual-pass glowing style
+          const colorFill = this.colorTemplate.replace('opacity', '0.12');
+          const colorStroke = this.colorTemplate.replace('opacity', '0.62');
+          const colorGlow = this.colorTemplate.replace('opacity', '0.22');
+
+          ctx.save();
+          ctx.translate(this.x, this.y);
+          ctx.rotate(this.angle);
+
+          // Pass 1: Outer glow layer (thicker stroke, low opacity)
+          ctx.strokeStyle = colorGlow;
+          ctx.lineWidth = this.lineWidth * 3.5;
+          ctx.beginPath();
+          this.drawPath(size);
+          ctx.stroke();
+
+          // Pass 2: Main core layer (sharp, filled)
+          ctx.fillStyle = colorFill;
+          ctx.strokeStyle = colorStroke;
+          ctx.lineWidth = this.lineWidth;
+          ctx.beginPath();
+          this.drawPath(size);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.restore();
+        }
+
+        drawPath(size) {
+          if (this.shape === 'circle') {
+            ctx.arc(0, 0, size, 0, Math.PI * 2);
+          } else if (this.shape === 'square') {
+            ctx.rect(-size, -size, size * 2, size * 2);
+          } else if (this.shape === 'triangle') {
+            ctx.moveTo(0, -size * 1.15);
+            ctx.lineTo(size * 1.0, size * 0.85);
+            ctx.lineTo(-size * 1.0, size * 0.85);
+            ctx.closePath();
+          } else if (this.shape === 'cross') {
+            ctx.moveTo(-size, 0);
+            ctx.lineTo(size, 0);
+            ctx.moveTo(0, -size);
+            ctx.lineTo(0, size);
+          } else if (this.shape === 'line') {
+            ctx.moveTo(-size * 1.35, 0);
+            ctx.lineTo(size * 1.35, 0);
+          }
+        }
+      }
+
+      function initParticles() {
+        const isMobile = width < 768;
+        const maxLimit = isMobile ? CONFIG.maxParticlesMobile : CONFIG.maxParticlesDesktop;
+        const density = 0.00015; // particles density
+        const count = Math.min(maxLimit, Math.floor(width * height * density));
+        
+        particles = [];
+        for (let i = 0; i < count; i++) {
+          particles.push(new Particle());
+        }
+      }
+
+      // Mouse movements
+      window.addEventListener('mousemove', (e) => {
+        mouse.targetX = e.clientX;
+        mouse.targetY = e.clientY;
+      });
+
+      window.addEventListener('mouseleave', () => {
+        mouse.targetX = null;
+        mouse.targetY = null;
+      });
+
+      // Touch support
+      window.addEventListener('touchmove', (e) => {
+        if (e.touches.length > 0) {
+          mouse.targetX = e.touches[0].clientX;
+          mouse.targetY = e.touches[0].clientY;
+        }
+      });
+
+      window.addEventListener('touchend', () => {
+        mouse.targetX = null;
+        mouse.targetY = null;
+      });
+
+      function animate(time) {
+        ctx.clearRect(0, 0, width, height);
+
+        // Smoothly lerp mouse coordinate to prevent sudden jumps
+        if (mouse.targetX !== null && mouse.targetY !== null) {
+          if (mouse.x === null) {
+            mouse.x = mouse.targetX;
+            mouse.y = mouse.targetY;
+          } else {
+            mouse.x += (mouse.targetX - mouse.x) * 0.08;
+            mouse.y += (mouse.targetY - mouse.y) * 0.08;
+          }
+        } else {
+          mouse.x = null;
+          mouse.y = null;
+        }
+
+        // Update and Draw Particles
+        for (let i = 0; i < particles.length; i++) {
+          particles[i].update(time);
+          particles[i].draw(time);
+        }
+
+        // Faint mesh line connections with cursor-reactive glow
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < CONFIG.connectionDist) {
+              let alpha = (1 - (dist / CONFIG.connectionDist)) * 0.16;
+              
+              // Boost line opacity near the mouse cursor
+              if (mouse.x !== null && mouse.y !== null) {
+                const midX = (particles[i].x + particles[j].x) / 2;
+                const midY = (particles[i].y + particles[j].y) / 2;
+                const mx = mouse.x - midX;
+                const my = mouse.y - midY;
+                const mDist = Math.sqrt(mx * mx + my * my);
+                if (mDist < CONFIG.mouseRadius) {
+                  const mouseInfluence = (1 - mDist / CONFIG.mouseRadius);
+                  alpha += mouseInfluence * 0.28; // glow intensity boost
+                }
+              }
+
+              if (alpha > 0.01) {
+                // Pass 1: Outer thick glow connection
+                ctx.lineWidth = 1.8;
+                ctx.strokeStyle = particles[i].colorTemplate.replace('opacity', (alpha * 0.35).toFixed(3));
+                ctx.beginPath();
+                ctx.moveTo(particles[i].x, particles[i].y);
+                ctx.lineTo(particles[j].x, particles[j].y);
+                ctx.stroke();
+
+                // Pass 2: Main core thin connection
+                ctx.lineWidth = 0.55;
+                ctx.strokeStyle = particles[i].colorTemplate.replace('opacity', alpha.toFixed(3));
+                ctx.beginPath();
+                ctx.moveTo(particles[i].x, particles[i].y);
+                ctx.lineTo(particles[j].x, particles[j].y);
+                ctx.stroke();
+              }
+            }
+          }
+        }
+
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Visibility API handle
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          cancelAnimationFrame(animationId);
+        } else {
+          animate(performance.now());
+        }
+      });
+
+      resize();
+      animate(0);
+    })();
+
+  </script>
+</body>
+</html>

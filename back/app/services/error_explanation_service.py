@@ -1,16 +1,17 @@
 import hashlib
-from typing import Dict
 from app.models.enums import CEFRLevel
 from app.services.ai.base import AbstractAIProvider
+from app.services.interfaces.cache import AbstractCacheService
 
 class ErrorExplanationService:
-    def __init__(self, ai_provider: AbstractAIProvider) -> None:
+    def __init__(self, ai_provider: AbstractAIProvider, cache_service: AbstractCacheService) -> None:
         self._ai_provider = ai_provider
-        self._cache: Dict[str, str] = {}
+        self._cache_service = cache_service
 
     def _generate_cache_key(self, error_text: str, correct_text: str, category: str, target_language: str, ui_language: str) -> str:
         raw_key = f"{error_text}||{correct_text}||{category}||{target_language}||{ui_language}"
-        return hashlib.sha256(raw_key.encode("utf-8")).hexdigest()
+        hash_key = hashlib.sha256(raw_key.encode("utf-8")).hexdigest()
+        return f"error_explanation:{hash_key}"
 
     async def generate_explanation(
         self,
@@ -22,8 +23,11 @@ class ErrorExplanationService:
         ui_language: str
     ) -> str:
         cache_key = self._generate_cache_key(error_text, correct_text, category, target_language, ui_language)
-        if cache_key in self._cache:
-            return self._cache[cache_key]
+        
+        # Check distributed cache
+        cached_explanation = await self._cache_service.get(cache_key)
+        if cached_explanation:
+            return cached_explanation
 
         prompt = (
             f"Explain the following language error to a student.\n"
@@ -48,7 +52,8 @@ class ErrorExplanationService:
             if not explanation:
                 explanation = f"The correct form is: {correct_text}"
             
-            self._cache[cache_key] = explanation
+            # Store in distributed cache with 7-day TTL
+            await self._cache_service.set(cache_key, explanation, ttl_seconds=604800)
             return explanation
         except Exception:
             return f"The correct form is: {correct_text}"

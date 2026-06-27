@@ -60,12 +60,14 @@ async def lifespan(app: FastAPI):
     from app.services.quota_tracking_service import QuotaTrackingService
     from app.repositories.user_quota_repository import UserQuotaRepository
     from app.repositories.profile_repository import ProfileRepository
+    from app.services.cache_service import get_cache_service
 
     async def run_quota_cleanup():
         async with db_manager.get_session() as session:
             service = QuotaTrackingService(
                 UserQuotaRepository(session),
-                ProfileRepository(session)
+                ProfileRepository(session),
+                get_cache_service()
             )
             await service.run_daily_cleanup_job()
 
@@ -134,6 +136,7 @@ app.include_router(missions.router, prefix="/api")
 app.include_router(writing_exam.router, prefix="/api")
 app.include_router(listening_exam.router, prefix="/api")
 app.include_router(gamification.router, prefix="/api")
+app.include_router(gamification.progress_router, prefix="/api")
 app.include_router(achievement.router, prefix="/api")
 app.include_router(coach.router, prefix="/api")
 app.include_router(coach.admin_router, prefix="/api")
@@ -147,7 +150,8 @@ async def rewrite_legacy_paths(request, call_next):
     legacy_prefixes = (
         "/auth", "/onboarding", "/lessons", "/vocabulary", "/review", 
         "/errors", "/tutor", "/missions", "/exams", "/gamification", 
-        "/achievements", "/coach", "/admin", "/quota", "/speaking"
+        "/achievements", "/coach", "/admin", "/quota", "/speaking", "/progress",
+        "/profile"
     )
     if path.startswith(legacy_prefixes):
         request.scope["path"] = f"/api{path}"

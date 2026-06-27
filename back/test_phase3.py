@@ -108,11 +108,15 @@ def test_phase3_flow():
     assert sessions_resp.status_code == 200
     assert len(sessions_resp.json()) > 0
 
+    print("First WS connect...")
     with client.websocket_connect(f"/ws/tutor/{session_id}?token={access_token}") as ws:
+        print("Sending ping...")
         ws.send_json({"type": "ping"})
         pong_data = ws.receive_json()
+        print("Pong received:", pong_data)
         assert pong_data["type"] == "pong"
 
+        print("Sending message...")
         ws.send_json({"type": "message", "content": "Hello tutor!"})
         
         chunks = []
@@ -132,10 +136,13 @@ def test_phase3_flow():
         assert done_msg["type"] == "done"
         assert "remaining" in done_msg
 
+        print("Ending session via WS...")
         ws.send_json({"type": "end_session"})
         end_data = ws.receive_json()
+        print("Session ended data:", end_data)
         assert end_data["type"] == "session_ended"
 
+    print("Requesting messages...")
     messages_resp = client.get(f"/tutor/sessions/{session_id}/messages", headers=headers)
     assert messages_resp.status_code == 200
     messages = messages_resp.json()
@@ -143,16 +150,19 @@ def test_phase3_flow():
     assert messages[0]["content"] == "Hello tutor!"
     assert messages[1]["content"] == "Hello! I'm your tutor."
 
+    print("Ending session...")
     end_resp = client.post(f"/tutor/sessions/{session_id}/end", headers=headers)
     assert end_resp.status_code == 200
     assert end_resp.json()["is_active"] is False
 
+    print("Getting missions...")
     missions_resp = client.get("/missions", headers=headers)
     assert missions_resp.status_code == 200
     missions = missions_resp.json()
     assert len(missions) > 0
     mission_id = missions[0]["id"]
 
+    print("Starting mission...")
     start_mission_resp = client.post(f"/missions/{mission_id}/start", headers=headers)
     assert start_mission_resp.status_code == 200
     start_data = start_mission_resp.json()
@@ -161,6 +171,7 @@ def test_phase3_flow():
     attempt_id = start_data["attempt_id"]
     m_session_id = start_data["session_id"]
 
+    print("Connecting to websocket...")
     with client.websocket_connect(f"/ws/tutor/{m_session_id}?token={access_token}") as ws:
         ws.send_json({"type": "message", "content": "I would like to order food."})
         for _ in range(10):
@@ -175,6 +186,7 @@ def test_phase3_flow():
         end_data = ws.receive_json()
         assert end_data["type"] == "session_ended"
 
+    print("Completing mission...")
     complete_resp = client.post(
         f"/missions/{mission_id}/complete",
         headers=headers,
@@ -186,10 +198,12 @@ def test_phase3_flow():
     assert complete_data["score"] == 86.0
     assert "strengths" in complete_data["feedback"]
 
+    print("Getting attempts...")
     attempts_resp = client.get(f"/missions/{mission_id}/attempts", headers=headers)
     assert attempts_resp.status_code == 200
     assert len(attempts_resp.json()) > 0
 
+    print("Done!")
     app.dependency_overrides.clear()
 
 if __name__ == "__main__":

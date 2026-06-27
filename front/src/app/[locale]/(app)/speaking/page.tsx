@@ -238,7 +238,7 @@ export default function SpeakingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-on-surface h-screen w-full flex flex-col relative overflow-hidden font-body-md antialiased select-none">
+    <div className="w-full h-[calc(100vh-160px)] min-h-[500px] flex flex-col relative overflow-hidden font-body-md antialiased select-none rounded-xl border border-[#2A2A32] bg-background">
       <header className="absolute top-0 w-full flex justify-end p-lg md:p-xl z-30">
         <div className="flex items-center gap-xs">
           <span className="material-symbols-outlined text-[16px] text-warning font-light">schedule</span>

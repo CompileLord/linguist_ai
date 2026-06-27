@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "@/i18n/navigation";
+import { useGetProfileQuery } from "@/services/onboardingApi";
 import { useSearchParams } from "next/navigation";
 import { LanguageSetupStep } from "@/features/onboarding/LanguageSetupStep";
 import { PlacementSelectionStep } from "@/features/onboarding/PlacementSelectionStep";
@@ -25,6 +26,14 @@ function OnboardingContent() {
   const currentStep =
     (searchParams.get("step") as OnboardingStep) || "language";
   const [direction, setDirection] = useState(1);
+
+  const { data: profile } = useGetProfileQuery();
+
+  useEffect(() => {
+    if (profile?.onboarding_completed) {
+      router.replace("/dashboard");
+    }
+  }, [profile, router]);
 
   const goToStep = (step: OnboardingStep, dir = 1) => {
     setDirection(dir);

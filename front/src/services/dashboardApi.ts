@@ -4,6 +4,12 @@ export interface GamificationStats {
   total_xp: number;
   current_game_level: number;
   current_streak: number;
+  longest_streak: number;
+  last_activity_date?: string | null;
+  xp_for_next_level: number;
+  xp_remaining_for_next_level: number;
+  level_progress_percentage: number;
+  has_unread_report: boolean;
 }
 
 export interface Achievement {

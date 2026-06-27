@@ -6,13 +6,15 @@ from app.services.interfaces.tutor import AbstractTutorRateLimiter
 from app.repositories.user_quota_repository import UserQuotaRepository
 from app.repositories.profile_repository import ProfileRepository
 from app.services.quota_tracking_service import QuotaTrackingService
+from app.services.cache_service import get_cache_service
 
 class TutorRateLimiter(AbstractTutorRateLimiter):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
         self._quota_service = QuotaTrackingService(
             UserQuotaRepository(session),
-            ProfileRepository(session)
+            ProfileRepository(session),
+            get_cache_service()
         )
 
     async def check_limit(self, user_id: uuid.UUID) -> RateLimitStatus:

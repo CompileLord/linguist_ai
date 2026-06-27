@@ -209,6 +209,7 @@ class LessonScoringService:
             from app.services.error_explanation_service import ErrorExplanationService
             from app.services.error_aggregation_service import ErrorAggregationService
             from app.services.error_signal_service import ErrorSignalService
+            from app.services.cache_service import get_cache_service
 
             async with db_manager.get_session() as session:
                 res = await session.execute(select(UserProfile).filter(UserProfile.user_id == user_id))
@@ -245,39 +246,42 @@ class LessonScoringService:
                     content = lesson.content
                     exercises = content.get("exercises", [])
                     incorrect_text = []
-                    for i, ex in enumerate(exercises):
-                        if i < len(answers.exercise_answers):
-                            user_ans = answers.exercise_answers[i].strip()
-                            correct_ans = ex.get("correct_answer", "").strip()
-                            if user_ans.lower() != correct_ans.lower():
-                                incorrect_text.append(f"Question: {ex.get('question')} | User Answer: {user_ans} | Correct Answer: {correct_ans}")
                     
-                    if incorrect_text:
-                        full_incorrect_str = "\n".join(incorrect_text)
+                    if answers.exercise_answers:
+                        for i, ex in enumerate(exercises):
+                            if i < len(answers.exercise_answers):
+                                user_ans = answers.exercise_answers[i].strip()
+                                correct_ans = ex.get("correct_answer", "").strip()
+                                if user_ans.lower() != correct_ans.lower():
+                                    incorrect_text.append(f"Question: {ex.get('question')} | User Answer: {user_ans} | Correct Answer: {correct_ans}")
                         
-                        res_lang = await session.execute(select(Language).filter(Language.id == db_profile.target_language_id))
-                        lang = res_lang.scalar_one_or_none()
-                        target_lang_name = lang.name if lang else "English"
-                        
-                        detected = await self._error_detection_service.detect_errors(
-                            user_text=full_incorrect_str,
-                            context_type=f"Lesson: {lesson.title}",
-                            target_language=target_lang_name,
-                            cefr_level=db_profile.current_level or CEFRLevel.A1
-                        )
-                        
-                        if detected:
-                            error_ai_provider = self._error_detection_service._ai_provider
-                            explanation_service = ErrorExplanationService(error_ai_provider)
-                            new_error_aggregation = ErrorAggregationService(user_error_repo, explanation_service)
+                        if incorrect_text:
+                            full_incorrect_str = "\n".join(incorrect_text)
                             
-                            await new_error_aggregation.record_errors(
-                                user_id=user_id,
-                                detected_errors=detected,
-                                related_lesson_id=lesson.id,
-                                profile=db_profile,
-                                target_language_name=target_lang_name
+                            res_lang = await session.execute(select(Language).filter(Language.id == db_profile.target_language_id))
+                            lang = res_lang.scalar_one_or_none()
+                            target_lang_name = lang.name if lang else "English"
+                            
+                            detected = await self._error_detection_service.detect_errors(
+                                user_text=full_incorrect_str,
+                                context_type=f"Lesson: {lesson.title}",
+                                target_language=target_lang_name,
+                                cefr_level=db_profile.current_level or CEFRLevel.A1
                             )
+                            
+                            if detected:
+                                error_ai_provider = self._error_detection_service._ai_provider
+                                cache_s = get_cache_service()
+                                explanation_service = ErrorExplanationService(error_ai_provider, cache_s)
+                                new_error_aggregation = ErrorAggregationService(user_error_repo, explanation_service)
+                                
+                                await new_error_aggregation.record_errors(
+                                    user_id=user_id,
+                                    detected_errors=detected,
+                                    related_lesson_id=lesson.id,
+                                    profile=db_profile,
+                                    target_language_name=target_lang_name
+                                )
                             
                             if self._error_signal_service:
                                 new_error_signal = ErrorSignalService(user_error_repo)

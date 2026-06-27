@@ -31,14 +31,22 @@ async def list_missions(
     per_page: int = Query(10, ge=1, le=100),
     current_user: User = Depends(get_current_active_user),
     profile_service: ProfileService = Depends(get_profile_service),
-    mission_repo: MissionRepository = Depends(get_mission_repository),
-    attempt_repo: MissionAttemptRepository = Depends(get_mission_attempt_repository)
+    mission_repo: MissionRepository = Depends(get_mission_repository)
 ):
+    """
+    List available missions with user completion stats.
+    
+    FIXED: Uses optimized query to fetch missions with stats in one DB call,
+    eliminating N+1 query problem.
+    """
     profile = await profile_service.get_profile(current_user.id)
     user_level = profile.current_level.value if profile.current_level else "A1"
     
     skip = (page - 1) * per_page
-    missions = await mission_repo.list_available(
+    
+    # Use optimized method that fetches missions with user stats in single query
+    mission_data = await mission_repo.list_available_with_user_stats(
+        user_id=current_user.id,
         cefr_level=user_level,
         related_goal=related_goal,
         skip=skip,
@@ -46,11 +54,8 @@ async def list_missions(
     )
     
     result = []
-    for m in missions:
-        attempts = await attempt_repo.list_by_user(current_user.id, mission_id=m.id, status="completed")
-        completed = len(attempts) > 0
-        best_score = max([a.score for a in attempts if a.score is not None]) if completed else None
-        
+    for data in mission_data:
+        m = data["mission"]
         result.append(
             MissionResponse(
                 id=m.id,
@@ -62,8 +67,8 @@ async def list_missions(
                 estimated_duration_minutes=m.estimated_duration_minutes,
                 difficulty_rating=m.difficulty_rating,
                 is_active=m.is_active,
-                completed_before=completed,
-                best_score=best_score
+                completed_before=data["completed"],
+                best_score=data["best_score"]
             )
         )
     return result
@@ -78,7 +83,18 @@ async def start_mission(
 ):
     active_attempts = await attempt_repo.list_by_user(current_user.id, mission_id=id, status="in_progress")
     if active_attempts:
-        raise ConflictException(detail="An attempt is already in progress for this mission")
+        from datetime import datetime
+        for attempt in active_attempts:
+            attempt.status = "abandoned"
+            attempt.completed_at = datetime.utcnow()
+            await attempt_repo.update(attempt)
+            
+            # End associated tutor session if active
+            sessions = await mission_service._session_repo.list_by_user(current_user.id, include_ended=True)
+            for s in sessions:
+                if s.topic_context and s.topic_context.get("attempt_id") == str(attempt.id):
+                    if s.is_active:
+                        await mission_service._session_repo.end_session(s.id)
         
     await quota_service.increment_usage(current_user.id, "mission_attempts", 1)
     session_id, attempt_id = await mission_service.start_mission(current_user.id, id)

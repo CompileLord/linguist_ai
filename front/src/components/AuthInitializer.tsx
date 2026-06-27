@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { setCredentials, setUiLanguage } from "@/store/authSlice";
+import { setCredentials, setUiLanguage, setInitialized } from "@/store/authSlice";
 import { useGetMeQuery } from "@/services/authApi";
 
 export function AuthInitializer({ children }: { children: React.ReactNode }) {
@@ -21,6 +21,9 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
             user: { id: "", username: "User", ui_language: uiLanguage || "en" },
           })
         );
+      } else {
+        // Mark initialization as finished if no token exists
+        dispatch(setInitialized());
       }
       if (uiLanguage) {
         dispatch(setUiLanguage(uiLanguage));

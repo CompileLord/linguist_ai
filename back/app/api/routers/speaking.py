@@ -37,6 +37,22 @@ from app.repositories.language_repository import LanguageRepository
 router = APIRouter(prefix="/speaking", tags=["Speaking"])
 ws_router = APIRouter(tags=["Speaking"])
 
+
+def _get_audio_duration(audio_bytes: bytes) -> float:
+    """
+    Get audio duration from WAV bytes. Runs in thread pool to avoid blocking.
+    """
+    import io
+    import wave
+    try:
+        with wave.open(io.BytesIO(audio_bytes), "rb") as wav:
+            frames = wav.getnframes()
+            rate = wav.getframerate()
+            return frames / float(rate)
+    except Exception:
+        return 2.0
+
+
 @router.post("/start", status_code=status.HTTP_201_CREATED)
 async def start_speaking(
     current_user: User = Depends(get_current_active_user),
@@ -193,15 +209,8 @@ async def ws_speaking(
                                     voice_name=user.voice_name
                                 )
                                 if audio_bytes and len(audio_bytes) > 44:
-                                    import io
-                                    import wave
-                                    try:
-                                        with wave.open(io.BytesIO(audio_bytes), "rb") as wav:
-                                            frames = wav.getnframes()
-                                            rate = wav.getframerate()
-                                            duration = frames / float(rate)
-                                    except Exception:
-                                        duration = 2.0
+                                    # FIXED: Offload blocking wave operation to thread pool
+                                    duration = await asyncio.to_thread(_get_audio_duration, audio_bytes)
                                     
                                     now = time.time()
                                     if now < playback_finish_time:
@@ -227,15 +236,8 @@ async def ws_speaking(
                             voice_name=user.voice_name
                         )
                         if audio_bytes and len(audio_bytes) > 44:
-                            import io
-                            import wave
-                            try:
-                                with wave.open(io.BytesIO(audio_bytes), "rb") as wav:
-                                    frames = wav.getnframes()
-                                    rate = wav.getframerate()
-                                    duration = frames / float(rate)
-                            except Exception:
-                                duration = 2.0
+                            # FIXED: Offload blocking wave operation to thread pool
+                            duration = await asyncio.to_thread(_get_audio_duration, audio_bytes)
                             
                             now = time.time()
                             if now < playback_finish_time:

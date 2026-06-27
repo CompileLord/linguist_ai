@@ -1,6 +1,7 @@
 from typing import List
 from fastapi import APIRouter, Depends, status
 from app.models.user import User
+from app.models.enums import CEFRLevel
 from app.api.dependencies.auth import get_current_active_user
 from app.api.dependencies.services import get_profile_service, get_placement_test_service
 from app.services.profile_service import ProfileService
@@ -32,6 +33,14 @@ async def get_profile(
     profile_service: ProfileService = Depends(get_profile_service)
 ):
     return await profile_service.get_profile(current_user.id)
+
+@router.put("/level", response_model=ProfileResponse, status_code=status.HTTP_200_OK)
+async def update_level_manually(
+    level: CEFRLevel,
+    current_user: User = Depends(get_current_active_user),
+    profile_service: ProfileService = Depends(get_profile_service)
+):
+    return await profile_service.complete_placement(current_user.id, level, 1.0)
 
 @router.post("/placement/start", response_model=PlacementQuestion, status_code=status.HTTP_200_OK)
 async def start_placement(

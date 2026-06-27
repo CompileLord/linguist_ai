@@ -1,4 +1,5 @@
 .venv
+.agents
 *.env
 linguist_ai.db
 *.db
@@ -23,7 +24,7 @@ __pycache__/
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
-
+skills-lock.json
 # testing
 /coverage
 

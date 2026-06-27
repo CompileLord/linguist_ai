@@ -5,6 +5,7 @@ import path from "path";
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["192.168.71.24", "localhost:5173", "127.0.0.1:5173"],
   async rewrites() {
     return [
       {

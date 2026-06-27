@@ -16,6 +16,12 @@ from app.services.ai.prompts import get_prompt_manager
 logger = logging.getLogger("weekly_report_job")
 
 async def run_weekly_reports_job() -> Dict[str, Any]:
+    """
+    Generate weekly reports for active users.
+    
+    FIXED: Improved session management to avoid exhausting connection pool.
+    Fetches all user IDs in a single session, then processes users one by one.
+    """
     today = date.today()
     period_end = today - timedelta(days=1)
     period_start = today - timedelta(days=7)
@@ -30,6 +36,7 @@ async def run_weekly_reports_job() -> Dict[str, Any]:
         "errors": []
     }
     
+    # Fetch user IDs in a single session
     async with db_manager.get_session() as session:
         result = await session.execute(
             select(User.id)
@@ -41,6 +48,7 @@ async def run_weekly_reports_job() -> Dict[str, Any]:
     ai_provider = get_ai_provider()
     prompt_manager = get_prompt_manager()
     
+    # Process each user with its own session
     for uid in user_ids:
         summary["total_users_processed"] += 1
         async with db_manager.get_session() as session:

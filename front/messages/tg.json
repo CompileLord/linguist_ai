@@ -93,5 +93,35 @@
         "daily_communication": "Муоширати ҳаррӯза"
       }
     }
+  },
+  "Lessons": {
+    "title": "Назарияи дарс",
+    "next": "Баъдӣ",
+    "continue": "Идома додан",
+    "check": "Санҷидан",
+    "incorrect": "Нодуруст",
+    "correct": "Дуруст",
+    "explanation": "Тузҳеҳ",
+    "theory": "Назария",
+    "vocabulary": "Луғат",
+    "exercises": "Машқҳо",
+    "quiz": "Тест",
+    "complete": "Хатм шуд",
+    "xp_earned": "Холҳои гирифташуда",
+    "level_up": "Сатҳи нав!",
+    "accuracy": "Дақиқӣ",
+    "finish": "Анҷоми дарс",
+    "back": "Қафо"
+  },
+  "Dashboard": {
+    "continue_learning": "Идомаи омӯзиш",
+    "generate_next_lesson": "Эҷоди дарси навбатӣ",
+    "level": "Сатҳ",
+    "no_pending_lessons": "Дарси навбатӣ нест",
+    "select_new_module": "Модули навро интихоб кунед",
+    "ready": "Тайёр",
+    "continue": "Идома додан",
+    "generate": "Эҷод кардан",
+    "recent_activity": "Фаъолияти охирин"
   }
 }

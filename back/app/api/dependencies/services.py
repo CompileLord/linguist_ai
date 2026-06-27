@@ -55,6 +55,8 @@ from app.services.achievement_evaluation_engine import AchievementEvaluationEngi
 from app.services.achievement_service import AchievementService
 from app.services.ai_coach_report_generation_service import AICoachReportGenerationService
 from app.services.quota_tracking_service import QuotaTrackingService
+from app.services.cache_service import get_cache_service
+from app.services.interfaces.cache import AbstractCacheService
 
 
 async def get_gamification_repository(db: AsyncSession = Depends(get_db_session)) -> GamificationRepository:
@@ -115,10 +117,11 @@ async def get_ai_coach_report_generation_service(
 
 async def get_quota_tracking_service(
     db: AsyncSession = Depends(get_db_session),
-    quota_repo = Depends(get_user_quota_repository)
+    quota_repo = Depends(get_user_quota_repository),
+    cache_service: AbstractCacheService = Depends(get_cache_service)
 ) -> QuotaTrackingService:
     profile_repo = ProfileRepository(db)
-    return QuotaTrackingService(quota_repo, profile_repo)
+    return QuotaTrackingService(quota_repo, profile_repo, cache_service)
 
 
 _tts_service = None
@@ -211,9 +214,10 @@ async def get_error_detection_service(
     return ErrorDetectionService(ai_provider)
 
 async def get_error_explanation_service(
-    ai_provider = Depends(get_ai_provider)
+    ai_provider = Depends(get_ai_provider),
+    cache_service: AbstractCacheService = Depends(get_cache_service)
 ) -> ErrorExplanationService:
-    return ErrorExplanationService(ai_provider)
+    return ErrorExplanationService(ai_provider, cache_service)
 
 async def get_error_aggregation_service(
     user_error_repo = Depends(get_user_error_repository),
