@@ -1,0 +1,9 @@
+# .claudeignore
+node_modules/
+dist/
+build/
+.git/
+*.log
+package-lock.json
+yarn.lock
+poetry.lock

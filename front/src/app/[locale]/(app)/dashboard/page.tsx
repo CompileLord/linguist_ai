@@ -1,7 +1,9 @@
 "use client";
 
-import { useGetNextLessonQuery, useGetRecentActivityQuery } from "@/services/dashboardApi";
+import { useGetRecentActivityQuery } from "@/services/dashboardApi";
+import { useGetNextLessonQuery } from "@/services/lessonApi";
 import { useGetReviewStatsQuery } from "@/services/reviewApi";
+import { useGetMissionsQuery } from "@/services/missionsApi";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 
@@ -10,6 +12,16 @@ export default function DashboardPage() {
   const { data: nextLesson, isLoading: isLoadingLesson } = useGetNextLessonQuery();
   const { data: reviewStats, isLoading: isLoadingReview } = useGetReviewStatsQuery();
   const { data: recentActivity, isLoading: isLoadingActivity } = useGetRecentActivityQuery();
+  const { data: missions, isLoading: isLoadingMissions } = useGetMissionsQuery();
+
+  const GOAL_ICON: Record<string, string> = {
+    travel: "flight", work: "business_center", study: "menu_book",
+    daily_life: "home", exam_prep: "assignment",
+  };
+  const CEFR_HEX: Record<string, string> = {
+    A1: "#22c55e", A2: "#14b8a6", B1: "#3b82f6",
+    B2: "#8B7CFF", C1: "#f97316", C2: "#ef4444",
+  };
 
   return (
     <div className="animate-fade-in space-y-md">
@@ -66,10 +78,23 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   )}
-                  <button className="bg-primary hover:bg-primary/95 text-white px-md py-sm rounded-lg font-medium active:scale-[0.96] transition-[transform,background-color,border-color,box-shadow] duration-150 shadow-[0_0_12px_rgba(110,91,255,0.25)] border border-[#8B7CFF]/30 hover:border-[#8B7CFF]/60 flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ml-auto cursor-pointer">
-                    <span>{nextLesson ? t("continue") : t("generate")}</span>
-                    <span className="material-symbols-outlined text-sm font-bold">arrow_forward</span>
-                  </button>
+                  {nextLesson ? (
+                    <Link
+                      href={`/lessons/${nextLesson.id}`}
+                      className="bg-primary hover:bg-primary/95 text-white px-md py-sm rounded-lg font-medium active:scale-[0.96] transition-[transform,background-color,border-color,box-shadow] duration-150 shadow-[0_0_12px_rgba(110,91,255,0.25)] border border-[#8B7CFF]/30 hover:border-[#8B7CFF]/60 flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ml-auto"
+                    >
+                      <span>{t("continue")}</span>
+                      <span className="material-symbols-outlined text-sm font-bold">arrow_forward</span>
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/lessons"
+                      className="bg-primary hover:bg-primary/95 text-white px-md py-sm rounded-lg font-medium active:scale-[0.96] transition-[transform,background-color,border-color,box-shadow] duration-150 shadow-[0_0_12px_rgba(110,91,255,0.25)] border border-[#8B7CFF]/30 hover:border-[#8B7CFF]/60 flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ml-auto"
+                    >
+                      <span>{t("generate")}</span>
+                      <span className="material-symbols-outlined text-sm font-bold">arrow_forward</span>
+                    </Link>
+                  )}
                 </div>
               </div>
             </>
@@ -77,8 +102,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Secondary Review Card */}
-        <Link 
-          href="/dashboard" // Keeps on current view, or links to spaced repetition review if available
+        <Link
+          href="/review"
           className="surface-card rounded-xl p-md col-span-1 flex flex-col justify-between hover:border-primary/50 hover:bg-[#1E1E24]/30 active:scale-[0.98] transition-[transform,border-color,background-color] duration-200 cursor-pointer group focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50"
         >
           <div className="flex justify-between items-start">
@@ -140,8 +165,8 @@ export default function DashboardPage() {
           </Link>
 
           {/* Exams */}
-          <Link 
-            href="/progress" 
+          <Link
+            href="/exams/listening"
             className="flex-shrink-0 w-[200px] surface-card rounded-lg p-sm flex items-center gap-sm hover:bg-[#1E1E24]/60 hover:border-primary/40 active:scale-[0.96] transition-[transform,background-color,border-color] duration-150 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 group"
           >
             <div className="p-xs bg-[#1E1E24] rounded border border-[#2A2A32] text-on-surface-variant group-hover:border-primary/40 group-hover:text-primary transition-colors duration-150 flex items-center justify-center">
@@ -151,8 +176,8 @@ export default function DashboardPage() {
           </Link>
 
           {/* Vocabulary */}
-          <Link 
-            href="/dashboard" 
+          <Link
+            href="/vocabulary"
             className="flex-shrink-0 w-[200px] surface-card rounded-lg p-sm flex items-center gap-sm hover:bg-[#1E1E24]/60 hover:border-primary/40 active:scale-[0.96] transition-[transform,background-color,border-color] duration-150 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 group"
           >
             <div className="p-xs bg-[#1E1E24] rounded border border-[#2A2A32] text-on-surface-variant group-hover:border-primary/40 group-hover:text-primary transition-colors duration-150 flex items-center justify-center">
@@ -161,6 +186,59 @@ export default function DashboardPage() {
             <span className="text-label-md font-label-md text-on-surface font-medium">Vocabulary</span>
           </Link>
         </div>
+      </div>
+
+      {/* Missions Row */}
+      <div className="mb-lg">
+        <div className="flex items-center justify-between mb-sm">
+          <h2 className="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider font-semibold">Missions</h2>
+          <Link href="/missions" className="text-[11px] text-primary/70 hover:text-primary transition-colors font-medium">View all →</Link>
+        </div>
+        {isLoadingMissions ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-[60px] bg-[#15151A] border border-[#2A2A32] rounded-xl animate-pulse" />
+            ))}
+          </div>
+        ) : (missions ?? []).length === 0 ? (
+          <p className="text-sm text-on-surface-variant text-center py-4">No missions available.</p>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {(missions ?? []).slice(0, 6).map((m) => {
+              const isLocked = m.is_active === false;
+              const icon = GOAL_ICON[m.related_goal ?? ""] ?? "explore";
+              const hex = CEFR_HEX[m.cefr_level_min ?? ""] ?? "#6E5BFF";
+              return (
+                <Link
+                  key={m.id}
+                  href={isLocked ? "/missions" : `/missions/${m.id}`}
+                  className="relative flex items-center gap-3 p-3 rounded-xl border border-[#2A2A32] bg-[#15151A] hover:border-primary/40 hover:bg-[#1E1E24]/50 active:scale-[0.97] transition-all duration-200 group overflow-hidden"
+                >
+                  <div
+                    className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border transition-all duration-200"
+                    style={{ backgroundColor: `${hex}15`, borderColor: `${hex}40` }}
+                  >
+                    <span
+                      className="material-symbols-outlined text-[18px]"
+                      style={{ color: hex, fontVariationSettings: "'FILL' 1" }}
+                    >
+                      {icon}
+                    </span>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-on-surface truncate group-hover:text-primary transition-colors">{m.title}</p>
+                    <span className="text-[10px] font-bold" style={{ color: hex }}>
+                      {m.cefr_level_min ?? ""}
+                    </span>
+                  </div>
+                  {isLocked && (
+                    <span className="material-symbols-outlined text-[15px] text-on-surface-variant/50 shrink-0">lock</span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Recent Activity List */}

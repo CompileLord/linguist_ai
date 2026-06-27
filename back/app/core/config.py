@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     VERTEX_AI_MODEL: str = "gemini-2.5-flash"
     
     JWT_SECRET_KEY: str = "supersecretkeychangeinproduction"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
     RATE_LIMIT_REQUESTS: int = 100

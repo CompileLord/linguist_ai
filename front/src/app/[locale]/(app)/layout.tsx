@@ -39,6 +39,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   }
 
   const isOnboarding = pathname.startsWith("/onboarding");
+  const isMissionChat = pathname.startsWith("/missions/") && !pathname.includes("/feedback");
+  const isFullscreenChat = isMissionChat || pathname === "/tutor";
 
   if (isOnboarding) {
     return (
@@ -91,6 +93,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     if (pathname.includes("/dashboard")) return "Dashboard";
     if (pathname.includes("/speaking")) return "AI Speaking";
     if (pathname.includes("/feedback")) return "Mission Feedback";
+    if (pathname.includes("/review")) return "Review Queue";
     if (pathname.includes("/missions")) return "Missions";
     if (pathname.includes("/tutor")) return "AI Tutor";
     if (pathname.includes("/coach")) return "AI Coach Reports";
@@ -156,7 +159,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       </nav>
 
       {/* Main Layout Wrapper */}
-      <div className="flex flex-1 pt-16 md:pt-0">
+      <div className="flex flex-1 pt-16 md:pt-0 min-h-0">
         
         {/* SideNavBar (Desktop Only) */}
         <aside className="hidden md:flex flex-col justify-between py-md px-sm fixed left-0 top-0 h-screen w-64 bg-background border-r border-[#2A2A32] z-20">
@@ -201,7 +204,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         </aside>
 
         {/* Content Canvas Area */}
-        <div className="flex-1 md:pl-64 w-full flex flex-col">
+        <div className="flex-1 md:pl-64 w-full flex flex-col min-h-0">
           
           {/* Inner TopAppBar (Desktop Only, matches mockup) */}
           <header className="hidden md:flex bg-surface/85 backdrop-blur-md border-b border-[#2A2A32] justify-between items-center w-full h-16 px-xl sticky top-0 z-10 shrink-0">
@@ -243,7 +246,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             </div>
           </header>
 
-          <main className="flex-grow p-sm md:p-xl max-w-[1000px] w-full mx-auto pb-24">
+          <main className={
+            isFullscreenChat
+              ? "flex-1 flex flex-col min-h-0 overflow-hidden"
+              : "flex-grow p-sm md:p-xl max-w-[1000px] w-full mx-auto pb-24"
+          }>
             {children}
           </main>
         </div>
@@ -277,8 +284,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         })}
       </nav>
 
-      {/* Bottom Progress Bar Footer (Desktop Only) */}
-      <footer className="hidden md:flex fixed bottom-0 left-64 right-0 bg-[#15151A] border-t border-[#2A2A32] z-40">
+      {/* Bottom Progress Bar Footer (Desktop Only, hidden in fullscreen chat) */}
+      {!isFullscreenChat && <footer className="hidden md:flex fixed bottom-0 left-64 right-0 bg-[#15151A] border-t border-[#2A2A32] z-40">
         <div className="absolute top-0 left-0 w-full h-[1.5px] bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
         <div className="max-w-[1000px] mx-auto px-gutter py-sm flex items-center gap-md relative">
           <span className="text-label-md font-label-md text-on-surface-variant whitespace-nowrap tabular-nums">
@@ -294,7 +301,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             Level {(gamification?.current_game_level || 1) + 1}
           </span>
         </div>
-      </footer>
+      </footer>}
     </div>
   );
 }

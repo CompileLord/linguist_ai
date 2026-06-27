@@ -103,6 +103,15 @@ async def list_user_vocabulary(
         per_page=per_page
     )
 
+@router.post("/{vocabulary_id}/audio", status_code=status.HTTP_200_OK)
+async def generate_audio(
+    vocabulary_id: uuid.UUID,
+    current_user: User = Depends(get_current_active_user),
+    vocab_service: VocabularyService = Depends(get_vocabulary_service)
+):
+    audio_url = await vocab_service.ensure_audio(vocabulary_id)
+    return {"audio_url": audio_url}
+
 @router.post("/{vocabulary_id}/review", response_model=UserVocabularyResponse, status_code=status.HTTP_200_OK)
 async def review_vocabulary_word(
     vocabulary_id: uuid.UUID,

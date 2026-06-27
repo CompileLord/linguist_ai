@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter, Link } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
-import { useRegisterMutation } from "@/services/authApi";
+import { useRegisterMutation, useGetVoicesQuery } from "@/services/authApi";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
 import { setCredentials } from "@/store/authSlice";
@@ -16,6 +16,7 @@ const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
+  voice_name: z.string().optional(),
 });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
@@ -26,6 +27,7 @@ export default function RegisterPage() {
   const dispatch = useDispatch();
   const t = useTranslations("Auth.Register");
   const [registerApi, { isLoading }] = useRegisterMutation();
+  const { data: voices } = useGetVoicesQuery();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
@@ -49,6 +51,7 @@ export default function RegisterPage() {
       name: "",
       email: "",
       password: "",
+      voice_name: "hfc_female",
     },
   });
 
@@ -69,7 +72,7 @@ export default function RegisterPage() {
         email: data.email,
         password: data.password,
         full_name: data.name,
-        voice_name: "hfc_female", // default voice
+        voice_name: data.voice_name || "hfc_female",
       }).unwrap();
 
       // Store credentials in localStorage and Redux
@@ -200,6 +203,35 @@ export default function RegisterPage() {
                     ></div>
                   </div>
                   {errors.password && <span className="text-error text-xs mt-1">{t("password_min_err")}</span>}
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-label-md text-xs font-semibold text-on-surface-variant text-left" htmlFor="voice_name">
+                    Voice Actor (AI Coach Voice)
+                  </label>
+                  <div className="relative border border-[#2A2A32] rounded-lg bg-[#15151A] focus-within:border-primary focus-within:shadow-[0_0_14px_rgba(110,91,255,0.15)] transition-all">
+                    <select
+                      {...register("voice_name")}
+                      className="w-full bg-transparent border-none text-on-surface font-body-md text-body-md px-3.5 py-2.5 focus:ring-0 focus:outline-none appearance-none cursor-pointer"
+                      id="voice_name"
+                    >
+                      {voices && voices.length > 0 ? (
+                        voices.map((v) => (
+                          <option key={v.id} value={v.id} className="bg-[#15151A] text-on-surface">
+                            {v.name} ({v.id})
+                          </option>
+                        ))
+                      ) : (
+                        <>
+                          <option value="hfc_female" className="bg-[#15151A] text-on-surface">Female Voice (hfc_female)</option>
+                          <option value="hfc_male" className="bg-[#15151A] text-on-surface">Male Voice (hfc_male)</option>
+                        </>
+                      )}
+                    </select>
+                    <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">
+                      unfold_more
+                    </span>
+                  </div>
                 </div>
 
                 <div className="text-[11px] text-on-surface-variant/80 mt-1 leading-relaxed text-pretty">

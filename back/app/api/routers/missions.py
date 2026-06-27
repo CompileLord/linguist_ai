@@ -1,6 +1,6 @@
 import uuid
 from typing import List, Optional
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, status, HTTPException
 from pydantic import BaseModel
 from app.models.user import User
 from app.schemas.mission import MissionResponse, UserMissionAttemptResponse
@@ -75,29 +75,33 @@ async def list_missions(
 
 @router.post("/{id}/start")
 async def start_mission(
-    id: uuid.UUID,
+    id: str,
     current_user: User = Depends(get_current_active_user),
     mission_service: MissionService = Depends(get_mission_service),
     attempt_repo: MissionAttemptRepository = Depends(get_mission_attempt_repository),
     quota_service: QuotaTrackingService = Depends(get_quota_tracking_service)
 ):
-    active_attempts = await attempt_repo.list_by_user(current_user.id, mission_id=id, status="in_progress")
+    try:
+        mission_uuid = uuid.UUID(id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail=f"Mission not found: '{id}' is not a valid mission ID")
+    active_attempts = await attempt_repo.list_by_user(current_user.id, mission_id=mission_uuid, status="in_progress")
     if active_attempts:
         from datetime import datetime
         for attempt in active_attempts:
             attempt.status = "abandoned"
             attempt.completed_at = datetime.utcnow()
             await attempt_repo.update(attempt)
-            
+
             # End associated tutor session if active
             sessions = await mission_service._session_repo.list_by_user(current_user.id, include_ended=True)
             for s in sessions:
                 if s.topic_context and s.topic_context.get("attempt_id") == str(attempt.id):
                     if s.is_active:
                         await mission_service._session_repo.end_session(s.id)
-        
+
     await quota_service.increment_usage(current_user.id, "mission_attempts", 1)
-    session_id, attempt_id = await mission_service.start_mission(current_user.id, id)
+    session_id, attempt_id = await mission_service.start_mission(current_user.id, mission_uuid)
     return {
         "attempt_id": attempt_id,
         "session_id": session_id

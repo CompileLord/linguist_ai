@@ -122,9 +122,47 @@ export const examsApi = api.injectEndpoints({
         transcript: response.script_text,
       }),
     }),
+    getAvailableListeningExams: b.query<PaginatedListeningExamAvailableResponse, { language_id: string; level: string }>({
+      query: ({ language_id, level }) => `/exams/listening/available?language_id=${language_id}&level=${level}`,
+    }),
+    getWritingHistory: b.query<PaginatedWritingExamHistoryResponse, { page?: number; per_page?: number } | void>({
+      query: (params) => {
+        const page = params?.page ?? 1;
+        const per_page = params?.per_page ?? 10;
+        return `/exams/writing/history?page=${page}&per_page=${per_page}`;
+      },
+    }),
   }),
   overrideExisting: false,
 });
+
+export interface ListeningExamAvailableItem {
+  exam_id: string;
+  level: string;
+  scenario_type: string | null;
+  question_count: number;
+}
+
+export interface PaginatedListeningExamAvailableResponse {
+  items: ListeningExamAvailableItem[];
+  total: number;
+  page: number;
+  per_page: number;
+}
+
+export interface WritingExamHistoryItem {
+  exam_id: string;
+  prompt_snippet: string;
+  overall_score: number | null;
+  created_at: string;
+}
+
+export interface PaginatedWritingExamHistoryResponse {
+  items: WritingExamHistoryItem[];
+  total: number;
+  page: number;
+  per_page: number;
+}
 
 export const {
   useGetWritingPromptQuery,
@@ -132,4 +170,6 @@ export const {
   useGetListeningExamQuery,
   useSubmitListeningExamMutation,
   useGetListeningTranscriptQuery,
+  useGetAvailableListeningExamsQuery,
+  useGetWritingHistoryQuery,
 } = examsApi;

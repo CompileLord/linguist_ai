@@ -98,6 +98,20 @@ class VocabularyService:
         except Exception:
             pass
 
+    async def ensure_audio(self, vocabulary_id: uuid.UUID) -> Optional[str]:
+        vocab = await self._vocabulary_repo.get_by_id(vocabulary_id)
+        if not vocab:
+            raise VocabularyNotFoundError(f"Vocabulary {vocabulary_id} not found")
+        if vocab.audio_url:
+            return vocab.audio_url
+        language = await self._language_repo.get_by_id(vocab.language_id)
+        lang_code = language.code if language else "en"
+        url = await self._tts_service.synthesize_and_store(vocab.word, lang_code)
+        if url:
+            vocab.audio_url = url
+            await self._vocabulary_repo.update(vocab)
+        return vocab.audio_url
+
     async def record_review(self, user_id: uuid.UUID, vocabulary_id: uuid.UUID, outcome: ReviewOutcome) -> UserVocabulary:
         user_vocab = await self._user_vocabulary_repo.get_by_user_and_vocab(user_id, vocabulary_id)
         if not user_vocab:

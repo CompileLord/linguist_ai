@@ -4,9 +4,14 @@ export interface Mission {
   id: string;
   title: string;
   description: string;
-  icon: string;
-  cefr_level: string;
-  is_locked: boolean;
+  scenario_prompt?: string;
+  related_goal?: string;
+  cefr_level_min?: string;
+  estimated_duration_minutes?: number;
+  difficulty_rating?: number;
+  is_active?: boolean;
+  completed_before?: boolean;
+  best_score?: number;
 }
 
 export interface MissionSession {

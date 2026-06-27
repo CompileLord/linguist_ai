@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { Link } from "@/i18n/navigation";
-import { useGetNextLessonQuery } from "@/services/dashboardApi";
-import { useGetLessonsHistoryQuery } from "@/services/progressApi";
+import { useGetNextLessonQuery, useGetLessonsHistoryQuery } from "@/services/lessonApi";
 
 const CEFR_COLORS: Record<string, string> = {
   A1: "text-success border-success/30 bg-success/10",

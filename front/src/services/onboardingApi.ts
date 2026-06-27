@@ -1,5 +1,12 @@
 import { api } from './api';
 
+export interface GoalResponse {
+  id: string;
+  goal_type: string;
+  is_primary: boolean;
+  priority_order: number;
+}
+
 export interface ProfileResponse {
   user_id: string;
   target_language_code: string;
@@ -10,6 +17,7 @@ export interface ProfileResponse {
   streak_count: number;
   total_xp: number;
   onboarding_completed: boolean;
+  goals: GoalResponse[];
 }
 
 export interface PlacementQuestion {

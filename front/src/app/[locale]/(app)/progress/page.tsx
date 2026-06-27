@@ -1,31 +1,41 @@
 "use client";
 
 import { Link } from "@/i18n/navigation";
-import { useGetProgressStatsQuery, useGetCoachReportsQuery } from "@/services/progressApi";
+import { useGetGamificationStatsQuery, useGetRecentActivityQuery } from "@/services/dashboardApi";
+import { useGetCoachReportsQuery } from "@/services/progressApi";
+import { useGetProfileQuery } from "@/services/onboardingApi";
+import { useGetUserVocabularyQuery } from "@/services/vocabularyApi";
 import CountUp from "react-countup";
-
-const FALLBACK_STATS = {
-  total_xp: 12450,
-  current_streak: 42,
-  current_game_level: 24,
-  words_learned: 1840,
-  cefr_level: "B2",
-  recent_badges: [
-    { id: "1", code: "polyglot", title: "Polyglot Initiate", description: "Completed 50 lessons", icon: "workspace_premium", icon_color: "text-primary" },
-    { id: "2", code: "speed", title: "Speed Demon", description: "10 perfect speed rounds", icon: "speed", icon_color: "text-warning" },
-  ],
-  recent_reports: [],
-};
 
 const FALLBACK_REPORTS = [
   { id: "1", period_start: "May 15", period_end: "May 21", strengths: "Strong progress with Present Perfect. Consistency during evening sessions is helping with retention.", weaknesses: "Subject-Verb Agreement · Irregular Verbs", recommendations: "Review irregular past participles.\nTry a 'Job Interview' roleplay." },
 ];
 
 export default function ProgressPage() {
-  const { data: stats, isLoading } = useGetProgressStatsQuery();
+  const { data: gamification, isLoading: isGamificationLoading } = useGetGamificationStatsQuery();
+  const { data: profile, isLoading: isProfileLoading } = useGetProfileQuery();
+  const { data: vocabulary, isLoading: isVocabLoading } = useGetUserVocabularyQuery({ is_known: true });
+  const { data: recentActivity, isLoading: isActivityLoading } = useGetRecentActivityQuery();
   const { data: reports } = useGetCoachReportsQuery();
 
-  const s = stats ?? FALLBACK_STATS;
+  const isLoading = isGamificationLoading || isProfileLoading || isVocabLoading || isActivityLoading;
+
+  const s = {
+    total_xp: gamification?.total_xp || 0,
+    current_streak: gamification?.current_streak || 0,
+    current_game_level: gamification?.current_game_level || 1,
+    words_learned: vocabulary?.total || 0,
+    cefr_level: profile?.current_level || "A1",
+    recent_badges: recentActivity?.map(a => ({
+      id: a.achievement_id,
+      code: a.code,
+      title: a.title,
+      description: a.description,
+      icon: "workspace_premium",
+      icon_color: "text-primary"
+    })) || []
+  };
+
   const rpts = reports ?? FALLBACK_REPORTS;
 
   return (
@@ -176,7 +186,7 @@ export default function ProgressPage() {
           </Link>
         </div>
         <div className="flex gap-md overflow-x-auto no-scrollbar pb-sm -mx-sm px-sm">
-          {(s.recent_badges.length ? s.recent_badges : FALLBACK_STATS.recent_badges).map((badge) => (
+          {(s.recent_badges.length ? s.recent_badges : []).map((badge) => (
             <div key={badge.id} className="shrink-0 w-48 bg-surface rounded-xl p-5 border border-outline flex flex-col items-center text-center shadow-md hover:border-primary/30 transition-all group cursor-pointer">
               <div className="w-16 h-16 rounded-full bg-surface-bright flex items-center justify-center border border-outline mb-sm group-hover:scale-105 transition-transform">
                 <span className={`material-symbols-outlined text-[32px] ${badge.icon_color}`} style={{ fontVariationSettings: "'FILL' 1" }}>{badge.icon}</span>

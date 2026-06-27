@@ -2,8 +2,9 @@ import uuid
 import base64
 import asyncio
 import time
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Literal
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, status, HTTPException
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db_session, db_manager
 from app.models.user import User
@@ -17,7 +18,8 @@ from app.api.dependencies.services import (
     get_xp_calculation_service,
     get_streak_tracking_service,
     get_game_level_progression_service,
-    get_achievement_service
+    get_achievement_service,
+    get_vocabulary_extraction_service,
 )
 from app.services.speaking_session_service import SpeakingSessionService
 from app.services.media.stt_service import SpeechToTextService
@@ -30,12 +32,38 @@ from app.services.game_level_progression_service import GameLevelProgressionServ
 from app.services.achievement_service import AchievementService
 from app.services.token_service import get_token_service
 from app.services.ai.factory import get_ai_provider
+from app.services.vocabulary_extraction_service import VocabularyExtractionService
 from app.repositories.profile_repository import ProfileRepository
 from app.repositories.user_repository import UserRepository
 from app.repositories.language_repository import LanguageRepository
 
 router = APIRouter(prefix="/speaking", tags=["Speaking"])
 ws_router = APIRouter(tags=["Speaking"])
+
+
+# --- Takeaways schemas ---
+
+class TranscriptMessage(BaseModel):
+    role: str
+    content: str
+
+class TakeawaysRequest(BaseModel):
+    transcript: List[TranscriptMessage]
+
+class SpeakingTakeaway(BaseModel):
+    content: str = Field(..., description="Takeaway text")
+    type: str = Field(..., description="Type: vocabulary, grammar, or tip")
+    is_critical: bool = Field(..., description="Whether this should be added to review queue")
+    word: Optional[str] = Field(None, description="The specific word (for vocabulary type)")
+    translation: Optional[str] = Field(None, description="Translation of the word")
+
+class TakeawaysResponse(BaseModel):
+    summary: str
+    takeaways: List[SpeakingTakeaway]
+
+class _TakeawaysGenerated(BaseModel):
+    summary: str = Field(..., description="2-3 sentence summary of the speaking session")
+    takeaways: List[SpeakingTakeaway] = Field(..., description="3-6 key learning takeaways")
 
 
 def _get_audio_duration(audio_bytes: bytes) -> float:
@@ -83,6 +111,74 @@ async def end_speaking(
         await achievement_service.evaluate_and_award(current_user.id, "speaking_session")
         return {"duration_minutes": duration_minutes, "xp_earned": xp_earned}
     return {"duration_minutes": 0, "xp_earned": 0}
+
+@router.post("/takeaways", response_model=TakeawaysResponse)
+async def generate_takeaways(
+    body: TakeawaysRequest,
+    current_user: User = Depends(get_current_active_user),
+    ai_provider = Depends(get_ai_provider),
+    vocab_extraction: VocabularyExtractionService = Depends(get_vocabulary_extraction_service),
+):
+    """Generate summary and takeaways from a completed speaking session, saving critical vocab to review queue."""
+    if not body.transcript:
+        raise HTTPException(status_code=400, detail="Transcript is empty")
+
+    async with db_manager.get_session() as db:
+        profile_repo = ProfileRepository(db)
+        lang_repo = LanguageRepository(db)
+        profile = await profile_repo.get_by_user_id(current_user.id)
+        target_lang_code = "English"
+        native_lang_code = "en"
+        current_level = "A1"
+        if profile:
+            current_level = profile.current_level.value if profile.current_level else "A1"
+            native_lang_code = profile.native_language_code or "en"
+            if profile.target_language_id:
+                lang = await lang_repo.get_by_id(profile.target_language_id)
+                if lang:
+                    target_lang_code = lang.name
+
+    transcript_text = "\n".join(
+        f"{'User' if m.role == 'user' else 'AI Coach'}: {m.content}"
+        for m in body.transcript
+    )
+
+    prompt = (
+        f"Analyze this speaking session transcript for a {current_level} level student learning {target_lang_code}.\n\n"
+        f"Transcript:\n{transcript_text}\n\n"
+        f"Generate a summary and learning takeaways. For vocabulary and grammar mistakes, set is_critical=true and they will be added to the review queue. "
+        f"Translate any vocabulary words into {native_lang_code}."
+    )
+
+    try:
+        result = await ai_provider.generate_structured(
+            prompt=prompt,
+            response_schema=_TakeawaysGenerated,
+            system_instruction=(
+                "You are a language learning coach. Analyze the speaking session and provide concise, actionable feedback. "
+                "Identify vocabulary words to learn, grammar patterns to improve, and general tips. "
+                "Mark as is_critical=true the most important items that the learner should review."
+            ),
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI generation failed: {str(e)}")
+
+    # Save critical vocabulary items to review queue
+    critical_vocab = [t for t in result.takeaways if t.is_critical and t.type == "vocabulary" and t.word]
+    if critical_vocab and profile:
+        vocab_text = " ".join(f"{t.word}: {t.content}" for t in critical_vocab)
+        try:
+            await vocab_extraction.extract_and_add_vocabulary(
+                user_id=current_user.id,
+                lesson_text=vocab_text,
+                profile=profile,
+                target_language_name=target_lang_code,
+            )
+        except Exception:
+            pass  # Non-fatal: takeaways still returned even if saving fails
+
+    return TakeawaysResponse(summary=result.summary, takeaways=result.takeaways)
+
 
 @ws_router.websocket("/ws/speaking/{session_id}")
 async def ws_speaking(

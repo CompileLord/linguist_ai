@@ -100,6 +100,17 @@ export interface LessonCompletionResponse {
   level_up: boolean;
 }
 
+export interface LessonSummaryResponse {
+  id: string;
+  lesson_id: string;
+  title: string;
+  topic: string;
+  status: string;
+  score: number | null;
+  xp_earned: number;
+  completed_at: string | null;
+}
+
 export const lessonApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getLessonById: builder.query<LessonResponse, string>({
@@ -117,6 +128,16 @@ export const lessonApi = api.injectEndpoints({
       }),
       invalidatesTags: ['Profile'],
     }),
+    getLessonsHistory: builder.query<LessonSummaryResponse[], { limit?: number; offset?: number } | void>({
+      query: (params) => {
+        const limit = params?.limit ?? 10;
+        const offset = params?.offset ?? 0;
+        return `/lessons/history?limit=${limit}&offset=${offset}`;
+      },
+    }),
+    getNextLesson: builder.query<LessonResponse, void>({
+      query: () => '/lessons/next',
+    }),
   }),
   overrideExisting: false,
 });
@@ -124,4 +145,6 @@ export const lessonApi = api.injectEndpoints({
 export const {
   useGetLessonByIdQuery,
   useCompleteLessonMutation,
+  useGetLessonsHistoryQuery,
+  useGetNextLessonQuery,
 } = lessonApi;

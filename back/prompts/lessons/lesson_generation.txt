@@ -1,20 +1,55 @@
-Generate a complete language learning lesson.
-Studied Language: $language
-Difficulty Level: $level
-Topic: $topic
+Generate a complete, rich language learning lesson.
 
-Personalization Context:
+Studied Language: $language
+CEFR Difficulty Level: $level
+Topic: $topic
 User Goal: $user_goal
 Explanation Language: $native_language
 Previously Learned Topics: $previous_topics
 Weak Areas to Address: $weak_areas
 
-Generate a JSON object conforming to the structured lesson schema:
-- theory: Clear, detailed explanation of the grammar topic in $native_language, including title, key_points, and grammar_notes.
-- examples: 5-8 examples showing the topic in use, with translation to $native_language, context, and difficulty. Align some examples with the User Goal if provided.
-- vocabulary: 10-15 new words related to the topic, with translation to $native_language, pronunciation, part of speech, and an example sentence.
-- exercises: 8-10 exercises testing the topic (multiple_choice, fill_blank, translation, reorder). Each must have a question, options (for multiple_choice), correct_answer, explanation, and hints.
-- test: A final quiz with 5 questions (question, options, correct_index (0-3), and points value).
-- speaking_task: A brief speaking prompt with expected keywords and difficulty.
-- reading_text: A short reading passage with 3-5 comprehension questions.
-- listening_script: A script text to be read later by TTS, and 3-5 multiple-choice questions to test listening comprehension.
+LEVEL-SPECIFIC REQUIREMENTS:
+- A1/A2: Use extremely simple sentences. Vocabulary should be everyday, high-frequency words. Grammar tables should show only the most basic patterns. Explanations must be very short and beginner-friendly.
+- B1/B2: Use natural, conversational language. Include idioms and collocations. Grammar tables may include multiple tenses and exceptions. Examples should reflect real-life contexts.
+- C1/C2: Use sophisticated, nuanced language. Include advanced grammar subtleties, register differences, and idiomatic usage. Tables may compare formal vs informal, active vs passive, etc.
+
+CONTENT REQUIREMENTS:
+
+theory.explanation — Write a clear, well-structured explanation of the grammar/topic IN $native_language. Use **rich Markdown** with:
+  - `## Section Headers` to divide the explanation into logical parts
+  - Markdown **tables** for grammar patterns, verb conjugations, comparison of forms, etc.
+    Example table format:
+    | Form | Example | Translation |
+    |------|---------|-------------|
+    | I have + V3 | I have eaten | Я поел |
+  - **Bold** for key terms and rules
+  - `code` for exact grammar patterns (e.g. `Subject + have/has + V3`)
+  - Bullet lists for rules and notes
+  - Blockquotes `>` for important grammar rules or warnings
+  - At least 2 grammar tables when the topic involves conjugations, tenses, or comparisons
+
+theory.key_points — 4-6 concise bullet-point rules. Each should be a single clear statement. May use **bold** for emphasis.
+
+theory.grammar_notes — Additional notes, edge cases, or common mistakes. Use Markdown: tables, bold, lists. Write in $native_language.
+
+examples — 6-8 progressively harder examples. Each has source_text (in $language), translation (in $native_language), context (situation where this is used), and difficulty (A1/A2/B1/B2/C1).
+
+vocabulary — 10-15 words that are:
+  - Directly related to the topic
+  - Appropriate for CEFR level $level
+  - Each with: word, translation (in $native_language), pronunciation (IPA or phonetic), part_of_speech, example_sentence (in $language using the word in context)
+
+exercises — 8-10 exercises, mixing types:
+  - multiple_choice: question (with ___ for blank), 4 options, correct_answer matches one option exactly
+  - fill_blank: question with ___, correct_answer is the word/phrase
+  - translation: question is a $native_language sentence, correct_answer is $language translation
+  - reorder: question has shuffled words as a string, correct_answer is the correct sentence
+  Each exercise: question, options (array, empty for fill_blank/translation/reorder), correct_answer, explanation (why this answer is correct, in $native_language), hints (1-2 hints).
+
+test — 5 multiple-choice quiz questions. Options should be plausible distractors. correct_index is 0-based. Points: 2 each.
+
+speaking_task — A realistic speaking prompt appropriate for level $level. Should relate to the topic. expected_response_keywords includes 4-6 key words/phrases the learner should use.
+
+reading_text — A short, engaging passage IN $language (50-120 words for A1/A2, 120-250 for B1/B2, 250-400 for C1/C2). Write in **Markdown** so the frontend can render formatting. Use the grammar topic naturally in the text. Include 3-5 comprehension questions in $native_language.
+
+listening_script — A realistic dialogue or monologue IN $language (suitable for TTS), using the grammar topic naturally. 3-5 multiple-choice comprehension questions in $native_language. correct_index is 0-based.

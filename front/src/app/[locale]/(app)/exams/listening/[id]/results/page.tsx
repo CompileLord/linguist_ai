@@ -42,7 +42,7 @@ export default function ListeningResultsPage() {
     };
   });
 
-  const correct = displayedAnswers.filter((a) => a.correct).length;
+  const correct = displayedAnswers.filter((a: any) => a.correct).length;
   const total = displayedAnswers.length || 3;
 
   return (
@@ -65,7 +65,7 @@ export default function ListeningResultsPage() {
       <section className="space-y-sm">
         <h3 className="font-headline-md text-xl font-bold text-on-surface">Answer Review</h3>
         <div className="space-y-3">
-          {displayedAnswers.map((a, i) => {
+          {displayedAnswers.map((a: any, i: number) => {
             return (
               <div key={a.question_id} className={`bg-surface border rounded-xl p-5 shadow-md ${a.correct ? "border-success/30" : "border-error/30"}`}>
                 <div className="flex items-start gap-3">

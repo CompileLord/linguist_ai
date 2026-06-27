@@ -1,8 +1,9 @@
-import i18nProxy from './i18n/proxy';
- 
-export default i18nProxy;
- 
+import createMiddleware from 'next-intl/middleware';
+import { routing } from './i18n/routing';
+
+export default createMiddleware(routing);
+
 export const config = {
   // Match only internationalized pathnames
-  matcher: ['/', '/(ru|tg|en)/:path*']
+  matcher: ['/', '/(ru|tg|en)/:path*', '/((?!api|_next|_vercel|.*\\..*).*)']
 };

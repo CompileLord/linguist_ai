@@ -19,6 +19,8 @@ const baseQuery = fetchBaseQuery({
   },
 });
 
+let pendingRefresh: Promise<any> | null = null;
+
 const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
@@ -27,14 +29,19 @@ const baseQueryWithReauth: BaseQueryFn<
   let result = await baseQuery(args, api, extraOptions);
 
   if (result.error && result.error.status === 401) {
-    // Try refresh
     const refreshToken = typeof window !== "undefined" ? localStorage.getItem("refresh_token") : null;
     if (refreshToken) {
-      const refreshResult = await baseQuery(
-        { url: '/auth/refresh', method: 'POST', body: { refresh_token: refreshToken } },
-        api,
-        extraOptions
-      );
+      // Deduplicate: all concurrent 401s share one refresh call
+      if (!pendingRefresh) {
+        pendingRefresh = Promise.resolve(
+          baseQuery(
+            { url: '/auth/refresh', method: 'POST', body: { refresh_token: refreshToken } },
+            api,
+            extraOptions
+          )
+        ).finally(() => { pendingRefresh = null; });
+      }
+      const refreshResult = await pendingRefresh;
       if (refreshResult.data) {
         const data = refreshResult.data as any;
         const state = api.getState() as RootState;
@@ -44,10 +51,9 @@ const baseQueryWithReauth: BaseQueryFn<
           user: state.auth.user ?? {
             id: data.user?.id ?? '',
             username: data.user?.full_name ?? data.user?.email ?? 'User',
-            ui_language: state.auth.user?.ui_language ?? 'en',
+            ui_language: (state.auth.user as any)?.ui_language ?? 'en',
           },
         }));
-        // Retry original query with new token
         result = await baseQuery(args, api, extraOptions);
       } else {
         api.dispatch(logout());

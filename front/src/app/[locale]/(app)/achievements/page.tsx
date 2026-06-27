@@ -71,10 +71,10 @@ export default function AchievementsPage() {
             >
               <div className={`w-16 h-16 rounded-full flex items-center justify-center border mb-sm relative transition-transform duration-300 ${isUnlocked ? "bg-surface-bright border-outline group-hover:scale-105" : "bg-surface-bright/40 border-outline/50"}`}>
                 <span
-                  className={`material-symbols-outlined text-[32px] ${isUnlocked ? badge.icon_color : "text-on-surface-variant/40"}`}
+                  className={`material-symbols-outlined text-[32px] ${isUnlocked ? (badge.icon_color || "text-primary") : "text-on-surface-variant/40"}`}
                   style={{ fontVariationSettings: isUnlocked ? "'FILL' 1" : "'FILL' 0" }}
                 >
-                  {badge.icon}
+                  {badge.icon || "military_tech"}
                 </span>
                 {isUnlocked && <div className="absolute inset-0 rounded-full bg-primary/5 blur-sm opacity-50" />}
               </div>
