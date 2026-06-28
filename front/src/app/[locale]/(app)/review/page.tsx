@@ -163,7 +163,7 @@ export default function ReviewPage() {
           <h2 className="text-2xl font-bold text-on-surface mb-2">
             Session Complete!
           </h2>
-          <p className="text-on-surface-variant text-sm max-w-xs mx-auto leading-relaxed">
+          <p className="text-on-surface-variant text-sm mx-auto leading-relaxed">
             {completedCount > 0
               ? `You reviewed ${completedCount} card${completedCount !== 1 ? "s" : ""} today. Great work!`
               : "No cards due right now. Come back tomorrow!"}

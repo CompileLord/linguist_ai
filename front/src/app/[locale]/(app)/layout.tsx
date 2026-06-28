@@ -148,6 +148,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     },
   );
 
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
   useEffect(() => {
     if (isInitialized && !isAuthenticated) {
       router.replace("/login");
@@ -296,17 +298,32 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       {/* Main Layout Wrapper */}
       <div className="flex flex-1 pt-16 md:pt-0 min-h-0">
         {/* SideNavBar (Desktop Only) */}
-        <aside className="hidden md:flex flex-col py-md px-sm fixed left-0 top-0 h-screen w-64 bg-background border-r border-[#2A2A32] z-20">
-          <div className="mb-sm px-sm mt-sm shrink-0">
-            <h1 className="font-display text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-[#8B7CFF] tracking-tight leading-tight mb-1">
-              Linguist AI
-            </h1>
-            <p className="text-on-surface-variant font-body-sm text-xs font-semibold">
-              Premium Tier
-            </p>
+        <aside 
+          className={`hidden md:flex flex-col py-md fixed left-0 top-0 h-screen bg-background border-r border-[#2A2A32] z-20 transition-[width] duration-300 ease-in-out ${
+            isSidebarCollapsed ? "w-[72px] px-2" : "w-64 px-sm"
+          }`}
+        >
+          <div className={`flex items-center mb-sm mt-sm shrink-0 overflow-hidden ${isSidebarCollapsed ? "justify-center px-0" : "justify-between px-sm"}`}>
+            <div className={`transition-all duration-300 whitespace-nowrap overflow-hidden ${isSidebarCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"}`}>
+              <h1 className="font-display text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-[#8B7CFF] tracking-tight leading-tight mb-1">
+                Linguist AI
+              </h1>
+              <p className="text-on-surface-variant font-body-sm text-xs font-semibold">
+                Premium Tier
+              </p>
+            </div>
+            <button
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              className="p-1.5 rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-colors shrink-0"
+              title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              <span className="material-symbols-outlined text-[20px]">
+                {isSidebarCollapsed ? "menu" : "menu_open"}
+              </span>
+            </button>
           </div>
-          <div className="flex flex-col flex-1 min-h-0">
-            <nav className="flex flex-col gap-0.5 flex-1 overflow-y-auto custom-scrollbar pb-2">
+          <div className="flex flex-col flex-1 min-h-0 mt-2">
+            <nav className="flex flex-col gap-1 flex-1 overflow-y-auto custom-scrollbar pb-2">
               {navItems.map((item) => {
                 const isTutor = item.href === "/tutor";
                 const isActive = isTutor
@@ -316,14 +333,15 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   <div key={item.label}>
                     <Link
                       href={item.href}
-                      className={`flex items-center gap-sm px-4 py-2.5 rounded-lg active:scale-[0.98] transition-all duration-150 ${
+                      title={isSidebarCollapsed ? item.label : undefined}
+                      className={`flex items-center py-2.5 rounded-lg active:scale-[0.98] transition-all duration-200 ${
                         isActive
                           ? "bg-surface-bright text-primary font-semibold border-l-2 border-primary"
                           : "text-on-surface-variant hover:bg-surface-bright/50 hover:text-on-surface"
-                      }`}
+                      } ${isSidebarCollapsed ? "justify-center px-0 mx-1 gap-0" : "px-4 gap-sm"}`}
                     >
                       <span
-                        className="material-symbols-outlined"
+                        className="material-symbols-outlined shrink-0"
                         style={{
                           fontVariationSettings: isActive
                             ? "'FILL' 1"
@@ -332,13 +350,23 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                       >
                         {item.icon}
                       </span>
-                      <span className="text-label-md font-label-md flex-1">
+                      <span 
+                        className={`text-label-md font-label-md whitespace-nowrap overflow-hidden transition-all duration-300 ${
+                          isSidebarCollapsed ? "w-0 opacity-0" : "w-full opacity-100 flex-1"
+                        }`}
+                      >
                         {item.label}
                       </span>
                     </Link>
-                    {isTutor && isActive && (
-                      <TutorSessionsNav router={router} />
-                    )}
+                    <div 
+                      className={`overflow-hidden transition-all duration-300 ${
+                        isSidebarCollapsed ? "max-h-0 opacity-0" : "max-h-[400px] opacity-100"
+                      }`}
+                    >
+                      {isTutor && isActive && (
+                        <TutorSessionsNav router={router} />
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -347,16 +375,25 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             <div className="px-xs pb-4 shrink-0 pt-2">
               <Link
                 href="/speaking"
-                className="block w-full text-center bg-primary hover:bg-primary/95 text-white font-medium py-2.5 px-4 rounded-lg active:scale-[0.96] transition-[transform,background-color] duration-150 shadow-[0_0_12px_rgba(110,91,255,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 text-label-md font-label-md border border-[#8B7CFF]/30 hover:border-[#8B7CFF]/60 cursor-pointer"
+                title={isSidebarCollapsed ? "New Session" : undefined}
+                className={`block w-full text-center bg-primary hover:bg-primary/95 text-white font-medium py-2.5 rounded-lg active:scale-[0.96] transition-all duration-300 shadow-[0_0_12px_rgba(110,91,255,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 border border-[#8B7CFF]/30 hover:border-[#8B7CFF]/60 cursor-pointer flex items-center justify-center ${
+                  isSidebarCollapsed ? "px-0" : "px-4"
+                }`}
               >
-                New Session
+                {isSidebarCollapsed ? (
+                  <span className="material-symbols-outlined text-[20px]">add</span>
+                ) : (
+                  <span className="text-label-md font-label-md whitespace-nowrap">New Session</span>
+                )}
               </Link>
             </div>
           </div>
         </aside>
 
         {/* Content Canvas Area */}
-        <div className="flex-1 md:pl-64 w-full flex flex-col min-h-0">
+        <div className={`flex-1 w-full flex flex-col min-h-0 transition-[padding] duration-300 ease-in-out ${
+          isSidebarCollapsed ? "md:pl-[72px]" : "md:pl-64"
+        }`}>
           {/* Inner TopAppBar (Desktop Only, matches mockup) */}
           <header className="hidden md:flex bg-surface/85 backdrop-blur-md border-b border-[#2A2A32] justify-between items-center w-full h-16 px-xl sticky top-0 z-10 shrink-0">
             <div className="font-headline-lg text-2xl font-bold text-on-surface tracking-tight">
