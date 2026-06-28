@@ -9,7 +9,9 @@ import {
 } from "@/services/reviewApi";
 import { MarkdownContent } from "@/components/MarkdownContent";
 
-const API_ORIGIN = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
+const API_ORIGIN = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
+).replace(/\/api\/?$/, "");
 
 function resolveAudioUrl(url: string): string {
   if (!url) return url;
@@ -19,16 +21,20 @@ function resolveAudioUrl(url: string): string {
 
 const RATINGS = [
   { label: "Again", key: "1", quality: 1, scheme: "error" as const },
-  { label: "Hard",  key: "2", quality: 3, scheme: "warning" as const },
-  { label: "Good",  key: "3", quality: 4, scheme: "primary" as const },
-  { label: "Easy",  key: "4", quality: 5, scheme: "success" as const },
+  { label: "Hard", key: "2", quality: 3, scheme: "warning" as const },
+  { label: "Good", key: "3", quality: 4, scheme: "primary" as const },
+  { label: "Easy", key: "4", quality: 5, scheme: "success" as const },
 ] as const;
 
 const schemeClasses = {
-  error:   "bg-red-500/10   hover:bg-red-500/20   border-red-500/30   text-red-400",
-  warning: "bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 text-amber-400",
-  primary: "bg-violet-500/10 hover:bg-violet-500/20 border-violet-500/30 text-violet-400",
-  success: "bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-emerald-400",
+  error:
+    "bg-red-500/10   hover:bg-red-500/20   border-red-500/30   text-red-400",
+  warning:
+    "bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 text-amber-400",
+  primary:
+    "bg-violet-500/10 hover:bg-violet-500/20 border-violet-500/30 text-violet-400",
+  success:
+    "bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-emerald-400",
 };
 
 export default function ReviewPage() {
@@ -44,8 +50,14 @@ export default function ReviewPage() {
   const activeAudioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
-  const { data: queue, isLoading, error, refetch } = useGetReviewQueueQuery({ batch_size: 20 });
-  const [respondToReviewItem, { isLoading: isSubmitting }] = useRespondToReviewItemMutation();
+  const {
+    data: queue,
+    isLoading,
+    error,
+    refetch,
+  } = useGetReviewQueueQuery({ batch_size: 20 });
+  const [respondToReviewItem, { isLoading: isSubmitting }] =
+    useRespondToReviewItemMutation();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -62,7 +74,7 @@ export default function ReviewPage() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, queue, currentIndex, isRevealed]);
 
   const handlePlayAudio = (url: string) => {
@@ -80,7 +92,10 @@ export default function ReviewPage() {
   const submitRating = async (quality: number) => {
     if (!queue || currentIndex >= queue.length || isSubmitting) return;
     try {
-      await respondToReviewItem({ itemId: queue[currentIndex].id, quality }).unwrap();
+      await respondToReviewItem({
+        itemId: queue[currentIndex].id,
+        quality,
+      }).unwrap();
       setXpEarned((p) => p + 10);
       setCompletedCount((p) => p + 1);
       setIsRevealed(false);
@@ -95,7 +110,9 @@ export default function ReviewPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm text-on-surface-variant animate-pulse">Loading review queue…</p>
+        <p className="text-sm text-on-surface-variant animate-pulse">
+          Loading review queue…
+        </p>
       </div>
     );
   }
@@ -104,9 +121,13 @@ export default function ReviewPage() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center px-4">
-        <span className="material-symbols-outlined text-red-400 text-5xl">error</span>
-        <h2 className="text-xl font-bold text-on-surface">Queue Fetch Failed</h2>
-        <p className="text-on-surface-variant max-w-sm text-sm">
+        <span className="material-symbols-outlined text-red-400 text-5xl">
+          error
+        </span>
+        <h2 className="text-xl font-bold text-on-surface">
+          Queue Fetch Failed
+        </h2>
+        <p className="text-on-surface-variant text-sm">
           Could not load review cards. Check your connection and try again.
         </p>
         <button
@@ -120,7 +141,8 @@ export default function ReviewPage() {
   }
 
   const reviewItems = queue ?? [];
-  const isFinished = reviewItems.length === 0 || currentIndex >= reviewItems.length;
+  const isFinished =
+    reviewItems.length === 0 || currentIndex >= reviewItems.length;
 
   /* ── Finished ────────────────────────────────────────────── */
   if (isFinished) {
@@ -132,11 +154,15 @@ export default function ReviewPage() {
           transition={{ type: "spring", stiffness: 180, damping: 14 }}
           className="w-24 h-24 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shadow-[0_0_32px_rgba(16,185,129,0.15)]"
         >
-          <span className="material-symbols-outlined text-emerald-400 text-5xl">task_alt</span>
+          <span className="material-symbols-outlined text-emerald-400 text-5xl">
+            task_alt
+          </span>
         </motion.div>
 
         <div>
-          <h2 className="text-2xl font-bold text-on-surface mb-2">Session Complete!</h2>
+          <h2 className="text-2xl font-bold text-on-surface mb-2">
+            Session Complete!
+          </h2>
           <p className="text-on-surface-variant text-sm max-w-xs mx-auto leading-relaxed">
             {completedCount > 0
               ? `You reviewed ${completedCount} card${completedCount !== 1 ? "s" : ""} today. Great work!`
@@ -147,12 +173,18 @@ export default function ReviewPage() {
         {completedCount > 0 && (
           <div className="grid grid-cols-2 gap-4 w-56 p-5 rounded-2xl border border-[#2A2A32] bg-[#15151A]">
             <div className="text-center">
-              <p className="text-xs font-semibold text-on-surface-variant mb-1">XP Earned</p>
+              <p className="text-xs font-semibold text-on-surface-variant mb-1">
+                XP Earned
+              </p>
               <p className="text-2xl font-bold text-violet-400">+{xpEarned}</p>
             </div>
             <div className="text-center">
-              <p className="text-xs font-semibold text-on-surface-variant mb-1">Reviewed</p>
-              <p className="text-2xl font-bold text-emerald-400">{completedCount}</p>
+              <p className="text-xs font-semibold text-on-surface-variant mb-1">
+                Reviewed
+              </p>
+              <p className="text-2xl font-bold text-emerald-400">
+                {completedCount}
+              </p>
             </div>
           </div>
         )}
@@ -173,8 +205,12 @@ export default function ReviewPage() {
   const isGrammar = currentItem.item_type === "grammar";
   const itemTitle = vocab?.word ?? "Grammar Rule";
   const itemTranslation =
-    vocab?.translation_context?.[locale] ?? vocab?.translation_context?.["en"] ?? "";
-  const itemTranscription = vocab?.transcription ? `/${vocab.transcription}/` : null;
+    vocab?.translation_context?.[locale] ??
+    vocab?.translation_context?.["en"] ??
+    "";
+  const itemTranscription = vocab?.transcription
+    ? `/${vocab.transcription}/`
+    : null;
   const cefrLevel = vocab?.cefr_level ?? "";
   const masteryPct = Math.round(currentItem.mastery_percent ?? 0);
   const progressPct = Math.round((currentIndex / reviewItems.length) * 100);
@@ -201,7 +237,8 @@ export default function ReviewPage() {
       <div className="flex flex-col items-center pb-32">
         {/* Counter */}
         <p className="text-xs font-medium text-on-surface-variant mb-5 tabular-nums">
-          {currentIndex + 1} <span className="opacity-50">/</span> {reviewItems.length}
+          {currentIndex + 1} <span className="opacity-50">/</span>{" "}
+          {reviewItems.length}
         </p>
 
         <AnimatePresence mode="wait">
@@ -229,7 +266,9 @@ export default function ReviewPage() {
 
                 <div className="flex items-center gap-3">
                   {cefrLevel && (
-                    <span className="text-xs font-mono text-on-surface-variant">{cefrLevel}</span>
+                    <span className="text-xs font-mono text-on-surface-variant">
+                      {cefrLevel}
+                    </span>
                   )}
                   {/* Mastery mini-bar */}
                   <div className="flex items-center gap-1.5">
@@ -253,7 +292,10 @@ export default function ReviewPage() {
               >
                 <p
                   className="text-4xl font-bold text-on-surface text-center leading-snug"
-                  style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
+                  style={{
+                    wordBreak: "break-word",
+                    overflowWrap: "break-word",
+                  }}
                 >
                   {itemTitle}
                 </p>
@@ -296,7 +338,9 @@ export default function ReviewPage() {
                       </p>
                       {vocab?.audio_url && (
                         <button
-                          onClick={() => handlePlayAudio(resolveAudioUrl(vocab.audio_url!))}
+                          onClick={() =>
+                            handlePlayAudio(resolveAudioUrl(vocab.audio_url!))
+                          }
                           className="shrink-0 w-9 h-9 rounded-full bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 flex items-center justify-center transition-all"
                           aria-label="Play audio"
                         >
@@ -316,13 +360,18 @@ export default function ReviewPage() {
 
                     {explanationMd && (
                       <div className="mt-2 pt-4 border-t border-[#2A2A32]">
-                        <MarkdownContent content={explanationMd} className="text-sm" />
+                        <MarkdownContent
+                          content={explanationMd}
+                          className="text-sm"
+                        />
                       </div>
                     )}
 
                     {/* Keyboard hint */}
                     <div className="flex items-center justify-center gap-2 mt-5 opacity-50">
-                      <span className="text-[10px] text-on-surface-variant">Rate:</span>
+                      <span className="text-[10px] text-on-surface-variant">
+                        Rate:
+                      </span>
                       {RATINGS.map((r) => (
                         <kbd
                           key={r.key}
@@ -346,8 +395,8 @@ export default function ReviewPage() {
                     idx < currentIndex
                       ? "w-1.5 h-1.5 bg-emerald-500/50"
                       : idx === currentIndex
-                      ? "w-3 h-1.5 bg-violet-500"
-                      : "w-1.5 h-1.5 bg-[#2A2A32]"
+                        ? "w-3 h-1.5 bg-violet-500"
+                        : "w-1.5 h-1.5 bg-[#2A2A32]"
                   }`}
                 />
               ))}
@@ -366,10 +415,7 @@ export default function ReviewPage() {
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             className="fixed bottom-0 left-0 md:left-64 right-0 z-50 bg-[#15151A]/95 backdrop-blur-md border-t border-[#2A2A32] px-4 py-3 shadow-2xl"
           >
-            <div
-              style={{ maxWidth: "520px" }}
-              className="flex gap-2 mx-auto"
-            >
+            <div style={{ maxWidth: "520px" }} className="flex gap-2 mx-auto">
               {RATINGS.map(({ label, key, quality, scheme }) => (
                 <button
                   key={label}
@@ -378,7 +424,9 @@ export default function ReviewPage() {
                   className={`flex-1 flex flex-col items-center py-3 rounded-xl border text-sm font-semibold transition-all active:scale-95 disabled:opacity-40 cursor-pointer ${schemeClasses[scheme]}`}
                 >
                   {label}
-                  <span className="text-[10px] font-mono opacity-40 mt-0.5">{key}</span>
+                  <span className="text-[10px] font-mono opacity-40 mt-0.5">
+                    {key}
+                  </span>
                 </button>
               ))}
             </div>

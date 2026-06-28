@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "framer-motion";
-import { useStartPlacementTestMutation, useAnswerPlacementQuestionMutation } from "@/services/onboardingApi";
+import {
+  useStartPlacementTestMutation,
+  useAnswerPlacementQuestionMutation,
+} from "@/services/onboardingApi";
 
 interface Props {
   onComplete: () => void;
@@ -10,9 +13,11 @@ interface Props {
 
 export function DiagnosticTestStep({ onComplete, onSkip }: Props) {
   const t = useTranslations("Onboarding.DiagnosticTest");
-  
-  const [startPlacement, { isLoading: isStarting }] = useStartPlacementTestMutation();
-  const [answerQuestion, { isLoading: isAnswering }] = useAnswerPlacementQuestionMutation();
+
+  const [startPlacement, { isLoading: isStarting }] =
+    useStartPlacementTestMutation();
+  const [answerQuestion, { isLoading: isAnswering }] =
+    useAnswerPlacementQuestionMutation();
 
   const [currentQuestion, setCurrentQuestion] = useState<any>(null);
   const [questionCount, setQuestionCount] = useState(1);
@@ -39,7 +44,9 @@ export function DiagnosticTestStep({ onComplete, onSkip }: Props) {
   const handleCheck = async () => {
     if (selectedOption === null || currentQuestion === null) return;
     try {
-      const res = await answerQuestion({ answer_index: selectedOption }).unwrap();
+      const res = await answerQuestion({
+        answer_index: selectedOption,
+      }).unwrap();
       setStepResult(res);
       setIsChecked(true);
     } catch (err) {
@@ -85,7 +92,7 @@ export function DiagnosticTestStep({ onComplete, onSkip }: Props) {
   const letters = ["A", "B", "C", "D"];
 
   return (
-    <div className="flex-grow flex flex-col items-center justify-start pt-md pb-md md:pt-lg md:pb-xl px-sm sm:px-lg max-w-[800px] w-full overflow-hidden">
+    <div className="flex-grow flex flex-col items-center justify-start pt-md pb-md md:pt-lg md:pb-xl px-sm sm:px-lg max-w-[1400px] w-full overflow-hidden">
       {/* Progress Indicator */}
       <div className="w-full flex justify-between items-center mb-md md:mb-xl max-w-[480px]">
         {Array.from({ length: 10 }).map((_, i) => (
@@ -96,7 +103,7 @@ export function DiagnosticTestStep({ onComplete, onSkip }: Props) {
         ))}
       </div>
 
-      <div className="w-full flex-grow flex flex-col items-center justify-start max-w-[480px] relative overflow-hidden">
+      <div className="flex items-start justify-between gap-[50px] relative overflow-hidden max-md:flex-col">
         <AnimatePresence mode="wait">
           <motion.div
             key={questionCount}
@@ -111,85 +118,91 @@ export function DiagnosticTestStep({ onComplete, onSkip }: Props) {
                 {formattedText}
               </h1>
             </div>
-
-            {/* Answer Options */}
-            <div className="w-full flex flex-col gap-sm">
-              {currentQuestion.options.map((opt: string, idx: number) => {
-                const isSelected = selectedOption === idx;
-                const isCorrectOption = idx === currentQuestion.correct_answer_index;
-                
-                let cardStyle = "border-[#2A2A32] hover:border-primary-container hover:bg-[#1E1E24]";
-                let circleStyle = "border-outline-variant text-on-surface-variant group-hover:border-primary-container group-hover:text-primary-container";
-
-                if (isChecked) {
-                  if (isCorrectOption) {
-                    cardStyle = "border-[#34A853] bg-[#1A2E20]";
-                    circleStyle = "border-[#34A853] text-[#34A853] bg-[#34A853]/10";
-                  } else if (isSelected) {
-                    cardStyle = "border-[#EA4335] bg-[#2E1A1A]";
-                    circleStyle = "border-[#EA4335] text-[#EA4335] bg-[#EA4335]/10";
-                  } else {
-                    cardStyle = "border-[#2A2A32] opacity-40";
-                    circleStyle = "border-outline-variant text-on-surface-variant";
-                  }
-                } else if (isSelected) {
-                  cardStyle = "border-primary-container bg-[#1E1E24]";
-                  circleStyle = "border-primary-container text-primary-container bg-primary-container/10";
-                }
-
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => handleSelect(idx)}
-                    disabled={isChecked || isAnswering}
-                    className={`p-sm text-left flex items-center gap-sm group bg-[#15151A] border rounded-[10px] transition-all duration-200 ${cardStyle}`}
-                  >
-                    <div
-                      className={`w-6 h-6 rounded-full border flex items-center justify-center text-label-md font-label-md transition-colors ${circleStyle}`}
-                    >
-                      {letters[idx]}
-                    </div>
-                    <span className="font-body-lg text-body-lg text-on-surface">
-                      {opt}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Explanation / Reasoning Box */}
-            {isChecked && (
-              <div
-                className={`w-full mt-md p-md rounded-[10px] border text-left transition-all duration-300
-                  ${isCorrect 
-                    ? "bg-[#1A2E20]/30 border-[#34A853]/40 text-[#a3e2b7]" 
-                    : "bg-[#2E1A1A]/30 border-[#EA4335]/40 text-[#f5b8b5]"
-                  }`}
-              >
-                <h4 className="font-bold text-base mb-xs flex items-center gap-xs">
-                  <span className="material-symbols-outlined text-[20px]">
-                    {isCorrect ? "check_circle" : "cancel"}
-                  </span>
-                  {isCorrect ? "Correct!" : "Incorrect"}
-                </h4>
-                <p className="font-body-sm text-body-sm opacity-90 leading-relaxed">
-                  {stepResult.explanation}
-                </p>
-              </div>
-            )}
           </motion.div>
         </AnimatePresence>
-
         {/* Check / Next / Skip Actions */}
-        <div className="mt-lg w-full flex flex-col gap-sm items-center z-10">
+        <div className="w-full flex flex-col gap-sm items-center z-10">
+          {/* Answer Options */}
+          <div className="w-full flex flex-col gap-sm">
+            {currentQuestion.options.map((opt: string, idx: number) => {
+              const isSelected = selectedOption === idx;
+              const isCorrectOption =
+                idx === currentQuestion.correct_answer_index;
+
+              let cardStyle =
+                "border-[#2A2A32] hover:border-primary-container hover:bg-[#1E1E24]";
+              let circleStyle =
+                "border-outline-variant text-on-surface-variant group-hover:border-primary-container group-hover:text-primary-container";
+
+              if (isChecked) {
+                if (isCorrectOption) {
+                  cardStyle = "border-[#34A853] bg-[#1A2E20]";
+                  circleStyle =
+                    "border-[#34A853] text-[#34A853] bg-[#34A853]/10";
+                } else if (isSelected) {
+                  cardStyle = "border-[#EA4335] bg-[#2E1A1A]";
+                  circleStyle =
+                    "border-[#EA4335] text-[#EA4335] bg-[#EA4335]/10";
+                } else {
+                  cardStyle = "border-[#2A2A32] opacity-40";
+                  circleStyle =
+                    "border-outline-variant text-on-surface-variant";
+                }
+              } else if (isSelected) {
+                cardStyle = "border-primary-container bg-[#1E1E24]";
+                circleStyle =
+                  "border-primary-container text-primary-container bg-primary-container/10";
+              }
+
+              return (
+                <button
+                  key={idx}
+                  onClick={() => handleSelect(idx)}
+                  disabled={isChecked || isAnswering}
+                  className={`p-sm text-left flex items-center gap-sm group bg-[#15151A] border rounded-[10px] transition-all duration-200 ${cardStyle}`}
+                >
+                  <div
+                    className={`w-6 h-6 rounded-full border flex items-center justify-center text-label-md font-label-md transition-colors ${circleStyle}`}
+                  >
+                    {letters[idx]}
+                  </div>
+                  <span className="font-body-lg text-body-lg text-on-surface">
+                    {opt}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          {/* Explanation / Reasoning Box */}
+          {isChecked && (
+            <div
+              className={`w-full mt-md p-md rounded-[10px] border text-left transition-all duration-300
+                  ${
+                    isCorrect
+                      ? "bg-[#1A2E20]/30 border-[#34A853]/40 text-[#a3e2b7]"
+                      : "bg-[#2E1A1A]/30 border-[#EA4335]/40 text-[#f5b8b5]"
+                  }`}
+            >
+              <h4 className="font-bold text-base mb-xs flex items-center gap-xs">
+                <span className="material-symbols-outlined text-[20px]">
+                  {isCorrect ? "check_circle" : "cancel"}
+                </span>
+                {isCorrect ? "Correct!" : "Incorrect"}
+              </h4>
+              <p className="font-body-sm text-body-sm opacity-90 leading-relaxed">
+                {stepResult.explanation}
+              </p>
+            </div>
+          )}
           {!isChecked ? (
             <button
               onClick={handleCheck}
               disabled={selectedOption === null || isAnswering}
               className={`font-label-md text-label-md px-xl py-sm rounded-lg border transition-colors duration-200 w-full
-                ${selectedOption !== null && !isAnswering
-                  ? 'bg-primary-container text-white border-transparent hover:opacity-90 cursor-pointer'
-                  : 'bg-surface-container-highest text-on-surface-variant border-[#2A2A32] cursor-not-allowed opacity-55'
+                ${
+                  selectedOption !== null && !isAnswering
+                    ? "bg-primary-container text-white border-transparent hover:opacity-90 cursor-pointer"
+                    : "bg-surface-container-highest text-on-surface-variant border-[#2A2A32] cursor-not-allowed opacity-55"
                 }`}
             >
               {isAnswering ? t("loading") : t("check")}
@@ -217,4 +230,3 @@ export function DiagnosticTestStep({ onComplete, onSkip }: Props) {
     </div>
   );
 }
-
