@@ -7,10 +7,6 @@ import { useGetProfileQuery } from "@/services/onboardingApi";
 import { useGetUserVocabularyQuery } from "@/services/vocabularyApi";
 import CountUp from "react-countup";
 
-const FALLBACK_REPORTS = [
-  { id: "1", period_start: "May 15", period_end: "May 21", strengths: "Strong progress with Present Perfect. Consistency during evening sessions is helping with retention.", weaknesses: "Subject-Verb Agreement · Irregular Verbs", recommendations: "Review irregular past participles.\nTry a 'Job Interview' roleplay." },
-];
-
 export default function ProgressPage() {
   const { data: gamification, isLoading: isGamificationLoading } = useGetGamificationStatsQuery();
   const { data: profile, isLoading: isProfileLoading } = useGetProfileQuery();
@@ -36,7 +32,7 @@ export default function ProgressPage() {
     })) || []
   };
 
-  const rpts = reports ?? FALLBACK_REPORTS;
+  const rpts = reports ?? [];
 
   return (
     <div className="animate-fade-in space-y-lg pb-24">

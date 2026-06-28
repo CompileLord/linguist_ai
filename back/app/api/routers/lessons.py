@@ -11,15 +11,21 @@ from app.api.dependencies.services import (
     get_lesson_scoring_service,
     get_lesson_repository,
     get_user_lesson_repository,
-    get_quota_tracking_service
+    get_quota_tracking_service,
+    get_tts_service
 )
 from app.services.profile_service import ProfileService
 from app.services.language_service import LanguageService
 from app.services.lesson_generator_service import LessonGeneratorService
 from app.services.lesson_scoring_service import LessonScoringService
 from app.services.quota_tracking_service import QuotaTrackingService
+from app.services.media.tts_service import TextToSpeechService
 from app.repositories.lesson_repository import LessonRepository, UserLessonRepository
-from app.schemas.lesson import LessonResponse, LessonCompletionRequest, LessonCompletionResponse, LessonSummaryResponse
+from app.schemas.lesson import (
+    LessonResponse, LessonCompletionRequest, LessonCompletionResponse,
+    LessonSummaryResponse, ReadingFeedbackRequest, ReadingFeedbackResponse,
+    TtsRequest, TtsResponse
+)
 
 from app.core.exceptions import NotFoundException
 from app.models.user_lesson import UserLesson
@@ -96,6 +102,22 @@ async def get_next_lesson(
     return lesson
 
 
+@router.post("/tts", response_model=TtsResponse, status_code=status.HTTP_200_OK)
+async def generate_tts(
+    body: TtsRequest,
+    current_user: User = Depends(get_current_active_user),
+    tts_service: TextToSpeechService = Depends(get_tts_service)
+):
+    try:
+        audio_url = await tts_service.synthesize_and_store(
+            text=body.text,
+            language_code=body.language_code
+        )
+        return TtsResponse(audio_url=audio_url)
+    except Exception:
+        return TtsResponse(audio_url=None)
+
+
 @router.get("/history", response_model=List[LessonSummaryResponse], status_code=status.HTTP_200_OK)
 async def get_history(
     limit: int = Query(10, ge=1, le=100),
@@ -158,3 +180,30 @@ async def complete_lesson(
         raise NotFoundException("Lesson not found")
 
     return await lesson_scoring_service.calculate_score(current_user.id, lesson, schema, background_tasks)
+
+
+@router.post("/{lesson_id}/reading-feedback", response_model=ReadingFeedbackResponse, status_code=status.HTTP_200_OK)
+async def get_reading_feedback(
+    lesson_id: uuid.UUID,
+    body: ReadingFeedbackRequest,
+    current_user: User = Depends(get_current_active_user),
+    lesson_repository: LessonRepository = Depends(get_lesson_repository),
+    lesson_generator_service: LessonGeneratorService = Depends(get_lesson_generator_service),
+    profile_service: ProfileService = Depends(get_profile_service)
+):
+    lesson = await lesson_repository.get_by_id(lesson_id)
+    if not lesson:
+        raise NotFoundException("Lesson not found")
+
+    profile = await profile_service.get_profile(current_user.id)
+    lang_map = {"ru": "Russian", "tg": "Tajik", "en": "English"}
+    native_language = lang_map.get(profile.native_language_code, "Russian")
+
+    return await lesson_generator_service.generate_reading_feedback(
+        reading_title=body.reading_title,
+        reading_text=body.reading_text,
+        comprehension_questions=body.comprehension_questions,
+        user_answers=body.user_answers,
+        user_level=body.user_level or lesson.cefr_level.value,
+        native_language=native_language
+    )

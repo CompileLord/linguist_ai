@@ -26,6 +26,22 @@ export interface TutorSessionCreate {
   topic_context?: Record<string, any>;
 }
 
+export interface CorrectionIssue {
+  original: string;
+  corrected: string;
+  explanation: string;
+  type: 'grammar' | 'spelling' | 'word_choice' | 'fluency';
+}
+
+export interface CorrectionResponse {
+  original_text: string;
+  corrected_text: string;
+  is_correct: boolean;
+  overall_feedback: string;
+  issues: CorrectionIssue[];
+  fluency_score: number;
+}
+
 export const tutorApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getTutorSessions: builder.query<TutorSessionResponse[], { skip?: number; limit?: number; include_ended?: boolean }>({
@@ -64,6 +80,20 @@ export const tutorApi = api.injectEndpoints({
       }),
       providesTags: (result, error, arg) => [{ type: 'Profile', id: arg.sessionId }],
     }),
+    correctText: builder.mutation<CorrectionResponse, { text: string; target_language?: string }>({
+      query: (body) => ({
+        url: '/tutor/correct',
+        method: 'POST',
+        body,
+      }),
+    }),
+    translateText: builder.mutation<{ translation: string }, { text: string; target_language?: string }>({
+      query: (body) => ({
+        url: '/tutor/translate',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -75,4 +105,6 @@ export const {
   useEndTutorSessionMutation,
   useGetTutorMessagesQuery,
   useLazyGetTutorMessagesQuery,
+  useCorrectTextMutation,
+  useTranslateTextMutation,
 } = tutorApi;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useUpdateGoalsMutation, useUpdateLevelManuallyMutation } from "@/services/onboardingApi";
+import { useUpdateGoalsMutation } from "@/services/onboardingApi";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 
@@ -11,10 +11,7 @@ export function GoalSelectionStep({ onBack }: Props) {
   const router = useRouter();
   const t = useTranslations("Onboarding.GoalSelection");
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
-  const [updateGoals, { isLoading: isUpdatingGoals }] = useUpdateGoalsMutation();
-  const [updateLevel, { isLoading: isUpdatingLevel }] = useUpdateLevelManuallyMutation();
-
-  const isLoading = isUpdatingGoals || isUpdatingLevel;
+  const [updateGoals, { isLoading }] = useUpdateGoalsMutation();
 
   const goals = [
     { id: 'travel', icon: 'flight_takeoff', span: true },
@@ -43,14 +40,10 @@ export function GoalSelectionStep({ onBack }: Props) {
   const handleContinue = async () => {
     if (selectedGoals.length === 0) return;
     try {
-      const selfSelectedLevel = typeof window !== "undefined" ? sessionStorage.getItem("user_selected_level") : null;
-      if (selfSelectedLevel) {
-        await updateLevel(selfSelectedLevel).unwrap();
-        if (typeof window !== "undefined") {
-          sessionStorage.removeItem("user_selected_level");
-        }
-      }
       await updateGoals(selectedGoals).unwrap();
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("user_selected_level");
+      }
       router.push("/dashboard");
     } catch (e) {
       console.error("Failed to complete onboarding setup:", e);

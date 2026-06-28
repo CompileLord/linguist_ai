@@ -96,13 +96,6 @@ export const vocabularyApi = api.injectEndpoints({
       }),
       invalidatesTags: ['Profile'],
     }),
-    generateAudio: builder.mutation<{ audio_url: string }, { vocabularyId: string }>({
-      query: ({ vocabularyId }) => ({
-        url: `/vocabulary/${vocabularyId}/audio`,
-        method: 'POST',
-      }),
-      invalidatesTags: ['Profile'],
-    }),
   }),
   overrideExisting: false,
 });
@@ -112,5 +105,4 @@ export const {
   useGetUserVocabularyQuery,
   useAddUserWordMutation,
   useReviewUserWordMutation,
-  useGenerateAudioMutation,
 } = vocabularyApi;

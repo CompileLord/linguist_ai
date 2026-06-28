@@ -1,8 +1,7 @@
 import uuid
-import base64
 import asyncio
-import time
-from typing import Optional, List, Dict, Any, Literal
+import json
+from typing import Optional, List, Dict, Any
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, status, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -64,21 +63,6 @@ class TakeawaysResponse(BaseModel):
 class _TakeawaysGenerated(BaseModel):
     summary: str = Field(..., description="2-3 sentence summary of the speaking session")
     takeaways: List[SpeakingTakeaway] = Field(..., description="3-6 key learning takeaways")
-
-
-def _get_audio_duration(audio_bytes: bytes) -> float:
-    """
-    Get audio duration from WAV bytes. Runs in thread pool to avoid blocking.
-    """
-    import io
-    import wave
-    try:
-        with wave.open(io.BytesIO(audio_bytes), "rb") as wav:
-            frames = wav.getnframes()
-            rate = wav.getframerate()
-            return frames / float(rate)
-    except Exception:
-        return 2.0
 
 
 @router.post("/start", status_code=status.HTTP_201_CREATED)
@@ -189,6 +173,26 @@ async def ws_speaking(
     tts_service: TextToSpeechService = Depends(get_tts_service),
     ai_provider = Depends(get_ai_provider)
 ):
+    """Hands-free speaking pipeline over a single persistent WebSocket.
+
+    Upstream (client -> server):
+      - binary frames: raw 16-bit PCM @ 16kHz mono (streamed while the user
+        is speaking, detected by the frontend VAD)
+      - JSON {"type":"start"}             : reset audio buffer
+      - JSON {"type":"end_of_speech"}     : finalize -> transcribe -> respond
+      - JSON {"type":"interrupt"}         : barge-in, cancel generation + audio
+      - JSON {"type":"ping"}
+
+    Downstream (server -> client):
+      - JSON {"type":"ready"}
+      - JSON {"type":"state","state":"processing"|"ai_speaking"}
+      - JSON {"type":"transcription","content":...}
+      - JSON {"type":"chunk","content":...}        (LLM token stream / subtitle)
+      - binary frames                                (Piper WAV per sentence)
+      - JSON {"type":"done"}
+      - JSON {"type":"interrupted"}
+      - JSON {"type":"error","content":...}
+    """
     token_service = get_token_service()
     if not token:
         token = websocket.query_params.get("token")
@@ -230,124 +234,140 @@ async def ws_speaking(
         if target_lang and target_lang.code == "ru":
             target_lang_code = "ru-RU"
 
-    await websocket.accept()
+    tts_lang_code = target_lang.code if target_lang else "en"
+    tts_voice = user.voice_name
 
-    conversation_history = [
+    await websocket.accept()
+    await websocket.send_json({"type": "ready"})
+
+    conversation_history: List[Dict[str, Any]] = [
         {"role": "user", "parts": [{"text": f"SYSTEM INSTRUCTION: You are a friendly AI speaking coach. The user's target language code is {target_lang_code} and current level is {profile.current_level or 'A1'}. Speak in clear, natural, and simple language suitable for this level. Keep your responses short (1-3 sentences) and conversational. Do not use complex markdown formatting or bullet points."}]},
         {"role": "model", "parts": [{"text": "Understood. I will act as the AI Speaking coach according to these instructions."}]}
     ]
 
+    audio_buffer = bytearray()
+    generation_task: Optional[asyncio.Task] = None
+
+    async def _cancel_generation() -> None:
+        nonlocal generation_task
+        if generation_task is not None and not generation_task.done():
+            generation_task.cancel()
+            try:
+                await generation_task
+            except (asyncio.CancelledError, Exception):
+                pass
+        generation_task = None
+
+    async def _synthesize_and_send(sentence: str) -> None:
+        if not sentence:
+            return
+        try:
+            audio_bytes = await tts_service.synthesize(
+                text=sentence,
+                language_code=tts_lang_code,
+                voice_name=tts_voice,
+            )
+        except Exception as e:
+            await websocket.send_json({"type": "error", "content": f"TTS failed: {str(e)}"})
+            return
+        if audio_bytes and len(audio_bytes) > 44:
+            await websocket.send_bytes(audio_bytes)
+
+    async def _run_generation(text: str) -> None:
+        conversation_history.append({"role": "user", "parts": [{"text": text}]})
+        accumulated = ""
+        sentence_buffer = ""
+
+        try:
+            async for chunk in ai_provider.generate_content_stream(conversation_history):
+                accumulated += chunk
+                sentence_buffer += chunk
+                await websocket.send_json({"type": "chunk", "content": chunk})
+
+                # Flush complete sentences to TTS as soon as they arrive so
+                # audio starts flowing before the LLM finishes the turn.
+                while True:
+                    boundary = -1
+                    for i, ch in enumerate(sentence_buffer):
+                        if ch in (".", "?", "!") and not (
+                            i + 1 < len(sentence_buffer) and sentence_buffer[i + 1] in (".", "?", "!")
+                        ):
+                            boundary = i
+                            break
+                    if boundary == -1:
+                        break
+                    sentence = sentence_buffer[:boundary + 1].strip()
+                    sentence_buffer = sentence_buffer[boundary + 1:]
+                    await _synthesize_and_send(sentence)
+
+            # Synthesize any trailing fragment.
+            await _synthesize_and_send(sentence_buffer.strip())
+
+            conversation_history.append({"role": "model", "parts": [{"text": accumulated}]})
+            await websocket.send_json({"type": "done"})
+        except asyncio.CancelledError:
+            # Barge-in: keep any partial model turn so context isn't lost.
+            if accumulated:
+                conversation_history.append({"role": "model", "parts": [{"text": accumulated}]})
+            raise
+
     try:
         while True:
-            data = await websocket.receive_json()
+            msg = await websocket.receive()
+
+            # Binary frame: raw PCM packet from the user's mic.
+            if msg.get("bytes") is not None:
+                audio_buffer.extend(msg["bytes"])
+                continue
+
+            text = msg.get("text")
+            if not text:
+                continue
+            try:
+                data = json.loads(text)
+            except json.JSONDecodeError:
+                continue
+
             msg_type = data.get("type")
 
             if msg_type == "ping":
                 await websocket.send_json({"type": "pong"})
-                continue
 
-            text_to_process = None
+            elif msg_type == "start":
+                audio_buffer.clear()
+                await websocket.send_json({"type": "ready"})
 
-            if msg_type == "audio":
-                audio_base64 = data.get("data")
-                if not audio_base64:
-                    await websocket.send_json({"type": "error", "content": "Audio data missing"})
+            elif msg_type == "end_of_speech":
+                # Ignore if a turn is already in flight (frontend should be in
+                # processing/ai_speaking state and not emitting this).
+                if generation_task is not None and not generation_task.done():
                     continue
+                pcm = bytes(audio_buffer)
+                audio_buffer.clear()
+                if not pcm:
+                    await websocket.send_json({"type": "error", "content": "No audio captured"})
+                    continue
+
+                await websocket.send_json({"type": "state", "state": "processing"})
                 try:
-                    audio_bytes = base64.b64decode(audio_base64)
-                    transcription = await stt_service.transcribe(audio_bytes, language_code=target_lang_code)
-                    if not transcription.transcript:
-                        await websocket.send_json({"type": "error", "content": "No speech detected"})
-                        continue
-                    await websocket.send_json({"type": "transcription", "content": transcription.transcript})
-                    text_to_process = transcription.transcript
+                    transcription = await stt_service.transcribe_pcm(
+                        pcm_bytes=pcm, language_code=target_lang_code
+                    )
                 except Exception as e:
                     await websocket.send_json({"type": "error", "content": f"STT failed: {str(e)}"})
                     continue
 
-            elif msg_type == "text":
-                text_to_process = data.get("content")
-                if not text_to_process:
+                if not transcription.transcript:
+                    await websocket.send_json({"type": "done"})
                     continue
 
-            if text_to_process:
-                conversation_history.append({"role": "user", "parts": [{"text": text_to_process}]})
+                await websocket.send_json({"type": "transcription", "content": transcription.transcript})
+                generation_task = asyncio.create_task(_run_generation(transcription.transcript))
 
-                accumulated_text = ""
-                sentence_buffer = ""
-                playback_finish_time = time.time()
-
-                try:
-                    async for chunk in ai_provider.generate_content_stream(conversation_history):
-                        accumulated_text += chunk
-                        sentence_buffer += chunk
-                        await websocket.send_json({"type": "chunk", "content": chunk})
-
-                        while True:
-                            boundary_idx = -1
-                            for i, char in enumerate(sentence_buffer):
-                                if char in (".", "?", "!"):
-                                    if i + 1 < len(sentence_buffer) and sentence_buffer[i+1] in (".", "?", "!"):
-                                        continue
-                                    boundary_idx = i
-                                    break
-                            
-                            if boundary_idx == -1:
-                                break
-                            
-                            sentence = sentence_buffer[:boundary_idx + 1].strip()
-                            sentence_buffer = sentence_buffer[boundary_idx + 1:]
-                            
-                            if sentence:
-                                audio_bytes = await tts_service.synthesize(
-                                    text=sentence,
-                                    language_code=target_lang.code if target_lang else "en",
-                                    voice_name=user.voice_name
-                                )
-                                if audio_bytes and len(audio_bytes) > 44:
-                                    # FIXED: Offload blocking wave operation to thread pool
-                                    duration = await asyncio.to_thread(_get_audio_duration, audio_bytes)
-                                    
-                                    now = time.time()
-                                    if now < playback_finish_time:
-                                        await asyncio.sleep(playback_finish_time - now)
-                                        playback_finish_time += duration
-                                    else:
-                                        playback_finish_time = now + duration
-                                    
-                                    audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
-                                    await websocket.send_json({"type": "audio", "data": audio_base64})
-                except Exception as e:
-                    await websocket.send_json({"type": "error", "content": f"AI model error: {str(e)}"})
-                    continue
-
-                conversation_history.append({"role": "model", "parts": [{"text": accumulated_text}]})
-
-                remaining_sentence = sentence_buffer.strip()
-                if remaining_sentence:
-                    try:
-                        audio_bytes = await tts_service.synthesize(
-                            text=remaining_sentence,
-                            language_code=target_lang.code if target_lang else "en",
-                            voice_name=user.voice_name
-                        )
-                        if audio_bytes and len(audio_bytes) > 44:
-                            # FIXED: Offload blocking wave operation to thread pool
-                            duration = await asyncio.to_thread(_get_audio_duration, audio_bytes)
-                            
-                            now = time.time()
-                            if now < playback_finish_time:
-                                await asyncio.sleep(playback_finish_time - now)
-                                playback_finish_time += duration
-                            else:
-                                playback_finish_time = now + duration
-                            
-                            audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
-                            await websocket.send_json({"type": "audio", "data": audio_base64})
-                    except Exception as e:
-                        await websocket.send_json({"type": "error", "content": f"TTS synthesis failed: {str(e)}"})
-
-                await websocket.send_json({"type": "done"})
+            elif msg_type == "interrupt":
+                await _cancel_generation()
+                audio_buffer.clear()
+                await websocket.send_json({"type": "interrupted"})
 
     except WebSocketDisconnect:
         pass
@@ -356,3 +376,5 @@ async def ws_speaking(
             await websocket.send_json({"type": "error", "content": str(e)})
         except Exception:
             pass
+    finally:
+        await _cancel_generation()

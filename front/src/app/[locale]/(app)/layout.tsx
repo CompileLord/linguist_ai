@@ -1,11 +1,108 @@
 "use client";
 
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useGetGamificationStatsQuery } from "@/services/dashboardApi";
+import { useGetTutorSessionsQuery, useCreateTutorSessionMutation, TutorSessionResponse } from "@/services/tutorApi";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
 import CountUp from "react-countup";
+
+function TutorSessionsNav({ router }: { router: ReturnType<typeof useRouter> }) {
+  const { data: sessions = [], refetch } = useGetTutorSessionsQuery({ include_ended: true });
+  const [createSession, { isLoading: isCreating }] = useCreateTutorSessionMutation();
+  const [activeSessId, setActiveSessId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const read = () => {
+      const p = new URLSearchParams(window.location.search);
+      setActiveSessId(p.get("s"));
+    };
+    read();
+    window.addEventListener("popstate", read);
+    return () => window.removeEventListener("popstate", read);
+  }, []);
+
+  const handleNewChat = async () => {
+    try {
+      const sess = await createSession({ title: "New Chat" }).unwrap();
+      refetch();
+      router.push(`/tutor?s=${sess.id}` as any);
+      setActiveSessId(sess.id);
+    } catch { /* ignore */ }
+  };
+
+  const todayStart = new Date().setHours(0, 0, 0, 0);
+  const yesterdayStart = todayStart - 86400000;
+
+  const groups: { label: string; items: TutorSessionResponse[] }[] = [
+    {
+      label: "Today",
+      items: sessions.filter((s) => new Date(s.started_at).getTime() >= todayStart),
+    },
+    {
+      label: "Yesterday",
+      items: sessions.filter((s) => {
+        const t = new Date(s.started_at).getTime();
+        return t >= yesterdayStart && t < todayStart;
+      }),
+    },
+    {
+      label: "Older",
+      items: sessions.filter((s) => new Date(s.started_at).getTime() < yesterdayStart),
+    },
+  ].filter((g) => g.items.length > 0);
+
+  return (
+    <div className="mt-0.5 ml-0.5">
+      <button
+        onClick={handleNewChat}
+        disabled={isCreating}
+        className="w-full flex items-center gap-2 pl-9 pr-3 py-1.5 rounded-lg text-[12px] text-on-surface-variant/70 hover:bg-white/[0.05] hover:text-on-surface transition-all disabled:opacity-50"
+      >
+        <span className="material-symbols-outlined text-[14px]">add</span>
+        {isCreating ? "Creating…" : "New chat"}
+      </button>
+
+      <div className="mt-0.5 max-h-52 overflow-y-auto space-y-2 pr-0.5 custom-scrollbar">
+        {groups.map((g) => (
+          <div key={g.label}>
+            <p className="pl-9 text-[9px] uppercase tracking-widest text-on-surface-variant/35 font-bold mt-1.5 mb-0.5">
+              {g.label}
+            </p>
+            {g.items.map((s) => {
+              const isActive = s.id === activeSessId;
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => {
+                    setActiveSessId(s.id);
+                    router.push(`/tutor?s=${s.id}` as any);
+                  }}
+                  className={`w-full flex items-center gap-2 pl-9 pr-3 py-1.5 rounded-lg text-[12px] transition-all text-left ${
+                    isActive
+                      ? "bg-primary/10 text-primary"
+                      : "text-on-surface-variant/60 hover:bg-white/[0.04] hover:text-on-surface"
+                  }`}
+                >
+                  <span
+                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{ backgroundColor: s.is_active ? "#3DD68C" : "transparent", border: s.is_active ? "none" : "1px solid rgba(154,154,165,0.4)" }}
+                  />
+                  <span className="truncate flex-1 leading-snug">{s.title || "New Chat"}</span>
+                  <span className="text-[10px] text-on-surface-variant/30 shrink-0 tabular-nums">{s.message_count}</span>
+                </button>
+              );
+            })}
+          </div>
+        ))}
+        {sessions.length === 0 && (
+          <p className="pl-9 text-[11px] text-on-surface-variant/35 italic mt-1">No sessions yet</p>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -41,6 +138,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const isOnboarding = pathname.startsWith("/onboarding");
   const isMissionChat = pathname.startsWith("/missions/") && !pathname.includes("/feedback");
   const isFullscreenChat = isMissionChat || pathname === "/tutor";
+  const isLesson = pathname.includes("/lessons/");
 
   if (isOnboarding) {
     return (
@@ -162,44 +260,47 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       <div className="flex flex-1 pt-16 md:pt-0 min-h-0">
         
         {/* SideNavBar (Desktop Only) */}
-        <aside className="hidden md:flex flex-col justify-between py-md px-sm fixed left-0 top-0 h-screen w-64 bg-background border-r border-[#2A2A32] z-20">
-          <div className="flex flex-col gap-lg">
-            <div className="mb-sm px-sm mt-sm">
-              <h1 className="font-display text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-[#8B7CFF] tracking-tight leading-tight mb-1">
-                Linguist AI
-              </h1>
-              <p className="text-on-surface-variant font-body-sm text-xs font-semibold">Premium Tier</p>
-            </div>
-            <nav className="flex flex-col gap-1.5 flex-1">
+        <aside className="hidden md:flex flex-col py-md px-sm fixed left-0 top-0 h-screen w-64 bg-background border-r border-[#2A2A32] z-20">
+          <div className="mb-sm px-sm mt-sm shrink-0">
+            <h1 className="font-display text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-[#8B7CFF] tracking-tight leading-tight mb-1">
+              Linguist AI
+            </h1>
+            <p className="text-on-surface-variant font-body-sm text-xs font-semibold">Premium Tier</p>
+          </div>
+          <div className="flex flex-col flex-1 min-h-0">
+            <nav className="flex flex-col gap-0.5 flex-1 overflow-y-auto custom-scrollbar pb-2">
               {navItems.map((item) => {
-                const isActive = pathname === item.href;
+                const isTutor = item.href === "/tutor";
+                const isActive = isTutor ? pathname.startsWith("/tutor") : pathname === item.href;
                 return (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className={`flex items-center gap-sm px-4 py-2.5 rounded-lg active:scale-[0.98] transition-all duration-150 ${
-                      isActive
-                        ? "bg-surface-bright text-primary font-semibold border-l-2 border-primary"
-                        : "text-on-surface-variant hover:bg-surface-bright/50 hover:text-on-surface"
-                    }`}
-                  >
-                    <span className="material-symbols-outlined">{item.icon}</span>
-                    <span className="text-label-md font-label-md">
-                      {item.label}
-                    </span>
-                  </Link>
+                  <div key={item.label}>
+                    <Link
+                      href={item.href}
+                      className={`flex items-center gap-sm px-4 py-2.5 rounded-lg active:scale-[0.98] transition-all duration-150 ${
+                        isActive
+                          ? "bg-surface-bright text-primary font-semibold border-l-2 border-primary"
+                          : "text-on-surface-variant hover:bg-surface-bright/50 hover:text-on-surface"
+                      }`}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}>{item.icon}</span>
+                      <span className="text-label-md font-label-md flex-1">{item.label}</span>
+                    </Link>
+                    {isTutor && isActive && (
+                      <TutorSessionsNav router={router} />
+                    )}
+                  </div>
                 );
               })}
             </nav>
-          </div>
-          
-          <div className="px-xs pb-4">
-            <Link
-              href="/speaking"
-              className="block w-full text-center bg-primary hover:bg-primary/95 text-white font-medium py-2.5 px-4 rounded-lg active:scale-[0.96] transition-[transform,background-color] duration-150 shadow-[0_0_12px_rgba(110,91,255,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 text-label-md font-label-md border border-[#8B7CFF]/30 hover:border-[#8B7CFF]/60 cursor-pointer"
-            >
-              New Session
-            </Link>
+
+            <div className="px-xs pb-4 shrink-0 pt-2">
+              <Link
+                href="/speaking"
+                className="block w-full text-center bg-primary hover:bg-primary/95 text-white font-medium py-2.5 px-4 rounded-lg active:scale-[0.96] transition-[transform,background-color] duration-150 shadow-[0_0_12px_rgba(110,91,255,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 text-label-md font-label-md border border-[#8B7CFF]/30 hover:border-[#8B7CFF]/60 cursor-pointer"
+              >
+                New Session
+              </Link>
+            </div>
           </div>
         </aside>
 
@@ -249,6 +350,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <main className={
             isFullscreenChat
               ? "flex-1 flex flex-col min-h-0 overflow-hidden"
+              : isLesson
+              ? "flex-1 flex flex-col min-h-0 overflow-hidden"
               : "flex-grow p-sm md:p-xl max-w-[1000px] w-full mx-auto pb-24"
           }>
             {children}
@@ -283,25 +386,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           );
         })}
       </nav>
-
-      {/* Bottom Progress Bar Footer (Desktop Only, hidden in fullscreen chat) */}
-      {!isFullscreenChat && <footer className="hidden md:flex fixed bottom-0 left-64 right-0 bg-[#15151A] border-t border-[#2A2A32] z-40">
-        <div className="absolute top-0 left-0 w-full h-[1.5px] bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
-        <div className="max-w-[1000px] mx-auto px-gutter py-sm flex items-center gap-md relative">
-          <span className="text-label-md font-label-md text-on-surface-variant whitespace-nowrap tabular-nums">
-            Level {gamification?.current_game_level || 1}
-          </span>
-          <div className="flex-grow h-1.5 bg-background rounded-full overflow-hidden border border-[#2A2A32]">
-            <div
-              className="h-full bg-gradient-to-r from-primary to-[#8B7CFF] rounded-full"
-              style={{ width: `${gamification?.level_progress_percentage ?? 30}%` }}
-            ></div>
-          </div>
-          <span className="text-label-md font-label-md text-on-surface whitespace-nowrap tabular-nums">
-            Level {(gamification?.current_game_level || 1) + 1}
-          </span>
-        </div>
-      </footer>}
     </div>
   );
 }

@@ -7,7 +7,7 @@ from pydantic import ValidationError
 from app.models.lesson import Lesson
 from app.models.language import Language
 from app.models.enums import CEFRLevel
-from app.schemas.lesson import LessonContent, GenerationReport, PersonalizationContext
+from app.schemas.lesson import LessonContent, GenerationReport, PersonalizationContext, ReadingFeedbackResponse
 from app.services.interfaces.lesson import AbstractLessonGeneratorService
 from app.repositories.interfaces.lesson import AbstractLessonRepository
 from app.services.ai.base import AbstractAIProvider
@@ -198,3 +198,30 @@ class LessonGeneratorService(AbstractLessonGeneratorService):
             generation_duration_ms=duration
         )
         return await self._repository.create(lesson)
+
+    async def generate_reading_feedback(
+        self,
+        reading_title: str,
+        reading_text: str,
+        comprehension_questions: List[str],
+        user_answers: List[str],
+        user_level: str,
+        native_language: str
+    ) -> ReadingFeedbackResponse:
+        prompt = self._prompt_manager.render(
+            "lessons/reading_feedback",
+            reading_title=reading_title,
+            reading_text=reading_text,
+            comprehension_questions="\n".join(
+                f"{i+1}. {q}" for i, q in enumerate(comprehension_questions)
+            ),
+            user_answers="\n".join(
+                f"{i+1}. {a}" for i, a in enumerate(user_answers)
+            ),
+            user_level=user_level,
+            native_language=native_language
+        )
+        return await self._ai_provider.generate_structured(
+            prompt=prompt,
+            response_schema=ReadingFeedbackResponse
+        )

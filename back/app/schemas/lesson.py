@@ -130,3 +130,28 @@ class GenerationReport(BaseModel):
     blocks_failed: List[str]
     retry_count: int
     total_duration_ms: int
+
+class ReadingFeedbackRequest(BaseModel):
+    reading_title: str
+    reading_text: str
+    comprehension_questions: List[str]
+    user_answers: List[str]
+    user_level: str = "B1"
+    native_language: str = "Russian"
+
+class QuestionFeedback(BaseModel):
+    question: str
+    user_answer: str
+    is_correct: bool
+    feedback_text: str
+    correct_example: str
+
+class ReadingFeedbackResponse(BaseModel):
+    feedback: List[QuestionFeedback]
+
+class TtsRequest(BaseModel):
+    text: str
+    language_code: str = "en"
+
+class TtsResponse(BaseModel):
+    audio_url: Optional[str] = None

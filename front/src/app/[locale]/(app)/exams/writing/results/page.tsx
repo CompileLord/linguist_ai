@@ -4,21 +4,6 @@ import { useEffect, useState } from "react";
 import { Link } from "@/i18n/navigation";
 import type { WritingResult } from "@/services/examsApi";
 
-const FALLBACK: WritingResult = {
-  overall_score: 78,
-  criteria: [
-    { name: "Grammar", score: 85, label: "Proficient" },
-    { name: "Vocabulary", score: 72, label: "Adequate" },
-    { name: "Cohesion", score: 90, label: "Excellent" },
-    { name: "Naturalness", score: 60, label: "Needs Work" },
-    { name: "Style", score: 78, label: "Good" },
-  ],
-  corrections: [
-    { original: "The project was finished by the team in a quickly manner.", corrected: "The team quickly finished the project.", explanation: "Active voice makes the sentence more direct. 'Quickly manner' is incorrect; an adverb is more natural here." },
-    { original: "Despite of the rain, we went to the park.", corrected: "Despite the rain, we went to the park.", explanation: "'Despite' is never followed by 'of'. Alternatively, 'In spite of the rain...'." },
-  ],
-};
-
 const labelColor = (label: string) => {
   if (label === "Excellent" || label === "Proficient" || label === "Good") return "text-success";
   if (label === "Adequate") return "text-warning";
@@ -26,12 +11,34 @@ const labelColor = (label: string) => {
 };
 
 export default function WritingResultsPage() {
-  const [result, setResult] = useState<WritingResult>(FALLBACK);
+  const [result, setResult] = useState<WritingResult | null>(null);
 
   useEffect(() => {
     const stored = sessionStorage.getItem("writing_result");
     if (stored) setResult(JSON.parse(stored));
   }, []);
+
+  if (!result) {
+    return (
+      <div className="animate-fade-in max-w-[800px] mx-auto space-y-lg pb-24">
+        <header className="space-y-2">
+          <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-on-surface-variant hover:text-primary transition-colors text-sm self-start">
+            <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+            Back to Dashboard
+          </Link>
+          <h2 className="font-headline-lg text-3xl font-bold text-on-surface tracking-tight">Writing Evaluation Results</h2>
+        </header>
+        <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+          <span className="material-symbols-outlined text-on-surface-variant text-5xl">edit_note</span>
+          <p className="text-sm font-semibold text-on-surface">No results available</p>
+          <p className="text-xs text-on-surface-variant max-w-xs">Complete a writing exam to see your evaluation here.</p>
+          <Link href="/exams/writing" className="mt-2 bg-primary text-white text-sm font-semibold px-6 py-2.5 rounded-xl hover:bg-primary/95 transition-colors">
+            Take Writing Exam
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in max-w-[800px] mx-auto space-y-lg pb-24">

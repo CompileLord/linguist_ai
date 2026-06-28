@@ -85,9 +85,10 @@ export const missionsApi = api.injectEndpoints({
           ? feedbackObj.strengths
           : (feedbackObj.summary ? [feedbackObj.summary] : ["Communicative goal achieved!"]);
 
+        const rawScore = response.score ?? feedbackObj.score ?? 0;
         return {
-          score: response.score !== null ? response.score : (feedbackObj.score || 0),
-          xp_earned: 100, // XP is credited on backend, show 100 on client
+          score: Math.round(rawScore * 100),
+          xp_earned: 100,
           what_went_well,
           corrections,
         };

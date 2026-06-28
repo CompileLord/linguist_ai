@@ -34,7 +34,6 @@ export const progressApi = api.injectEndpoints({
         return items;
       },
     }),
-    getCoachReport: b.query<CoachReport, string>({ query: (id) => `/coach/reports/${id}` }),
     getLatestCoachReport: b.query<CoachReport, void>({ query: () => '/coach/reports/latest' }),
   }),
   overrideExisting: false,
@@ -44,6 +43,5 @@ export const {
   useGetAllBadgesQuery,
   useGetUserBadgesQuery,
   useGetCoachReportsQuery,
-  useGetCoachReportQuery,
   useGetLatestCoachReportQuery,
 } = progressApi;

@@ -38,3 +38,21 @@ class RateLimitStatus(BaseModel):
     allowed: bool
     remaining: int
     reset_at: datetime
+
+class CorrectionRequest(BaseModel):
+    text: str
+    target_language: Optional[str] = "English"
+
+class CorrectionIssue(BaseModel):
+    original: str
+    corrected: str
+    explanation: str
+    type: str  # grammar | spelling | word_choice | fluency
+
+class CorrectionResponse(BaseModel):
+    original_text: str
+    corrected_text: str
+    is_correct: bool
+    overall_feedback: str
+    issues: list[CorrectionIssue]
+    fluency_score: int  # 1-10

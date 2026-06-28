@@ -50,6 +50,6 @@ test — 5 multiple-choice quiz questions. Options should be plausible distracto
 
 speaking_task — A realistic speaking prompt appropriate for level $level. Should relate to the topic. expected_response_keywords includes 4-6 key words/phrases the learner should use.
 
-reading_text — A short, engaging passage IN $language (50-120 words for A1/A2, 120-250 for B1/B2, 250-400 for C1/C2). Write in **Markdown** so the frontend can render formatting. Use the grammar topic naturally in the text. Include 3-5 comprehension questions in $native_language.
+reading_text — A short, engaging passage IN $language (50-120 words for A1/A2, 120-250 for B1/B2, 250-400 for C1/C2). Write in **Markdown** so the frontend can render formatting. Use the grammar topic naturally in the text. Include 3-5 comprehension questions in $language (the studied language — NOT the native language). Questions and their options must be in $language.
 
-listening_script — A realistic dialogue or monologue IN $language (suitable for TTS), using the grammar topic naturally. 3-5 multiple-choice comprehension questions in $native_language. correct_index is 0-based.
+listening_script — A realistic dialogue or monologue IN $language using the grammar topic naturally. CRITICAL TTS RULES for script_text: use PLAIN TEXT ONLY — no markdown, no asterisks, no bold, no tables, no code blocks, no HTML. For dialogues write "Speaker Name: sentence." on each line. For monologues write continuous prose. The text must be clean and natural for TTS synthesis. 3-5 multiple-choice comprehension questions in $language (the studied language — NOT the native language). Both questions and all options must be in $language. correct_index is 0-based.

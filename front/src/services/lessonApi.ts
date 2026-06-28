@@ -100,6 +100,35 @@ export interface LessonCompletionResponse {
   level_up: boolean;
 }
 
+export interface QuestionFeedback {
+  question: string;
+  user_answer: string;
+  is_correct: boolean;
+  feedback_text: string;
+  correct_example: string;
+}
+
+export interface ReadingFeedbackRequest {
+  reading_title: string;
+  reading_text: string;
+  comprehension_questions: string[];
+  user_answers: string[];
+  user_level: string;
+}
+
+export interface ReadingFeedbackResponse {
+  feedback: QuestionFeedback[];
+}
+
+export interface TtsRequest {
+  text: string;
+  language_code: string;
+}
+
+export interface TtsResponse {
+  audio_url: string | null;
+}
+
 export interface LessonSummaryResponse {
   id: string;
   lesson_id: string;
@@ -138,6 +167,23 @@ export const lessonApi = api.injectEndpoints({
     getNextLesson: builder.query<LessonResponse, void>({
       query: () => '/lessons/next',
     }),
+    submitReadingFeedback: builder.mutation<
+      ReadingFeedbackResponse,
+      { lessonId: string; body: ReadingFeedbackRequest }
+    >({
+      query: ({ lessonId, body }) => ({
+        url: `/lessons/${lessonId}/reading-feedback`,
+        method: 'POST',
+        body,
+      }),
+    }),
+    generateLessonTts: builder.mutation<TtsResponse, TtsRequest>({
+      query: (body) => ({
+        url: '/lessons/tts',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -147,4 +193,6 @@ export const {
   useCompleteLessonMutation,
   useGetLessonsHistoryQuery,
   useGetNextLessonQuery,
+  useSubmitReadingFeedbackMutation,
+  useGenerateLessonTtsMutation,
 } = lessonApi;

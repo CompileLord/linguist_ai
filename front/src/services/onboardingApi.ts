@@ -83,13 +83,6 @@ export const onboardingApi = api.injectEndpoints({
     getPlacementResult: builder.query<PlacementResult, void>({
       query: () => '/profile/placement/result',
     }),
-    updateLevelManually: builder.mutation<ProfileResponse, string>({
-      query: (level) => ({
-        url: `/profile/level?level=${level}`,
-        method: 'PUT',
-      }),
-      invalidatesTags: ['Profile'],
-    }),
   }),
 });
 
@@ -101,6 +94,5 @@ export const {
   useStartPlacementTestMutation,
   useAnswerPlacementQuestionMutation,
   useGetPlacementResultQuery,
-  useUpdateLevelManuallyMutation,
 } = onboardingApi;
 

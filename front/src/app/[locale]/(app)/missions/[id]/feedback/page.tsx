@@ -5,26 +5,34 @@ import { useParams } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import type { MissionFeedback } from "@/services/missionsApi";
 
-const FALLBACK: MissionFeedback = {
-  score: 82,
-  xp_earned: 120,
-  what_went_well: ["Natural greeting", "Clear pronunciation of order", "Polite request for specials"],
-  corrections: [
-    { original: "I want see menu", suggestion: "I'd like to see the menu, please" },
-    { original: "What is special today?", suggestion: "Do you have any specials today?" },
-    { original: "Give me water", suggestion: "Could I have some water, please?" },
-  ],
-};
-
 export default function MissionFeedbackPage() {
   const params = useParams();
   const missionId = params.id as string;
-  const [feedback, setFeedback] = useState<MissionFeedback>(FALLBACK);
+  const [feedback, setFeedback] = useState<MissionFeedback | null>(null);
 
   useEffect(() => {
     const stored = sessionStorage.getItem(`mission_feedback_${missionId}`);
     if (stored) setFeedback(JSON.parse(stored));
   }, [missionId]);
+
+  if (!feedback) {
+    return (
+      <div className="animate-fade-in max-w-[800px] mx-auto space-y-md pb-24">
+        <header className="mb-lg">
+          <p className="font-label-md text-xs font-bold text-primary mb-1 uppercase tracking-widest">Mission Complete</p>
+          <h2 className="font-headline-lg text-3xl font-bold text-on-surface tracking-tight">Mission Feedback</h2>
+        </header>
+        <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+          <span className="material-symbols-outlined text-on-surface-variant text-5xl">military_tech</span>
+          <p className="text-sm font-semibold text-on-surface">No feedback available</p>
+          <p className="text-xs text-on-surface-variant max-w-xs">Complete a mission to see your feedback here.</p>
+          <Link href="/missions" className="mt-2 bg-primary text-white text-sm font-semibold px-6 py-2.5 rounded-xl hover:bg-primary/95 transition-colors">
+            Back to Missions
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in max-w-[800px] mx-auto space-y-md pb-24">

@@ -7,7 +7,6 @@ import {
   useGetVocabularyListQuery,
   useGetUserVocabularyQuery,
   useAddUserWordMutation,
-  useGenerateAudioMutation,
 } from "@/services/vocabularyApi";
 import { useGetNextLessonQuery } from "@/services/lessonApi";
 import { Card } from "@/components/ui/Card";
@@ -50,8 +49,6 @@ export default function VocabularyPage() {
 
   const activeAudioRef = useRef<HTMLAudioElement | null>(null);
   const [playingId, setPlayingId] = useState<string | null>(null);
-  const [generatingId, setGeneratingId] = useState<string | null>(null);
-  const [generateAudio] = useGenerateAudioMutation();
 
   const resolveAudioUrl = (url: string) =>
     url.startsWith('http') ? url : `${API_ORIGIN}${url}`;
@@ -67,20 +64,6 @@ export default function VocabularyPage() {
     setPlayingId(id);
     audio.play().catch(() => setPlayingId(null));
     audio.onended = () => setPlayingId(null);
-  };
-
-  const handleGenerateAudio = async (vocabId: string, wordId: string) => {
-    setGeneratingId(wordId);
-    try {
-      const result = await generateAudio({ vocabularyId: vocabId }).unwrap();
-      if (result.audio_url) {
-        handlePlayAudio(result.audio_url, wordId);
-      }
-    } catch {
-      // ignore
-    } finally {
-      setGeneratingId(null);
-    }
   };
 
   // Filter items in My Deck by search term and selected level locally for performance
@@ -262,16 +245,12 @@ export default function VocabularyPage() {
                             </span>
                           </button>
                         ) : (
-                          <button
-                            onClick={() => handleGenerateAudio(vocab.id, wordId)}
-                            disabled={generatingId === wordId}
-                            title="Generate pronunciation"
-                            className="w-8 h-8 rounded-full bg-surface-bright hover:bg-primary/10 text-on-surface-variant hover:text-primary inline-flex items-center justify-center active:scale-[0.96] transition-all disabled:opacity-50"
+                          <span
+                            title="No audio available"
+                            className="w-8 h-8 rounded-full inline-flex items-center justify-center text-on-surface-variant/30"
                           >
-                            <span className="material-symbols-outlined text-lg">
-                              {generatingId === wordId ? "hourglass_empty" : "record_voice_over"}
-                            </span>
-                          </button>
+                            <span className="material-symbols-outlined text-lg">volume_off</span>
+                          </span>
                         )}
                       </td>
                     </tr>

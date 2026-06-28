@@ -2,17 +2,21 @@
 
 import { useGetRecentActivityQuery } from "@/services/dashboardApi";
 import { useGetNextLessonQuery } from "@/services/lessonApi";
-import { useGetReviewStatsQuery } from "@/services/reviewApi";
+import { useGetReviewStatsQuery, useGetReviewQueueQuery } from "@/services/reviewApi";
 import { useGetMissionsQuery } from "@/services/missionsApi";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
+import { useParams } from "next/navigation";
 
 export default function DashboardPage() {
   const t = useTranslations("Dashboard");
+  const params = useParams();
+  const locale = (params?.locale as string) || "en";
   const { data: nextLesson, isLoading: isLoadingLesson } = useGetNextLessonQuery();
   const { data: reviewStats, isLoading: isLoadingReview } = useGetReviewStatsQuery();
   const { data: recentActivity, isLoading: isLoadingActivity } = useGetRecentActivityQuery();
   const { data: missions, isLoading: isLoadingMissions } = useGetMissionsQuery();
+  const { data: reviewQueue } = useGetReviewQueueQuery({ batch_size: 4 });
 
   const GOAL_ICON: Record<string, string> = {
     travel: "flight", work: "business_center", study: "menu_book",
@@ -112,16 +116,34 @@ export default function DashboardPage() {
             </div>
             <span className="flex h-2.5 w-2.5 rounded-full bg-warning animate-pulse"></span>
           </div>
-          <div className="mt-8">
+          <div className="mt-6 flex-1 flex flex-col justify-between">
             <h3 className="text-headline-md font-headline-md text-on-surface mb-xs font-bold tracking-tight">Review Queue</h3>
             {isLoadingReview ? (
-              <div className="h-6 w-3/4 bg-[#1E1E24] rounded animate-pulse"></div>
+              <div className="h-6 w-3/4 bg-[#1E1E24] rounded animate-pulse mb-2"></div>
             ) : (
-              <p className="text-body-md font-body-md text-on-surface-variant flex items-center gap-xs">
+              <p className="text-body-md font-body-md text-on-surface-variant flex items-center gap-xs mb-3">
                 <span className="text-on-surface font-semibold tabular-nums">
                   {reviewStats?.total_due_today || 0} items
                 </span> ready for review
               </p>
+            )}
+            {reviewQueue && reviewQueue.length > 0 && (
+              <div className="flex flex-col gap-1.5">
+                {reviewQueue.slice(0, 4).map((item) => {
+                  const vocab = item.detail;
+                  if (!vocab) return null;
+                  const translation =
+                    vocab.translation_context?.[locale] ??
+                    vocab.translation_context?.["en"] ??
+                    "";
+                  return (
+                    <div key={item.id} className="flex items-center justify-between gap-2 px-2 py-1 rounded-lg bg-[#1E1E24]/50 border border-[#2A2A32]">
+                      <span className="text-xs font-semibold text-on-surface truncate">{vocab.word}</span>
+                      <span className="text-xs text-on-surface-variant truncate text-right">{translation}</span>
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
         </Link>
@@ -277,7 +299,7 @@ export default function DashboardPage() {
                     <p className="text-code-sm font-code-sm text-on-surface-variant mt-0.5">{activity.description}</p>
                   </div>
                 </div>
-                <span className="text-code-sm font-code-sm text-primary tabular-nums font-semibold">+100 XP</span>
+                <span className="material-symbols-outlined text-on-surface-variant/40 text-base">chevron_right</span>
               </div>
             ))
           ) : (
