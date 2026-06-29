@@ -20,16 +20,21 @@ const SCENARIO_ICONS: Record<string, string> = {
 export default function ListeningExamsPage() {
   const { data: profile, isLoading: profileLoading } = useGetProfileQuery();
   const { data: nextLesson } = useGetNextLessonQuery();
-  
+
   const [selectedLevel, setSelectedLevel] = useState<string>("");
 
   // Extracted language_id logic matching vocabulary page fallback
-  const languageId = (nextLesson as any)?.language_id || "f28abcfd-773a-446d-9b1e-b85fc92eb09c";
+  const languageId =
+    (nextLesson as any)?.language_id || "f28abcfd-773a-446d-9b1e-b85fc92eb09c";
   const userLevel = selectedLevel || profile?.current_level || "B1";
 
-  const { data: examsData, isLoading: examsLoading, error } = useGetAvailableListeningExamsQuery(
+  const {
+    data: examsData,
+    isLoading: examsLoading,
+    error,
+  } = useGetAvailableListeningExamsQuery(
     { language_id: languageId, level: userLevel },
-    { skip: profileLoading }
+    { skip: profileLoading },
   );
 
   const exams = examsData?.items || [];
@@ -41,14 +46,22 @@ export default function ListeningExamsPage() {
         <div className="absolute -right-8 -top-8 w-40 h-40 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-md">
           <div className="space-y-2">
-            <span className="font-bold text-xs text-primary uppercase tracking-widest block">Exam Center</span>
-            <h1 className="font-display text-3xl font-bold text-on-surface tracking-tight">Listening Comprehension</h1>
-            <p className="text-on-surface-variant text-sm max-w-xl">
-              Listen to native-speaker dialogues, monologues, and academic scenarios, and test your auditory recall and parsing accuracy.
+            <span className="font-bold text-xs text-primary uppercase tracking-widest block">
+              Exam Center
+            </span>
+            <h1 className="font-display text-3xl font-bold text-on-surface tracking-tight">
+              Listening Comprehension
+            </h1>
+            <p className="text-on-surface-variant text-sm max-w-">
+              Listen to native-speaker dialogues, monologues, and academic
+              scenarios, and test your auditory recall and parsing accuracy.
             </p>
           </div>
           <div className="flex flex-col gap-1.5 shrink-0">
-            <label className="font-label-md text-xs font-semibold text-on-surface-variant" htmlFor="level-filter">
+            <label
+              className="font-label-md text-xs font-semibold text-on-surface-variant"
+              htmlFor="level-filter"
+            >
               CEFR Tier
             </label>
             <div className="relative border border-[#2A2A32] rounded-lg bg-[#15151A] focus-within:border-primary transition-all">
@@ -59,7 +72,11 @@ export default function ListeningExamsPage() {
                 className="bg-transparent border-none text-on-surface font-body-md text-sm px-3.5 py-2 focus:ring-0 focus:outline-none appearance-none cursor-pointer pr-8"
               >
                 {CEFR_LEVELS.map((lvl) => (
-                  <option key={lvl} value={lvl} className="bg-[#15151A] text-on-surface">
+                  <option
+                    key={lvl}
+                    value={lvl}
+                    className="bg-[#15151A] text-on-surface"
+                  >
                     {lvl} Level
                   </option>
                 ))}
@@ -74,12 +91,17 @@ export default function ListeningExamsPage() {
 
       {/* Main exams browser */}
       <div>
-        <h3 className="font-headline-md text-lg font-bold text-on-surface mb-4">Available Exams</h3>
+        <h3 className="font-headline-md text-lg font-bold text-on-surface mb-4">
+          Available Exams
+        </h3>
 
         {examsLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-sm">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-surface border border-outline rounded-xl p-6 animate-pulse space-y-3">
+              <div
+                key={i}
+                className="bg-surface border border-outline rounded-xl p-6 animate-pulse space-y-3"
+              >
                 <div className="flex justify-between">
                   <div className="h-4 w-12 bg-outline rounded" />
                   <div className="h-4 w-16 bg-outline rounded" />
@@ -91,22 +113,33 @@ export default function ListeningExamsPage() {
           </div>
         ) : error ? (
           <div className="text-center py-12 bg-surface border border-outline rounded-xl">
-            <span className="material-symbols-outlined text-error text-5xl mb-2">error_outline</span>
-            <p className="text-on-surface font-semibold">Failed to load listening exams</p>
-            <p className="text-on-surface-variant text-sm mt-1">Please try again later.</p>
+            <span className="material-symbols-outlined text-error text-5xl mb-2">
+              error_outline
+            </span>
+            <p className="text-on-surface font-semibold">
+              Failed to load listening exams
+            </p>
+            <p className="text-on-surface-variant text-sm mt-1">
+              Please try again later.
+            </p>
           </div>
         ) : exams.length === 0 ? (
           <div className="text-center py-16 bg-surface border border-outline rounded-xl">
-            <span className="material-symbols-outlined text-primary text-5xl mb-3 block">headset</span>
+            <span className="material-symbols-outlined text-primary text-5xl mb-3 block">
+              headset
+            </span>
             <p className="text-on-surface font-semibold mb-1">All caught up!</p>
-            <p className="text-on-surface-variant text-sm max-w-xs mx-auto">
-              No uncompleted exams found for {userLevel} level. Change level or practice grammar lessons instead!
+            <p className="text-on-surface-variant text-sm mx-auto">
+              No uncompleted exams found for {userLevel} level. Change level or
+              practice grammar lessons instead!
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-sm">
             {exams.map((exam) => {
-              const icon = SCENARIO_ICONS[exam.scenario_type?.toLowerCase() || ""] || SCENARIO_ICONS.default;
+              const icon =
+                SCENARIO_ICONS[exam.scenario_type?.toLowerCase() || ""] ||
+                SCENARIO_ICONS.default;
               return (
                 <div
                   key={exam.exam_id}
@@ -119,8 +152,12 @@ export default function ListeningExamsPage() {
                         {exam.level} Level
                       </span>
                       <div className="flex items-center gap-1 text-xs text-on-surface-variant">
-                        <span className="material-symbols-outlined text-[15px]">{icon}</span>
-                        <span className="capitalize">{exam.scenario_type || "General Dialogue"}</span>
+                        <span className="material-symbols-outlined text-[15px]">
+                          {icon}
+                        </span>
+                        <span className="capitalize">
+                          {exam.scenario_type || "General Dialogue"}
+                        </span>
                       </div>
                     </div>
                     <div>
@@ -134,7 +171,9 @@ export default function ListeningExamsPage() {
                   </div>
                   <div className="flex items-center justify-between mt-6 pt-3 border-t border-outline/50 relative z-10">
                     <span className="text-xs text-on-surface-variant font-label-md flex items-center gap-xs">
-                      <span className="material-symbols-outlined text-[14px]">timer</span>
+                      <span className="material-symbols-outlined text-[14px]">
+                        timer
+                      </span>
                       10 mins limit
                     </span>
                     <Link
@@ -142,7 +181,9 @@ export default function ListeningExamsPage() {
                       className="flex items-center gap-1 bg-surface-raised hover:bg-primary hover:text-white border border-outline hover:border-primary/20 rounded-lg py-1.5 px-3.5 text-xs font-label-md transition-all group-hover:shadow-[0_0_8px_rgba(110,91,255,0.15)] active:scale-95 cursor-pointer"
                     >
                       Start Player
-                      <span className="material-symbols-outlined text-[13px] group-hover:translate-x-0.5 transition-transform">play_arrow</span>
+                      <span className="material-symbols-outlined text-[13px] group-hover:translate-x-0.5 transition-transform">
+                        play_arrow
+                      </span>
                     </Link>
                   </div>
                 </div>
