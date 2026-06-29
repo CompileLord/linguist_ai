@@ -1,6 +1,7 @@
 import uuid
 import asyncio
 import json
+import logging
 from typing import Optional, List, Dict, Any
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, status, HTTPException
 from pydantic import BaseModel, Field
@@ -35,6 +36,8 @@ from app.services.vocabulary_extraction_service import VocabularyExtractionServi
 from app.repositories.profile_repository import ProfileRepository
 from app.repositories.user_repository import UserRepository
 from app.repositories.language_repository import LanguageRepository
+
+ws_logger = logging.getLogger("speaking.websocket")
 
 router = APIRouter(prefix="/speaking", tags=["Speaking"])
 ws_router = APIRouter(tags=["Speaking"])
@@ -206,36 +209,51 @@ async def ws_speaking(
         payload = token_service.decode_token(token)
         user_id = uuid.UUID(payload.sub)
     except Exception as e:
+        ws_logger.warning("Speaking WS auth failed: %s", e)
         await websocket.accept()
         await websocket.send_json({"type": "error", "content": f"Authentication failed: {str(e)}"})
         await websocket.close(code=4001)
         return
 
-    async with db_manager.get_session() as db:
-        user_repo = UserRepository(db)
-        profile_repo = ProfileRepository(db)
-        lang_repo = LanguageRepository(db)
-        user = await user_repo.get_by_id(user_id)
-        if not user or not user.is_active:
+    try:
+        async with db_manager.get_session() as db:
+            user_repo = UserRepository(db)
+            profile_repo = ProfileRepository(db)
+            lang_repo = LanguageRepository(db)
+            user = await user_repo.get_by_id(user_id)
+            if not user or not user.is_active:
+                await websocket.accept()
+                await websocket.send_json({"type": "error", "content": "User inactive or not found"})
+                await websocket.close(code=4001)
+                return
+
+            profile = await profile_repo.get_by_user_id(user_id)
+            if not profile:
+                await websocket.accept()
+                await websocket.send_json({"type": "error", "content": "User profile not found"})
+                await websocket.close(code=4004)
+                return
+
+            target_lang = await lang_repo.get_by_id(profile.target_language_id)
+            target_lang_code = "en-US"
+            if target_lang and target_lang.code == "ru":
+                target_lang_code = "ru-RU"
+    except Exception:
+        ws_logger.exception("Speaking WS DB setup error for session %s", session_id)
+        try:
             await websocket.accept()
-            await websocket.send_json({"type": "error", "content": "User inactive or not found"})
-            await websocket.close(code=4001)
-            return
+            await websocket.send_json({"type": "error", "content": "Server error during setup"})
+            await websocket.close(code=4500)
+        except Exception:
+            pass
+        return
 
-        profile = await profile_repo.get_by_user_id(user_id)
-        if not profile:
-            await websocket.accept()
-            await websocket.send_json({"type": "error", "content": "User profile not found"})
-            await websocket.close(code=4004)
-            return
-
-        target_lang = await lang_repo.get_by_id(profile.target_language_id)
-        target_lang_code = "en-US"
-        if target_lang and target_lang.code == "ru":
-            target_lang_code = "ru-RU"
-
-    tts_lang_code = target_lang.code if target_lang else "en"
-    tts_voice = user.voice_name
+    try:
+        tts_lang_code = target_lang.code if target_lang else "en"
+        tts_voice = user.voice_name
+    except Exception:
+        ws_logger.exception("Speaking WS attribute error for session %s", session_id)
+        return
 
     await websocket.accept()
     await websocket.send_json({"type": "ready"})
@@ -279,29 +297,30 @@ async def ws_speaking(
         sentence_buffer = ""
 
         try:
-            async for chunk in ai_provider.generate_content_stream(conversation_history):
-                accumulated += chunk
-                sentence_buffer += chunk
-                await websocket.send_json({"type": "chunk", "content": chunk})
+            async with asyncio.timeout(60):
+                async for chunk in ai_provider.generate_content_stream(conversation_history):
+                    accumulated += chunk
+                    sentence_buffer += chunk
+                    await websocket.send_json({"type": "chunk", "content": chunk})
 
-                # Flush complete sentences to TTS as soon as they arrive so
-                # audio starts flowing before the LLM finishes the turn.
-                while True:
-                    boundary = -1
-                    for i, ch in enumerate(sentence_buffer):
-                        if ch in (".", "?", "!") and not (
-                            i + 1 < len(sentence_buffer) and sentence_buffer[i + 1] in (".", "?", "!")
-                        ):
-                            boundary = i
+                    # Flush complete sentences to TTS as soon as they arrive so
+                    # audio starts flowing before the LLM finishes the turn.
+                    while True:
+                        boundary = -1
+                        for i, ch in enumerate(sentence_buffer):
+                            if ch in (".", "?", "!") and not (
+                                i + 1 < len(sentence_buffer) and sentence_buffer[i + 1] in (".", "?", "!")
+                            ):
+                                boundary = i
+                                break
+                        if boundary == -1:
                             break
-                    if boundary == -1:
-                        break
-                    sentence = sentence_buffer[:boundary + 1].strip()
-                    sentence_buffer = sentence_buffer[boundary + 1:]
-                    await _synthesize_and_send(sentence)
+                        sentence = sentence_buffer[:boundary + 1].strip()
+                        sentence_buffer = sentence_buffer[boundary + 1:]
+                        await _synthesize_and_send(sentence)
 
-            # Synthesize any trailing fragment.
-            await _synthesize_and_send(sentence_buffer.strip())
+                # Synthesize any trailing fragment.
+                await _synthesize_and_send(sentence_buffer.strip())
 
             conversation_history.append({"role": "model", "parts": [{"text": accumulated}]})
             await websocket.send_json({"type": "done"})
@@ -310,7 +329,24 @@ async def ws_speaking(
             if accumulated:
                 conversation_history.append({"role": "model", "parts": [{"text": accumulated}]})
             raise
+        except asyncio.TimeoutError:
+            ws_logger.error("AI generation timed out in speaking session %s", session_id)
+            if accumulated:
+                conversation_history.append({"role": "model", "parts": [{"text": accumulated}]})
+            try:
+                await websocket.send_json({"type": "error", "content": "AI response timed out — please try again"})
+            except Exception:
+                pass
+        except Exception as gen_err:
+            ws_logger.error("Generation error in speaking session %s: %s", session_id, gen_err, exc_info=True)
+            if accumulated:
+                conversation_history.append({"role": "model", "parts": [{"text": accumulated}]})
+            try:
+                await websocket.send_json({"type": "error", "content": str(gen_err)})
+            except Exception:
+                pass
 
+    ws_logger.info("Speaking WS ready for session %s", session_id)
     try:
         while True:
             msg = await websocket.receive()
@@ -330,51 +366,63 @@ async def ws_speaking(
 
             msg_type = data.get("type")
 
-            if msg_type == "ping":
-                await websocket.send_json({"type": "pong"})
+            try:
+                if msg_type == "ping":
+                    await websocket.send_json({"type": "pong"})
 
-            elif msg_type == "start":
-                audio_buffer.clear()
-                await websocket.send_json({"type": "ready"})
+                elif msg_type == "start":
+                    audio_buffer.clear()
+                    await websocket.send_json({"type": "ready"})
 
-            elif msg_type == "end_of_speech":
-                # Ignore if a turn is already in flight (frontend should be in
-                # processing/ai_speaking state and not emitting this).
-                if generation_task is not None and not generation_task.done():
-                    continue
-                pcm = bytes(audio_buffer)
-                audio_buffer.clear()
-                if not pcm:
-                    await websocket.send_json({"type": "error", "content": "No audio captured"})
-                    continue
+                elif msg_type == "end_of_speech":
+                    # Ignore if a turn is already in flight (frontend should be in
+                    # processing/ai_speaking state and not emitting this).
+                    if generation_task is not None and not generation_task.done():
+                        continue
+                    pcm = bytes(audio_buffer)
+                    audio_buffer.clear()
+                    if not pcm:
+                        await websocket.send_json({"type": "error", "content": "No audio captured"})
+                        continue
 
-                await websocket.send_json({"type": "state", "state": "processing"})
+                    await websocket.send_json({"type": "state", "state": "processing"})
+                    try:
+                        transcription = await stt_service.transcribe_pcm(
+                            pcm_bytes=pcm, language_code=target_lang_code
+                        )
+                    except Exception as e:
+                        ws_logger.error("STT error in speaking session %s: %s", session_id, e, exc_info=True)
+                        try:
+                            await websocket.send_json({"type": "error", "content": f"STT failed: {str(e)}"})
+                        except Exception:
+                            pass
+                        continue
+
+                    if not transcription.transcript:
+                        await websocket.send_json({"type": "done"})
+                        continue
+
+                    await websocket.send_json({"type": "transcription", "content": transcription.transcript})
+                    generation_task = asyncio.create_task(_run_generation(transcription.transcript))
+
+                elif msg_type == "interrupt":
+                    await _cancel_generation()
+                    audio_buffer.clear()
+                    await websocket.send_json({"type": "interrupted"})
+
+            except WebSocketDisconnect:
+                raise
+            except Exception as err:
+                ws_logger.error("Error handling speaking msg type=%s session=%s: %s", msg_type, session_id, err, exc_info=True)
                 try:
-                    transcription = await stt_service.transcribe_pcm(
-                        pcm_bytes=pcm, language_code=target_lang_code
-                    )
-                except Exception as e:
-                    await websocket.send_json({"type": "error", "content": f"STT failed: {str(e)}"})
-                    continue
-
-                if not transcription.transcript:
-                    await websocket.send_json({"type": "done"})
-                    continue
-
-                await websocket.send_json({"type": "transcription", "content": transcription.transcript})
-                generation_task = asyncio.create_task(_run_generation(transcription.transcript))
-
-            elif msg_type == "interrupt":
-                await _cancel_generation()
-                audio_buffer.clear()
-                await websocket.send_json({"type": "interrupted"})
+                    await websocket.send_json({"type": "error", "content": str(err)})
+                except Exception:
+                    pass
 
     except WebSocketDisconnect:
         pass
-    except Exception as e:
-        try:
-            await websocket.send_json({"type": "error", "content": str(e)})
-        except Exception:
-            pass
+    except Exception:
+        ws_logger.exception("Unexpected error in speaking WS handler session=%s", session_id)
     finally:
         await _cancel_generation()
+        ws_logger.info("Speaking WS closed for session %s", session_id)

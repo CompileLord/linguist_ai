@@ -1,7 +1,11 @@
 import uuid
+import asyncio
 import json
+import logging
 from typing import List, Optional
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, status, UploadFile, File, Response
+
+ws_logger = logging.getLogger("tutor.websocket")
 from app.models.user import User
 from app.models.tutor_session import TutorSession
 from app.models.tutor_message import TutorMessage
@@ -309,36 +313,51 @@ async def ws_tutor(
         return
 
     async with db_manager.get_session() as db:
-        session_repo = TutorSessionRepository(db)
-        profile_repo = ProfileRepository(db)
-        goals_repo = GoalsRepository(db)
-        user_repo = UserRepository(db)
-        
-        user = await user_repo.get_by_id(user_id)
+        user = await UserRepository(db).get_by_id(user_id)
         if not user or not user.is_active:
+            ws_logger.warning("[tutor-ws] CLOSE 4001: user inactive/not found user_id=%s", user_id)
             await websocket.accept()
             await websocket.send_json({"type": "error", "content": "User inactive or not found"})
             await websocket.close(code=4001)
             return
 
-        session_obj = await session_repo.get_by_id(session_id)
-        if not session_obj:
-            await websocket.accept()
-            await websocket.send_json({"type": "error", "content": "Session not found"})
-            await websocket.close(code=4004)
-            return
-            
-        if session_obj.user_id != user_id:
-            await websocket.accept()
-            await websocket.send_json({"type": "error", "content": "Forbidden: Session owner mismatch"})
-            await websocket.close(code=4003)
-            return
+    # Retry the session lookup: the HTTP response that gave the client this
+    # session_id is sent before FastAPI's yield-dependency commit runs, so the
+    # session may not yet be visible on the first query. Use a FRESH session per
+    # attempt — reusing one session keeps the same transaction snapshot and would
+    # never observe the row committed by the other request.
+    session_obj = None
+    for _attempt in range(20):
+        async with db_manager.get_session() as db:
+            session_obj = await TutorSessionRepository(db).get_by_id(session_id)
+        if session_obj:
+            break
+        await asyncio.sleep(0.05)
 
-        profile = await profile_repo.get_by_user_id(user_id)
-        goals_list = await goals_repo.get_by_user_id(user_id)
+    if not session_obj:
+        ws_logger.error("Session %s not found after retries for user %s", session_id, user_id)
+        await websocket.accept()
+        await websocket.send_json({"type": "error", "content": "Session not found"})
+        await websocket.close(code=4004)
+        return
+
+    if session_obj.user_id != user_id:
+        ws_logger.warning("[tutor-ws] CLOSE 4003: owner mismatch session_owner=%s connecting_user=%s", session_obj.user_id, user_id)
+        await websocket.accept()
+        await websocket.send_json({"type": "error", "content": "Forbidden: Session owner mismatch"})
+        await websocket.close(code=4003)
+        return
+
+    async with db_manager.get_session() as db:
+        profile = await ProfileRepository(db).get_by_user_id(user_id)
+        goals_list = await GoalsRepository(db).get_by_user_id(user_id)
         goal_types = [g.goal_type for g in goals_list]
 
+    if profile is None:
+        ws_logger.warning("[tutor-ws] profile is None for user_id=%s — process_message may fail", user_id)
+
     await ws_manager.connect(websocket, user_id, session_id)
+    ws_logger.info("[tutor-ws] OPEN: receive loop started user_id=%s session=%s", user_id, session_id)
 
     try:
         while True:
@@ -357,37 +376,52 @@ async def ws_tutor(
                 content = data.get("content")
                 if not content:
                     continue
-                
-                async with db_manager.get_session() as db:
-                    session_repo = TutorSessionRepository(db)
-                    message_repo = TutorMessageRepository(db)
-                    prompt_builder = TutorPromptBuilder(get_prompt_manager())
-                    profile_repo = ProfileRepository(db)
-                    goals_repo = GoalsRepository(db)
-                    context_manager = SessionContextManager(
-                        session_repo, message_repo, prompt_builder, profile_repo, goals_repo
-                    )
-                    rate_limiter = TutorRateLimiter(db)
-                    
-                    tutor_service = TutorService(
-                        session_repo, message_repo, context_manager, rate_limiter, ai_provider
-                    )
-                    
+
+                try:
+                    async with asyncio.timeout(90):
+                        async with db_manager.get_session() as db:
+                            session_repo = TutorSessionRepository(db)
+                            message_repo = TutorMessageRepository(db)
+                            prompt_builder = TutorPromptBuilder(get_prompt_manager())
+                            profile_repo = ProfileRepository(db)
+                            goals_repo = GoalsRepository(db)
+                            context_manager = SessionContextManager(
+                                session_repo, message_repo, prompt_builder, profile_repo, goals_repo
+                            )
+                            rate_limiter = TutorRateLimiter(db)
+
+                            tutor_service = TutorService(
+                                session_repo, message_repo, context_manager, rate_limiter, ai_provider
+                            )
+
+                            async for chunk in tutor_service.process_message(session_id, content, profile, goal_types):
+                                await websocket.send_json({"type": "chunk", "content": chunk})
+
+                            rate_status = await rate_limiter.check_limit(user_id)
+                            await websocket.send_json({
+                                "type": "done",
+                                "remaining": rate_status.remaining,
+                                "reset_at": rate_status.reset_at.isoformat()
+                            })
+                except WebSocketDisconnect:
+                    raise
+                except asyncio.TimeoutError:
+                    ws_logger.error("Tutor generation timed out for session %s", session_id)
                     try:
-                        async for chunk in tutor_service.process_message(session_id, content, profile, goal_types):
-                            await websocket.send_json({"type": "chunk", "content": chunk})
-                        
-                        rate_status = await rate_limiter.check_limit(user_id)
-                        await websocket.send_json({
-                            "type": "done",
-                            "remaining": rate_status.remaining,
-                            "reset_at": rate_status.reset_at.isoformat()
-                        })
-                    except Exception as err:
-                        await websocket.send_json({"type": "error", "content": str(err)})
+                        await websocket.send_json({"type": "error", "content": "The response timed out — please try again."})
+                    except Exception:
+                        pass
+                except Exception:
+                    # Always surface a failure to the client so its "thinking"
+                    # state clears; keep the connection alive for the next message.
+                    ws_logger.exception("Error processing tutor message for session %s", session_id)
+                    try:
+                        await websocket.send_json({"type": "error", "content": "Sorry, something went wrong generating a response. Please try again."})
+                    except Exception:
+                        pass
     except WebSocketDisconnect:
         pass
     except Exception:
-        pass
+        ws_logger.exception("Unexpected error in tutor WebSocket handler — closing connection")
     finally:
         await ws_manager.disconnect(user_id, session_id)
