@@ -227,10 +227,13 @@ export default function VocabularyPage() {
 
                     const wordId = activeTab === "deck" ? item.id : vocab.id;
                     const wordTranslation =
-                      vocab.translation_context[locale] ||
-                      vocab.translation_context["en"] ||
+                      vocab.translation_context[locale]?.translation ||
+                      vocab.translation_context["en"]?.translation ||
+                      // Object.values(vocab.translation_context)[0].translation ||
                       "";
-                    // console.log(Object.values(vocab.translation_context)[0].translation);
+                    // console.log(
+                    //   Object.values(vocab.translation_context)[0].translation,
+                    // );
 
                     return (
                       <tr
@@ -248,7 +251,7 @@ export default function VocabularyPage() {
                           )}
                         </td>
                         <td className="p-4 text-sm text-on-surface-variant">
-                          {wordTranslation.translation}
+                          {wordTranslation}
                         </td>
                         <td className="p-4 text-xs font-bold text-primary tabular-nums">
                           {vocab.cefr_level}
