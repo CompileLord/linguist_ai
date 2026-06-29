@@ -38,9 +38,15 @@ export default function ForgotPasswordPage() {
         {/* Card Container */}
         <div className="bg-surface rounded-xl border border-outline p-8 w-full flex flex-col gap-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
           <div className="flex flex-col gap-1 items-center text-center">
-            <span className="font-bold text-xs text-primary uppercase tracking-widest mb-2">Linguist AI</span>
-            <h1 className="font-display text-2xl font-bold text-on-surface tracking-tight text-balance">Reset Password</h1>
-            <p className="font-body-md text-sm text-on-surface-variant text-pretty">Enter your account details to recover access</p>
+            <span className="font-bold text-xs text-primary uppercase tracking-widest mb-2">
+              Linguist AI
+            </span>
+            <h1 className="font-display text-2xl font-bold text-on-surface tracking-tight text-balance">
+              Reset Password
+            </h1>
+            <p className="font-body-md text-sm text-on-surface-variant text-pretty">
+              Enter your account details to recover access
+            </p>
           </div>
 
           {success ? (
@@ -48,9 +54,15 @@ export default function ForgotPasswordPage() {
               Recovery details validated. Redirecting to login...
             </div>
           ) : (
-            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="flex flex-col gap-4"
+            >
               <div className="flex flex-col gap-1.5">
-                <label className="font-label-md text-xs font-semibold text-on-surface-variant" htmlFor="username">
+                <label
+                  className="font-label-md text-xs font-semibold text-on-surface-variant"
+                  htmlFor="username"
+                >
                   Username / Email
                 </label>
                 <input
@@ -60,11 +72,18 @@ export default function ForgotPasswordPage() {
                   placeholder="Enter your username or email"
                   type="text"
                 />
-                {errors.username && <span className="text-error text-xs mt-1">{errors.username.message}</span>}
+                {errors.username && (
+                  <span className="text-error text-xs mt-1">
+                    {errors.username.message}
+                  </span>
+                )}
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="font-label-md text-xs font-semibold text-on-surface-variant" htmlFor="answer">
+                <label
+                  className="font-label-md text-xs font-semibold text-on-surface-variant"
+                  htmlFor="answer"
+                >
                   Security Question: What was your first pet's name?
                 </label>
                 <input
@@ -74,7 +93,11 @@ export default function ForgotPasswordPage() {
                   placeholder="Answer here"
                   type="text"
                 />
-                {errors.answer && <span className="text-error text-xs mt-1">{errors.answer.message}</span>}
+                {errors.answer && (
+                  <span className="text-error text-xs mt-1">
+                    {errors.answer.message}
+                  </span>
+                )}
               </div>
 
               <button
@@ -89,7 +112,10 @@ export default function ForgotPasswordPage() {
 
         <div className="text-center font-body-sm text-sm text-on-surface-variant">
           Remembered your password?{" "}
-          <Link href="/login" className="text-primary hover:text-accent-glow hover:underline transition-colors duration-150 font-medium ml-1">
+          <Link
+            href="/login"
+            className="text-primary hover:text-accent-glow hover:underline transition-colors duration-150 font-medium ml-1"
+          >
             Log in
           </Link>
         </div>
