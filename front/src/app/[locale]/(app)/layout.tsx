@@ -318,8 +318,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <div className="absolute inset-0 z-0 pointer-events-none">
             <MeshBackground contained />
           </div>
-          <div className={`relative z-10 flex items-center mb-sm mt-sm shrink-0 overflow-hidden ${isSidebarCollapsed ? "justify-center px-0" : "justify-between px-sm"}`}>
-            <div className={`transition-all duration-300 whitespace-nowrap overflow-hidden ${isSidebarCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"}`}>
+          <div
+            className={`relative z-10 flex items-center mb-sm mt-sm shrink-0 overflow-hidden ${isSidebarCollapsed ? "justify-center px-0" : "justify-between px-sm"}`}
+          >
+            <div
+              className={`transition-all duration-300 whitespace-nowrap overflow-hidden ${isSidebarCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"}`}
+            >
               <h1 className="font-display text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-[#8B7CFF] tracking-tight leading-tight mb-1">
                 Linguist AI
               </h1>
@@ -345,8 +349,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 const isActive = isTutor
                   ? pathname.startsWith("/tutor")
                   : isSpeaking
-                  ? pathname.startsWith("/speaking")
-                  : pathname === item.href;
+                    ? pathname.startsWith("/speaking")
+                    : pathname === item.href;
                 return (
                   <div key={item.label}>
                     <Link
@@ -355,7 +359,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                       className={`flex items-center py-2.5 rounded-lg active:scale-[0.98] transition-all duration-200 ${
                         isActive
                           ? "bg-surface-bright text-primary font-semibold border-l-2 border-primary"
-                          : "text-on-surface-variant hover:bg-surface-bright/50 hover:text-on-surface"
+                          : "text-on-surface-variant hover:bg-surface-bright/50 hover:text-on-surface bg-surface-bright/10 backdrop-blur-[20px]"
                       } ${isSidebarCollapsed ? "justify-center px-0 mx-1 gap-0" : "px-4 gap-sm"}`}
                     >
                       <span
@@ -368,17 +372,21 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                       >
                         {item.icon}
                       </span>
-                      <span 
+                      <span
                         className={`text-label-md font-label-md whitespace-nowrap overflow-hidden transition-all duration-300 ${
-                          isSidebarCollapsed ? "w-0 opacity-0" : "w-full opacity-100 flex-1"
+                          isSidebarCollapsed
+                            ? "w-0 opacity-0"
+                            : "w-full opacity-100 flex-1"
                         }`}
                       >
                         {item.label}
                       </span>
                     </Link>
-                    <div 
+                    <div
                       className={`overflow-hidden transition-all duration-300 ${
-                        isSidebarCollapsed ? "max-h-0 opacity-0" : "max-h-[400px] opacity-100"
+                        isSidebarCollapsed
+                          ? "max-h-0 opacity-0"
+                          : "max-h-[400px] opacity-100"
                       }`}
                     >
                       {isTutor && isActive && (
@@ -399,9 +407,13 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 }`}
               >
                 {isSidebarCollapsed ? (
-                  <span className="material-symbols-outlined text-[20px]">add</span>
+                  <span className="material-symbols-outlined text-[20px]">
+                    add
+                  </span>
                 ) : (
-                  <span className="text-label-md font-label-md whitespace-nowrap">New Session</span>
+                  <span className="text-label-md font-label-md whitespace-nowrap">
+                    New Session
+                  </span>
                 )}
               </Link>
             </div>
@@ -409,9 +421,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         </aside>
 
         {/* Content Canvas Area */}
-        <div className={`flex-1 w-full flex flex-col min-h-0 transition-[padding] duration-300 ease-in-out ${
-          isSidebarCollapsed ? "md:pl-[72px]" : "md:pl-64"
-        }`}>
+        <div
+          className={`flex-1 w-full flex flex-col min-h-0 transition-[padding] duration-300 ease-in-out ${
+            isSidebarCollapsed ? "md:pl-[72px]" : "md:pl-64"
+          }`}
+        >
           {/* Inner TopAppBar (Desktop Only, matches mockup) */}
           <header className="hidden md:flex bg-surface/85 backdrop-blur-md border-b border-[#2A2A32] justify-between items-center w-full h-16 px-xl sticky top-0 z-10 shrink-0">
             <div className="font-headline-lg text-2xl font-bold text-on-surface tracking-tight">

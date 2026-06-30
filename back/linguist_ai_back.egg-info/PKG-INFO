@@ -1,0 +1,31 @@
+Metadata-Version: 2.4
+Name: linguist-ai-back
+Version: 1.0.0
+Summary: LinguistAI Backend
+Requires-Python: >=3.10
+Requires-Dist: fastapi
+Requires-Dist: uvicorn[standard]
+Requires-Dist: sqlalchemy[asyncio]
+Requires-Dist: asyncpg
+Requires-Dist: alembic
+Requires-Dist: pydantic>=2.0
+Requires-Dist: pydantic-settings
+Requires-Dist: email-validator
+Requires-Dist: google-genai
+Requires-Dist: google-cloud-texttospeech
+Requires-Dist: google-cloud-speech
+Requires-Dist: google-cloud-storage
+Requires-Dist: python-jose[cryptography]
+Requires-Dist: passlib[bcrypt]
+Requires-Dist: httpx
+Requires-Dist: apscheduler
+Requires-Dist: aiosqlite
+Requires-Dist: piper-tts
+Requires-Dist: transformers
+Requires-Dist: torch
+Requires-Dist: soundfile
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: pytest-asyncio; extra == "dev"
+Requires-Dist: ruff; extra == "dev"
+Requires-Dist: mypy; extra == "dev"

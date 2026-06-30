@@ -115,7 +115,7 @@ export default function MissionsPage() {
               ].map((av, i) => (
                 <div
                   key={i}
-                  className="w-11 h-11 rounded-full flex items-center justify-center border-2 border-[#15151A] shadow-lg"
+                  className={`w-11 h-11 rounded-full flex items-center justify-center border-2 border-[#15151A] shadow-lg hover:scale-110 duration-300 ${i == 0 ? "z-10" : "z-20"}`}
                   style={{ background: av.gradient }}
                 >
                   <span
@@ -154,7 +154,7 @@ export default function MissionsPage() {
           <span className="material-symbols-outlined text-error text-4xl">
             wifi_off
           </span>
-          <p className="text-on-surface-variant text-sm max-w-xs">
+          <p className="text-on-surface-variant text-sm">
             Could not load missions from the server. Check that the backend is
             running and try again.
           </p>

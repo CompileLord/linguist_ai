@@ -698,7 +698,7 @@ export default function LandingPage() {
           <div className="flex flex-wrap gap-3 items-center justify-center text-[10px] font-mono text-[#9A9AA5]">
             {[
               "FastAPI (Python)",
-              "Next.js (React)",
+              "Next.js (App router)",
               "Vertex AI",
               "Piper TTS",
             ].map((t) => (

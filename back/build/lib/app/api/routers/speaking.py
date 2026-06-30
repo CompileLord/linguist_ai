@@ -1,0 +1,521 @@
+import uuid
+import asyncio
+import json
+import logging
+from typing import Optional, List, Dict, Any
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, status, HTTPException
+from pydantic import BaseModel, Field
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.database import get_db_session, db_manager
+from app.models.speaking_scenario import SpeakingScenario
+from app.models.user import User
+from app.api.dependencies.auth import get_current_active_user
+from app.api.dependencies.services import (
+    get_speaking_session_service,
+    get_stt_service,
+    get_tts_service,
+    get_quota_tracking_service,
+    get_gamification_repository,
+    get_xp_calculation_service,
+    get_streak_tracking_service,
+    get_game_level_progression_service,
+    get_achievement_service,
+    get_vocabulary_extraction_service,
+)
+from app.services.speaking_session_service import SpeakingSessionService
+from app.services.media.stt_service import SpeechToTextService
+from app.services.media.tts_service import TextToSpeechService
+from app.services.quota_tracking_service import QuotaTrackingService
+from app.repositories.gamification_repository import GamificationRepository
+from app.services.xp_calculation_service import XPCalculationService, ActionType
+from app.services.streak_tracking_service import StreakTrackingService
+from app.services.game_level_progression_service import GameLevelProgressionService
+from app.services.achievement_service import AchievementService
+from app.services.token_service import get_token_service
+from app.services.ai.factory import get_ai_provider
+from app.services.ai.base import GenerationConfig
+from app.services.vocabulary_extraction_service import VocabularyExtractionService
+from app.repositories.profile_repository import ProfileRepository
+from app.repositories.user_repository import UserRepository
+from app.repositories.language_repository import LanguageRepository
+
+ws_logger = logging.getLogger("speaking.websocket")
+
+router = APIRouter(prefix="/speaking", tags=["Speaking"])
+ws_router = APIRouter(tags=["Speaking"])
+
+
+# --- Takeaways schemas ---
+
+class TranscriptMessage(BaseModel):
+    role: str
+    content: str
+
+class TakeawaysRequest(BaseModel):
+    transcript: List[TranscriptMessage]
+
+class SpeakingTakeaway(BaseModel):
+    content: str = Field(..., description="Takeaway text")
+    type: str = Field(..., description="Type: vocabulary, grammar, or tip")
+    is_critical: bool = Field(..., description="Whether this should be added to review queue")
+    word: Optional[str] = Field(None, description="The specific word (for vocabulary type)")
+    translation: Optional[str] = Field(None, description="Translation of the word")
+
+class TakeawaysResponse(BaseModel):
+    summary: str
+    takeaways: List[SpeakingTakeaway]
+
+class _TakeawaysGenerated(BaseModel):
+    summary: str = Field(..., description="2-3 sentence summary of the speaking session")
+    takeaways: List[SpeakingTakeaway] = Field(..., description="3-6 key learning takeaways")
+
+
+class ScenarioResponse(BaseModel):
+    id: str
+    title: str
+    description: str
+    icon: str
+    cefr_level: str
+    character_name: str
+    character_role: str
+    scene: str
+    sort_order: int
+
+
+@router.post("/start", status_code=status.HTTP_201_CREATED)
+async def start_speaking(
+    current_user: User = Depends(get_current_active_user),
+    speaking_session_service: SpeakingSessionService = Depends(get_speaking_session_service)
+):
+    session_id = await speaking_session_service.start_speaking_session(current_user.id)
+    return {"session_id": session_id}
+
+@router.get("/scenarios", response_model=List[ScenarioResponse])
+async def get_scenarios(
+    current_user: User = Depends(get_current_active_user),
+):
+    """Return all speaking scenarios ordered by level and sort_order."""
+    async with db_manager.get_session() as db:
+        result = await db.execute(
+            select(SpeakingScenario).order_by(SpeakingScenario.cefr_level, SpeakingScenario.sort_order)
+        )
+        scenarios = result.scalars().all()
+    return [
+        ScenarioResponse(
+            id=str(s.id),
+            title=s.title,
+            description=s.description,
+            icon=s.icon,
+            cefr_level=s.cefr_level.value,
+            character_name=s.character_name,
+            character_role=s.character_role,
+            scene=s.scene,
+            sort_order=s.sort_order,
+        )
+        for s in scenarios
+    ]
+
+@router.post("/end")
+async def end_speaking(
+    session_id: str,
+    current_user: User = Depends(get_current_active_user),
+    speaking_session_service: SpeakingSessionService = Depends(get_speaking_session_service),
+    db: AsyncSession = Depends(get_db_session),
+    xp_service: XPCalculationService = Depends(get_xp_calculation_service),
+    streak_service: StreakTrackingService = Depends(get_streak_tracking_service),
+    level_service: GameLevelProgressionService = Depends(get_game_level_progression_service),
+    achievement_service: AchievementService = Depends(get_achievement_service)
+):
+    gamification_repo = GamificationRepository(db)
+    duration_minutes = await speaking_session_service.complete_speaking_session(session_id)
+    if duration_minutes > 0:
+        xp_earned = xp_service.calculate_xp(ActionType.SPEAKING_SESSION)
+        await gamification_repo.add_speaking_minutes(current_user.id, duration_minutes)
+        await gamification_repo.add_xp(current_user.id, xp_earned)
+        await streak_service.record_activity(current_user.id)
+        await level_service.check_and_apply_level_up(current_user.id)
+        await achievement_service.evaluate_and_award(current_user.id, "speaking_session")
+        return {"duration_minutes": duration_minutes, "xp_earned": xp_earned}
+    return {"duration_minutes": 0, "xp_earned": 0}
+
+@router.post("/takeaways", response_model=TakeawaysResponse)
+async def generate_takeaways(
+    body: TakeawaysRequest,
+    current_user: User = Depends(get_current_active_user),
+    ai_provider = Depends(get_ai_provider),
+    vocab_extraction: VocabularyExtractionService = Depends(get_vocabulary_extraction_service),
+):
+    """Generate summary and takeaways from a completed speaking session, saving critical vocab to review queue."""
+    if not body.transcript:
+        raise HTTPException(status_code=400, detail="Transcript is empty")
+
+    async with db_manager.get_session() as db:
+        profile_repo = ProfileRepository(db)
+        lang_repo = LanguageRepository(db)
+        profile = await profile_repo.get_by_user_id(current_user.id)
+        target_lang_code = "English"
+        native_lang_code = "en"
+        current_level = "A1"
+        if profile:
+            current_level = profile.current_level.value if profile.current_level else "A1"
+            native_lang_code = profile.native_language_code or "en"
+            if profile.target_language_id:
+                lang = await lang_repo.get_by_id(profile.target_language_id)
+                if lang:
+                    target_lang_code = lang.name
+
+    transcript_text = "\n".join(
+        f"{'User' if m.role == 'user' else 'AI Coach'}: {m.content}"
+        for m in body.transcript
+    )
+
+    prompt = (
+        f"Analyze this speaking session transcript for a {current_level} level student learning {target_lang_code}.\n\n"
+        f"Transcript:\n{transcript_text}\n\n"
+        f"Generate a summary and learning takeaways. For vocabulary and grammar mistakes, set is_critical=true and they will be added to the review queue. "
+        f"Translate any vocabulary words into {native_lang_code}."
+    )
+
+    try:
+        result = await ai_provider.generate_structured(
+            prompt=prompt,
+            response_schema=_TakeawaysGenerated,
+            system_instruction=(
+                "You are a language learning coach. Analyze the speaking session and provide concise, actionable feedback. "
+                "Identify vocabulary words to learn, grammar patterns to improve, and general tips. "
+                "Mark as is_critical=true the most important items that the learner should review."
+            ),
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI generation failed: {str(e)}")
+
+    # Save critical vocabulary items to review queue
+    critical_vocab = [t for t in result.takeaways if t.is_critical and t.type == "vocabulary" and t.word]
+    if critical_vocab and profile:
+        vocab_text = " ".join(f"{t.word}: {t.content}" for t in critical_vocab)
+        try:
+            await vocab_extraction.extract_and_add_vocabulary(
+                user_id=current_user.id,
+                lesson_text=vocab_text,
+                profile=profile,
+                target_language_name=target_lang_code,
+            )
+        except Exception:
+            pass  # Non-fatal: takeaways still returned even if saving fails
+
+    return TakeawaysResponse(summary=result.summary, takeaways=result.takeaways)
+
+
+@ws_router.websocket("/ws/speaking/{session_id}")
+async def ws_speaking(
+    websocket: WebSocket,
+    session_id: str,
+    token: Optional[str] = None,
+    scenario_id: Optional[str] = None,
+    stt_service: SpeechToTextService = Depends(get_stt_service),
+    tts_service: TextToSpeechService = Depends(get_tts_service),
+    ai_provider = Depends(get_ai_provider)
+):
+    """Hands-free speaking pipeline over a single persistent WebSocket.
+
+    Upstream (client -> server):
+      - binary frames: raw 16-bit PCM @ 16kHz mono (streamed while the user
+        is speaking, detected by the frontend VAD)
+      - JSON {"type":"start"}             : reset audio buffer
+      - JSON {"type":"end_of_speech"}     : finalize -> transcribe -> respond
+      - JSON {"type":"interrupt"}         : barge-in, cancel generation + audio
+      - JSON {"type":"ping"}
+
+    Downstream (server -> client):
+      - JSON {"type":"ready"}
+      - JSON {"type":"state","state":"processing"|"ai_speaking"}
+      - JSON {"type":"transcription","content":...}
+      - JSON {"type":"chunk","content":...}        (LLM token stream / subtitle)
+      - binary frames                                (Piper WAV per sentence)
+      - JSON {"type":"done"}
+      - JSON {"type":"interrupted"}
+      - JSON {"type":"error","content":...}
+    """
+    token_service = get_token_service()
+    if not token:
+        token = websocket.query_params.get("token")
+    if not scenario_id:
+        scenario_id = websocket.query_params.get("scenario_id")
+    if not token:
+        await websocket.accept()
+        await websocket.send_json({"type": "error", "content": "Authentication token missing"})
+        await websocket.close(code=4001)
+        return
+
+    try:
+        payload = token_service.decode_token(token)
+        user_id = uuid.UUID(payload.sub)
+    except Exception as e:
+        ws_logger.warning("Speaking WS auth failed: %s", e)
+        await websocket.accept()
+        await websocket.send_json({"type": "error", "content": f"Authentication failed: {str(e)}"})
+        await websocket.close(code=4001)
+        return
+
+    try:
+        async with db_manager.get_session() as db:
+            user_repo = UserRepository(db)
+            profile_repo = ProfileRepository(db)
+            lang_repo = LanguageRepository(db)
+            user = await user_repo.get_by_id(user_id)
+            if not user or not user.is_active:
+                await websocket.accept()
+                await websocket.send_json({"type": "error", "content": "User inactive or not found"})
+                await websocket.close(code=4001)
+                return
+
+            profile = await profile_repo.get_by_user_id(user_id)
+            if not profile:
+                await websocket.accept()
+                await websocket.send_json({"type": "error", "content": "User profile not found"})
+                await websocket.close(code=4004)
+                return
+
+            target_lang = await lang_repo.get_by_id(profile.target_language_id)
+            target_lang_code = "en-US"
+            if target_lang and target_lang.code == "ru":
+                target_lang_code = "ru-RU"
+    except Exception:
+        ws_logger.exception("Speaking WS DB setup error for session %s", session_id)
+        try:
+            await websocket.accept()
+            await websocket.send_json({"type": "error", "content": "Server error during setup"})
+            await websocket.close(code=4500)
+        except Exception:
+            pass
+        return
+
+    try:
+        tts_lang_code = target_lang.code if target_lang else "en"
+        tts_voice = user.voice_name
+    except Exception:
+        ws_logger.exception("Speaking WS attribute error for session %s", session_id)
+        return
+
+    speaking_scenario = None
+    if scenario_id:
+        try:
+            async with db_manager.get_session() as db:
+                result = await db.execute(
+                    select(SpeakingScenario).where(SpeakingScenario.id == uuid.UUID(scenario_id))
+                )
+                speaking_scenario = result.scalar_one_or_none()
+        except Exception:
+            pass  # proceed without scenario if load fails
+
+    await websocket.accept()
+    await websocket.send_json({"type": "ready"})
+
+    level_name = profile.current_level.value if profile.current_level else "A1"
+
+    if speaking_scenario:
+        system_text = f"""You are playing a character in an English speaking practice session.
+
+SCENARIO: {speaking_scenario.scene}
+YOUR CHARACTER: {speaking_scenario.character_name} — {speaking_scenario.character_role}
+STUDENT'S CEFR LEVEL: {level_name}
+
+ABSOLUTE RULES — never break any of these:
+1. You ARE {speaking_scenario.character_name}. Speak only as this character. Never narrate, describe, or step outside the scene.
+2. This is a VOICE conversation. Every response must be 1–3 short sentences. Zero markdown, zero bullet points, zero asterisks.
+3. React naturally to what the student says and move the scene forward with a relevant reply or question.
+4. Adapt vocabulary strictly to CEFR {level_name}: very simple for A1/A2, moderate for B1/B2, rich and nuanced for C1/C2.
+5. When the student makes a clear error, model the correct form once naturally inside your character's reply — e.g. "Oh you mean you 'have been living here' for two years? That's great!" — then continue. Never lecture or stop the scene to teach.
+6. Never say "Great!", "Wonderful!", "Fantastic!" or any hollow praise. React as a real person.
+7. Open the conversation immediately as your character — no meta-commentary, no scene-setting narration.
+
+{speaking_scenario.prompt_context}"""
+    else:
+        system_text = f"""You are having a natural English conversation with a student at CEFR level {level_name}.
+
+ABSOLUTE RULES:
+1. This is a VOICE conversation. Every response must be 1–3 short sentences. Zero markdown, zero bullet points, zero asterisks.
+2. Be warm and natural, like a real conversational partner.
+3. Adapt vocabulary strictly to CEFR {level_name}.
+4. When the student makes a clear error, model the correct form once naturally in your reply. Never lecture.
+5. Ask natural follow-up questions to keep the conversation going.
+6. Never say "Great!", "Wonderful!" or hollow praise. React like a real person."""
+
+    conversation_history: List[Dict[str, Any]] = [
+        {"role": "user", "parts": [{"text": f"SYSTEM INSTRUCTION: {system_text}"}]},
+        {"role": "model", "parts": [{"text": "Understood. I am in character and will follow all rules exactly."}]}
+    ]
+
+    audio_buffer = bytearray()
+    generation_task: Optional[asyncio.Task] = None
+
+    async def _cancel_generation() -> None:
+        nonlocal generation_task
+        if generation_task is not None and not generation_task.done():
+            generation_task.cancel()
+            try:
+                await generation_task
+            except (asyncio.CancelledError, Exception):
+                pass
+        generation_task = None
+
+    async def _synthesize_and_send(sentence: str) -> None:
+        if not sentence:
+            return
+        try:
+            audio_bytes = await tts_service.synthesize(
+                text=sentence,
+                language_code=tts_lang_code,
+                voice_name=tts_voice,
+            )
+        except Exception as e:
+            await websocket.send_json({"type": "error", "content": f"TTS failed: {str(e)}"})
+            return
+        if audio_bytes and len(audio_bytes) > 44:
+            await websocket.send_bytes(audio_bytes)
+
+    async def _run_generation(text: str) -> None:
+        conversation_history.append({"role": "user", "parts": [{"text": text}]})
+        accumulated = ""
+        sentence_buffer = ""
+
+        _speaking_config = GenerationConfig(
+            temperature=0.8,
+            max_output_tokens=512,
+            thinking_budget=0,  # disable thinking for low-latency real-time conversation
+        )
+        try:
+            async with asyncio.timeout(60):
+                async for chunk in ai_provider.generate_content_stream(conversation_history, config=_speaking_config):
+                    accumulated += chunk
+                    sentence_buffer += chunk
+                    await websocket.send_json({"type": "chunk", "content": chunk})
+
+                    # Flush complete sentences to TTS as soon as they arrive so
+                    # audio starts flowing before the LLM finishes the turn.
+                    while True:
+                        boundary = -1
+                        for i, ch in enumerate(sentence_buffer):
+                            if ch in (".", "?", "!") and not (
+                                i + 1 < len(sentence_buffer) and sentence_buffer[i + 1] in (".", "?", "!")
+                            ):
+                                boundary = i
+                                break
+                        if boundary == -1:
+                            break
+                        sentence = sentence_buffer[:boundary + 1].strip()
+                        sentence_buffer = sentence_buffer[boundary + 1:]
+                        await _synthesize_and_send(sentence)
+
+                # Synthesize any trailing fragment.
+                await _synthesize_and_send(sentence_buffer.strip())
+
+            conversation_history.append({"role": "model", "parts": [{"text": accumulated}]})
+            await websocket.send_json({"type": "done"})
+        except asyncio.CancelledError:
+            # Barge-in: keep any partial model turn so context isn't lost.
+            if accumulated:
+                conversation_history.append({"role": "model", "parts": [{"text": accumulated}]})
+            raise
+        except asyncio.TimeoutError:
+            ws_logger.error("AI generation timed out in speaking session %s", session_id)
+            if accumulated:
+                conversation_history.append({"role": "model", "parts": [{"text": accumulated}]})
+            try:
+                await websocket.send_json({"type": "error", "content": "AI response timed out — please try again"})
+            except Exception:
+                pass
+        except Exception as gen_err:
+            ws_logger.error("Generation error in speaking session %s: %s", session_id, gen_err, exc_info=True)
+            if accumulated:
+                conversation_history.append({"role": "model", "parts": [{"text": accumulated}]})
+            try:
+                await websocket.send_json({"type": "error", "content": str(gen_err)})
+            except Exception:
+                pass
+
+    ws_logger.info("Speaking WS ready for session %s", session_id)
+    try:
+        while True:
+            msg = await websocket.receive()
+
+            # Low-level receive() returns a disconnect dict instead of raising.
+            if msg.get("type") == "websocket.disconnect":
+                break
+
+            # Binary frame: raw PCM packet from the user's mic.
+            if msg.get("bytes") is not None:
+                audio_buffer.extend(msg["bytes"])
+                continue
+
+            text = msg.get("text")
+            if not text:
+                continue
+            try:
+                data = json.loads(text)
+            except json.JSONDecodeError:
+                continue
+
+            msg_type = data.get("type")
+
+            try:
+                if msg_type == "ping":
+                    await websocket.send_json({"type": "pong"})
+
+                elif msg_type == "start":
+                    audio_buffer.clear()
+                    await websocket.send_json({"type": "ready"})
+
+                elif msg_type == "end_of_speech":
+                    # Ignore if a turn is already in flight (frontend should be in
+                    # processing/ai_speaking state and not emitting this).
+                    if generation_task is not None and not generation_task.done():
+                        continue
+                    pcm = bytes(audio_buffer)
+                    audio_buffer.clear()
+                    if not pcm:
+                        await websocket.send_json({"type": "error", "content": "No audio captured"})
+                        continue
+
+                    await websocket.send_json({"type": "state", "state": "processing"})
+                    try:
+                        transcription = await stt_service.transcribe_pcm(
+                            pcm_bytes=pcm, language_code=target_lang_code
+                        )
+                    except Exception as e:
+                        ws_logger.error("STT error in speaking session %s: %s", session_id, e, exc_info=True)
+                        try:
+                            await websocket.send_json({"type": "error", "content": f"STT failed: {str(e)}"})
+                        except Exception:
+                            pass
+                        continue
+
+                    if not transcription.transcript:
+                        await websocket.send_json({"type": "done"})
+                        continue
+
+                    await websocket.send_json({"type": "transcription", "content": transcription.transcript})
+                    generation_task = asyncio.create_task(_run_generation(transcription.transcript))
+
+                elif msg_type == "interrupt":
+                    await _cancel_generation()
+                    audio_buffer.clear()
+                    await websocket.send_json({"type": "interrupted"})
+
+            except WebSocketDisconnect:
+                raise
+            except Exception as err:
+                ws_logger.error("Error handling speaking msg type=%s session=%s: %s", msg_type, session_id, err, exc_info=True)
+                try:
+                    await websocket.send_json({"type": "error", "content": str(err)})
+                except Exception:
+                    pass
+
+    except WebSocketDisconnect:
+        pass
+    except Exception:
+        ws_logger.exception("Unexpected error in speaking WS handler session=%s", session_id)
+    finally:
+        await _cancel_generation()
+        ws_logger.info("Speaking WS closed for session %s", session_id)

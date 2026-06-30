@@ -12,6 +12,7 @@ dependencies = [
     "pydantic>=2.0",
     "pydantic-settings",
     "email-validator",
+    "python-multipart",
     "google-genai",
     "google-cloud-texttospeech",
     "google-cloud-speech",
