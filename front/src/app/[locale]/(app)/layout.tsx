@@ -11,6 +11,11 @@ import {
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
 import CountUp from "react-countup";
+import dynamic from "next/dynamic";
+
+const MeshBackground = dynamic(() => import("@/components/MeshBackground"), {
+  ssr: false,
+});
 
 function TutorSessionsNav({
   router,
@@ -299,12 +304,21 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       {/* Main Layout Wrapper */}
       <div className="flex flex-1 pt-16 md:pt-0 min-h-0">
         {/* SideNavBar (Desktop Only) */}
-        <aside 
-          className={`hidden md:flex flex-col py-md fixed left-0 top-0 h-screen bg-background border-r border-[#2A2A32] z-20 transition-[width] duration-300 ease-in-out ${
+        <aside
+          className={`hidden md:flex flex-col py-md fixed left-0 top-0 h-screen border-r border-[#2A2A32] z-20 overflow-hidden transition-[width] duration-300 ease-in-out ${
             isSidebarCollapsed ? "w-[72px] px-2" : "w-64 px-sm"
           }`}
+          style={{
+            background: "#050507",
+            backgroundImage:
+              "linear-gradient(to right,rgba(110,91,255,.03) 1px,transparent 1px),linear-gradient(to bottom,rgba(110,91,255,.03) 1px,transparent 1px)",
+            backgroundSize: "40px 40px",
+          }}
         >
-          <div className={`flex items-center mb-sm mt-sm shrink-0 overflow-hidden ${isSidebarCollapsed ? "justify-center px-0" : "justify-between px-sm"}`}>
+          <div className="absolute inset-0 z-0 pointer-events-none">
+            <MeshBackground contained />
+          </div>
+          <div className={`relative z-10 flex items-center mb-sm mt-sm shrink-0 overflow-hidden ${isSidebarCollapsed ? "justify-center px-0" : "justify-between px-sm"}`}>
             <div className={`transition-all duration-300 whitespace-nowrap overflow-hidden ${isSidebarCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"}`}>
               <h1 className="font-display text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-[#8B7CFF] tracking-tight leading-tight mb-1">
                 Linguist AI
@@ -323,7 +337,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               </span>
             </button>
           </div>
-          <div className="flex flex-col flex-1 min-h-0 mt-2">
+          <div className="relative z-10 flex flex-col flex-1 min-h-0 mt-2">
             <nav className="flex flex-col gap-1 flex-1 overflow-y-auto custom-scrollbar pb-2">
               {navItems.map((item) => {
                 const isTutor = item.href === "/tutor";

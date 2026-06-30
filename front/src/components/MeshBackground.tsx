@@ -1,7 +1,11 @@
 "use client";
 import { useEffect, useRef } from "react";
 
-export default function MeshBackground() {
+export default function MeshBackground({
+  contained = false,
+}: {
+  contained?: boolean;
+}) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const canvas = ref.current!;
@@ -64,8 +68,9 @@ export default function MeshBackground() {
     }
     let pts: Pt[] = [];
     const resize = () => {
-      W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight;
-      const n=Math.min(W<768?100:280,Math.floor(W*H*.00015));
+      if(contained){ const par=canvas.parentElement; W=canvas.width=par?par.clientWidth:window.innerWidth; H=canvas.height=par?par.clientHeight:window.innerHeight; }
+      else { W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; }
+      const n=Math.min(W<768?100:280,Math.max(24,Math.floor(W*H*.00015)));
       pts=Array.from({length:n},()=>new Pt());
     };
     const tick = (t: number) => {
@@ -82,14 +87,17 @@ export default function MeshBackground() {
       }
       aid=requestAnimationFrame(tick);
     };
-    const mm=(e:MouseEvent)=>{ms.tx=e.clientX;ms.ty=e.clientY;};
+    const loc=(cx:number,cy:number)=>{ if(!contained){ms.tx=cx;ms.ty=cy;return;} const r=canvas.getBoundingClientRect(); ms.tx=cx-r.left; ms.ty=cy-r.top; };
+    const mm=(e:MouseEvent)=>loc(e.clientX,e.clientY);
     const ml=()=>{ms.tx=null;ms.ty=null;};
-    const mt=(e:TouchEvent)=>{if(e.touches[0]){ms.tx=e.touches[0].clientX;ms.ty=e.touches[0].clientY;}};
+    const mt=(e:TouchEvent)=>{if(e.touches[0])loc(e.touches[0].clientX,e.touches[0].clientY);};
     const vis=()=>{if(document.hidden)cancelAnimationFrame(aid);else tick(performance.now());};
     window.addEventListener("resize",resize); window.addEventListener("mousemove",mm); window.addEventListener("mouseleave",ml);
     window.addEventListener("touchmove",mt); window.addEventListener("touchend",ml); document.addEventListener("visibilitychange",vis);
+    let ro: ResizeObserver | null = null;
+    if(contained && canvas.parentElement && typeof ResizeObserver!=="undefined"){ ro=new ResizeObserver(()=>resize()); ro.observe(canvas.parentElement); }
     resize(); tick(0);
-    return()=>{cancelAnimationFrame(aid);window.removeEventListener("resize",resize);window.removeEventListener("mousemove",mm);window.removeEventListener("mouseleave",ml);window.removeEventListener("touchmove",mt);window.removeEventListener("touchend",ml);document.removeEventListener("visibilitychange",vis);};
-  },[]);
-  return <canvas ref={ref} className="fixed inset-0 w-full h-full pointer-events-none" style={{zIndex:0}} />;
+    return()=>{cancelAnimationFrame(aid);if(ro)ro.disconnect();window.removeEventListener("resize",resize);window.removeEventListener("mousemove",mm);window.removeEventListener("mouseleave",ml);window.removeEventListener("touchmove",mt);window.removeEventListener("touchend",ml);document.removeEventListener("visibilitychange",vis);};
+  },[contained]);
+  return <canvas ref={ref} className={(contained?"absolute":"fixed")+" inset-0 w-full h-full pointer-events-none"} style={{zIndex:0}} />;
 }
