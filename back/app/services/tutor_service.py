@@ -5,7 +5,7 @@ from app.models.tutor_message import TutorMessage
 from app.models.user_profile import UserProfile
 from app.repositories.interfaces.tutor import AbstractTutorSessionRepository, AbstractTutorMessageRepository
 from app.services.interfaces.tutor import AbstractTutorService, AbstractSessionContextManager, AbstractTutorRateLimiter
-from app.services.ai.base import AbstractAIProvider
+from app.services.ai.base import AbstractAIProvider, GenerationConfig
 from app.core.exceptions import RateLimitException, SessionNotFoundError
 
 logger = logging.getLogger("tutor")
@@ -61,8 +61,13 @@ class TutorService(AbstractTutorService):
         accumulated_text = ""
         error_occurred = False
 
+        _config = GenerationConfig(
+            temperature=0.8,
+            max_output_tokens=1024,
+            thinking_budget=0,  # disable thinking for low-latency chat
+        )
         try:
-            async for chunk in self._ai_provider.generate_content_stream(contents):
+            async for chunk in self._ai_provider.generate_content_stream(contents, config=_config):
                 accumulated_text += chunk
                 yield chunk
         except Exception as e:

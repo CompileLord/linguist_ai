@@ -33,6 +33,8 @@ class VertexAIProvider(AbstractAIProvider):
             sdk_config.top_k = config.top_k
             sdk_config.max_output_tokens = config.max_output_tokens
             sdk_config.response_mime_type = config.response_mime_type
+            if config.thinking_budget is not None:
+                sdk_config.thinking_config = types.ThinkingConfig(thinking_budget=config.thinking_budget)
             
         if response_schema:
             sdk_config.response_mime_type = "application/json"
@@ -75,7 +77,9 @@ class VertexAIProvider(AbstractAIProvider):
                 config=sdk_config
             )
             async for chunk in response:
-                yield chunk.text or ""
+                text = chunk.text
+                if text:
+                    yield text
         except APIError as e:
             raise ExternalServiceException(detail=f"Vertex AI streaming error: {str(e)}", error_code="AI_API_ERROR")
         except Exception as e:

@@ -23,6 +23,7 @@ from app.models.achievement import Achievement
 from app.models.user_achievement import UserAchievement
 from app.models.weekly_report import WeeklyReport
 from app.models.user_quota import UserQuota
+from app.models.speaking_scenario import SpeakingScenario
 
 __all__ = [
     "Base",
@@ -51,7 +52,8 @@ __all__ = [
     "Achievement",
     "UserAchievement",
     "WeeklyReport",
-    "UserQuota"
+    "UserQuota",
+    "SpeakingScenario"
 ]
 
 

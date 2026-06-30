@@ -10,11 +10,11 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     languages = [
-        {"id": uuid.uuid4().hex, "code": "en", "name": "English", "native_name": "English", "is_active": True},
-        {"id": uuid.uuid4().hex, "code": "es", "name": "Spanish", "native_name": "Español", "is_active": False},
-        {"id": uuid.uuid4().hex, "code": "fr", "name": "French", "native_name": "Français", "is_active": False},
-        {"id": uuid.uuid4().hex, "code": "de", "name": "German", "native_name": "Deutsch", "is_active": False},
-        {"id": uuid.uuid4().hex, "code": "ja", "name": "Japanese", "native_name": "日本語", "is_active": False}
+        {"id": uuid.uuid4(), "code": "en", "name": "English", "native_name": "English", "is_active": True},
+        {"id": uuid.uuid4(), "code": "es", "name": "Spanish", "native_name": "Español", "is_active": False},
+        {"id": uuid.uuid4(), "code": "fr", "name": "French", "native_name": "Français", "is_active": False},
+        {"id": uuid.uuid4(), "code": "de", "name": "German", "native_name": "Deutsch", "is_active": False},
+        {"id": uuid.uuid4(), "code": "ja", "name": "Japanese", "native_name": "日本語", "is_active": False}
     ]
     for lang in languages:
         op.execute(

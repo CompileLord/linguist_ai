@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator, Dict, Any
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy import event, text
+from sqlalchemy import text
 from app.core.config import settings
 
 class DatabaseManager:
@@ -15,26 +15,22 @@ class DatabaseManager:
                 "pool_recycle": settings.DB_POOL_RECYCLE
             })
         elif settings.DATABASE_URL.startswith("sqlite"):
-            # Allow cross-thread usage and give writers a grace period before
-            # raising "database is locked" so concurrent commits can serialize.
             engine_args["connect_args"] = {
                 "check_same_thread": False,
                 "timeout": 30,
             }
         self.engine = create_async_engine(settings.DATABASE_URL, **engine_args)
-
-        if settings.DATABASE_URL.startswith("sqlite"):
-            @event.listens_for(self.engine.sync_engine, "connect")
-            def _set_sqlite_pragma(dbapi_connection, connection_record):  # noqa: ANN001
-                cursor = dbapi_connection.cursor()
-                cursor.execute("PRAGMA busy_timeout=30000")
-                cursor.execute("PRAGMA journal_mode=WAL")
-                cursor.close()
         self.async_session_factory = async_sessionmaker(
             bind=self.engine,
             class_=AsyncSession,
             expire_on_commit=False
         )
+
+    async def initialize(self) -> None:
+        if self.engine.url.get_backend_name() == "sqlite":
+            async with self.engine.begin() as conn:
+                await conn.execute(text("PRAGMA journal_mode=WAL"))
+                await conn.execute(text("PRAGMA busy_timeout=30000"))
 
     @asynccontextmanager
     async def get_session(self) -> AsyncGenerator[AsyncSession, None]:

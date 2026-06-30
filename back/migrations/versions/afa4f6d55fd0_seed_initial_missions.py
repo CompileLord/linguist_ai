@@ -17,8 +17,8 @@ def upgrade() -> None:
         sa.column('title', sa.String),
         sa.column('description', sa.String),
         sa.column('scenario_prompt', sa.String),
-        sa.column('related_goal', sa.String),
-        sa.column('cefr_level_min', sa.String),
+        sa.column('related_goal', sa.Enum("travel", "work", "study", "daily_life", "exam_prep", name="mission_related_goal", create_type=False)),
+        sa.column('cefr_level_min', sa.Enum("A1", "A2", "B1", "B2", "C1", "C2", name="cefr_level", create_type=False)),
         sa.column('estimated_duration_minutes', sa.Integer),
         sa.column('difficulty_rating', sa.Integer),
         sa.column('is_active', sa.Boolean)

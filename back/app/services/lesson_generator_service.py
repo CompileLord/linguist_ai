@@ -1,7 +1,7 @@
 import uuid
 import time
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 from pydantic import ValidationError
 from app.models.lesson import Lesson
@@ -96,7 +96,7 @@ class LessonGeneratorService(AbstractLessonGeneratorService):
         norm_topic = self._normalize_topic(topic)
         cached = await self._repository.find_cached(language.id, level, norm_topic)
         if cached:
-            age_days = (datetime.utcnow() - cached.created_at).days
+            age_days = (datetime.now(timezone.utc) - cached.created_at).days
             if age_days < 30:
                 return cached
 

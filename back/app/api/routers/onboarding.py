@@ -1,5 +1,6 @@
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, status
+from app.core.exceptions import NotFoundException
 from app.models.user import User
 from app.models.enums import CEFRLevel
 from app.api.dependencies.auth import get_current_active_user
@@ -27,12 +28,18 @@ async def update_goals(
 ):
     return await profile_service.update_goals(current_user.id, schema)
 
-@router.get("", response_model=ProfileResponse, status_code=status.HTTP_200_OK)
+@router.get("", response_model=Optional[ProfileResponse], status_code=status.HTTP_200_OK)
 async def get_profile(
     current_user: User = Depends(get_current_active_user),
     profile_service: ProfileService = Depends(get_profile_service)
 ):
-    return await profile_service.get_profile(current_user.id)
+    # Return 200 with a null body when the user hasn't completed onboarding yet,
+    # rather than a 404. A brand-new user legitimately has no profile, and the
+    # onboarding flow polls this endpoint — a 404 there is just console noise.
+    try:
+        return await profile_service.get_profile(current_user.id)
+    except NotFoundException:
+        return None
 
 @router.put("/level", response_model=ProfileResponse, status_code=status.HTTP_200_OK)
 async def update_level_manually(

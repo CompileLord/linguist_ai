@@ -47,7 +47,7 @@ export interface PlacementResult {
 
 export const onboardingApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    getProfile: builder.query<ProfileResponse, void>({
+    getProfile: builder.query<ProfileResponse | null, void>({
       query: () => '/profile',
       providesTags: ['Profile'],
     }),
@@ -83,6 +83,13 @@ export const onboardingApi = api.injectEndpoints({
     getPlacementResult: builder.query<PlacementResult, void>({
       query: () => '/profile/placement/result',
     }),
+    updateLevelManually: builder.mutation<ProfileResponse, string>({
+      query: (level) => ({
+        url: `/profile/level?level=${encodeURIComponent(level)}`,
+        method: 'PUT',
+      }),
+      invalidatesTags: ['Profile'],
+    }),
   }),
 });
 
@@ -94,5 +101,6 @@ export const {
   useStartPlacementTestMutation,
   useAnswerPlacementQuestionMutation,
   useGetPlacementResultQuery,
+  useUpdateLevelManuallyMutation,
 } = onboardingApi;
 

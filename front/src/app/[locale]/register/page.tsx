@@ -9,6 +9,7 @@ import { useRegisterMutation, useGetVoicesQuery } from "@/services/authApi";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
 import { setCredentials } from "@/store/authSlice";
+import { getApiErrorMessage } from "@/lib/apiError";
 import { useTranslations } from "next-intl";
 import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
@@ -107,13 +108,7 @@ export default function RegisterPage() {
       router.push("/onboarding");
     } catch (err: any) {
       console.error("Registration failed:", err);
-      const detail =
-        err?.data?.detail ||
-        err?.data ||
-        err?.error ||
-        err?.message ||
-        "Registration failed";
-      setErrorMsg(typeof detail === "string" ? detail : JSON.stringify(detail));
+      setErrorMsg(getApiErrorMessage(err, "Registration failed"));
     }
   };
 

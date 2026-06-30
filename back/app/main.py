@@ -26,6 +26,8 @@ async def lifespan(app: FastAPI):
     else:
         logger.error("Database connection check failed during startup.")
 
+    await db_manager.initialize()
+
     logger.info("Verifying local Speech-to-Text and Text-to-Speech models...")
     try:
         import asyncio

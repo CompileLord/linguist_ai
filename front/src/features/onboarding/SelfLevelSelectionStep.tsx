@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
+import { useUpdateLevelManuallyMutation } from "@/services/onboardingApi";
 
 interface Props {
-  onComplete: (level: string) => void;
+  onComplete: () => void;
   onBack: () => void;
 }
 
 export function SelfLevelSelectionStep({ onComplete, onBack }: Props) {
   const t = useTranslations("Onboarding.SelfLevelSelection");
   const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
+  const [updateLevel, { isLoading }] = useUpdateLevelManuallyMutation();
 
   const levels = [
     { id: "A1", title: t("levels.a1_title"), desc: t("levels.a1_desc") },
@@ -20,9 +22,14 @@ export function SelfLevelSelectionStep({ onComplete, onBack }: Props) {
     { id: "C2", title: t("levels.c2_title"), desc: t("levels.c2_desc") },
   ];
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     if (!selectedLevel) return;
-    onComplete(selectedLevel);
+    try {
+      await updateLevel(selectedLevel).unwrap();
+    } catch (e) {
+      console.error("Failed to save level:", e);
+    }
+    onComplete();
   };
 
   return (
@@ -86,10 +93,10 @@ export function SelfLevelSelectionStep({ onComplete, onBack }: Props) {
         <Button
           variant="primary"
           onClick={handleComplete}
-          disabled={!selectedLevel}
+          disabled={!selectedLevel || isLoading}
           className="w-full"
         >
-          {t("continue")}
+          {isLoading ? "..." : t("continue")}
         </Button>
         <button
           onClick={onBack}

@@ -10,6 +10,7 @@ import { useLazyGetProfileQuery } from "@/services/onboardingApi";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
 import { setCredentials } from "@/store/authSlice";
+import { getApiErrorMessage } from "@/lib/apiError";
 import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
@@ -93,7 +94,7 @@ export default function LoginPage() {
       // Fetch user profile to check onboarding status
       try {
         const profile = await triggerGetProfile().unwrap();
-        if (profile.onboarding_completed) {
+        if (profile?.onboarding_completed) {
           router.push("/dashboard");
         } else {
           router.push("/onboarding");
@@ -107,13 +108,7 @@ export default function LoginPage() {
       }
     } catch (err: any) {
       console.error("Login failed:", err);
-      const detail =
-        err?.data?.detail ||
-        err?.data ||
-        err?.error ||
-        err?.message ||
-        "Login failed";
-      setErrorMsg(typeof detail === "string" ? detail : JSON.stringify(detail));
+      setErrorMsg(getApiErrorMessage(err, "Login failed"));
     }
   };
 

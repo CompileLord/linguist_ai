@@ -43,7 +43,7 @@ class SessionContextManager(AbstractSessionContextManager):
         )
 
         sys_msg_text = f"SYSTEM INSTRUCTION: {system_prompt}"
-        ack_text = "Understood. I will act as the AI English tutor according to these instructions."
+        ack_text = "Understood. I will stay in character inside the scenario, speak as Elena or as the character in the scene, and only step out briefly to give corrections or coaching notes."
         
         sys_tokens = len(sys_msg_text) // 4
         ack_tokens = len(ack_text) // 4

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { setCredentials, setUiLanguage, setInitialized } from "@/store/authSlice";
+import { setCredentials, setUiLanguage, setInitialized, logout } from "@/store/authSlice";
 import { useGetMeQuery } from "@/services/authApi";
 
 export function AuthInitializer({ children }: { children: React.ReactNode }) {
@@ -34,7 +34,7 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
   // Fetch /me to get actual user details if we have a token
   // skip the query if there is no token in localStorage
   const hasToken = typeof window !== "undefined" && !!localStorage.getItem("access_token");
-  const { data: user } = useGetMeQuery(undefined, { skip: !hasToken });
+  const { data: user, error } = useGetMeQuery(undefined, { skip: !hasToken });
 
   useEffect(() => {
     if (user && hasToken) {
@@ -54,6 +54,18 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
       }
     }
   }, [user, dispatch, hasToken]);
+
+  // If the stored token is rejected (e.g. the user no longer exists, or it was
+  // issued by a different backend), drop it so the app falls back to login
+  // instead of staying optimistically "authenticated" with a dead token.
+  useEffect(() => {
+    if (!error || !hasToken) return;
+    const status = (error as { status?: number | string }).status;
+    if (status === 401 || status === 403 || status === 404) {
+      dispatch(logout());
+    }
+    dispatch(setInitialized());
+  }, [error, hasToken, dispatch]);
 
   return <>{children}</>;
 }

@@ -9,6 +9,8 @@ class GenerationConfig(BaseModel):
     max_output_tokens: int = Field(default=2048, ge=1)
     response_mime_type: str = Field(default="text/plain")
     model: Optional[str] = None
+    # Set to 0 to disable thinking (required for low-latency streaming like speaking)
+    thinking_budget: Optional[int] = None
 
 
 T = TypeVar("T", bound=BaseModel)

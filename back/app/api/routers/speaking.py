@@ -5,8 +5,10 @@ import logging
 from typing import Optional, List, Dict, Any
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, status, HTTPException
 from pydantic import BaseModel, Field
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db_session, db_manager
+from app.models.speaking_scenario import SpeakingScenario
 from app.models.user import User
 from app.api.dependencies.auth import get_current_active_user
 from app.api.dependencies.services import (
@@ -32,6 +34,7 @@ from app.services.game_level_progression_service import GameLevelProgressionServ
 from app.services.achievement_service import AchievementService
 from app.services.token_service import get_token_service
 from app.services.ai.factory import get_ai_provider
+from app.services.ai.base import GenerationConfig
 from app.services.vocabulary_extraction_service import VocabularyExtractionService
 from app.repositories.profile_repository import ProfileRepository
 from app.repositories.user_repository import UserRepository
@@ -68,6 +71,18 @@ class _TakeawaysGenerated(BaseModel):
     takeaways: List[SpeakingTakeaway] = Field(..., description="3-6 key learning takeaways")
 
 
+class ScenarioResponse(BaseModel):
+    id: str
+    title: str
+    description: str
+    icon: str
+    cefr_level: str
+    character_name: str
+    character_role: str
+    scene: str
+    sort_order: int
+
+
 @router.post("/start", status_code=status.HTTP_201_CREATED)
 async def start_speaking(
     current_user: User = Depends(get_current_active_user),
@@ -75,6 +90,31 @@ async def start_speaking(
 ):
     session_id = await speaking_session_service.start_speaking_session(current_user.id)
     return {"session_id": session_id}
+
+@router.get("/scenarios", response_model=List[ScenarioResponse])
+async def get_scenarios(
+    current_user: User = Depends(get_current_active_user),
+):
+    """Return all speaking scenarios ordered by level and sort_order."""
+    async with db_manager.get_session() as db:
+        result = await db.execute(
+            select(SpeakingScenario).order_by(SpeakingScenario.cefr_level, SpeakingScenario.sort_order)
+        )
+        scenarios = result.scalars().all()
+    return [
+        ScenarioResponse(
+            id=str(s.id),
+            title=s.title,
+            description=s.description,
+            icon=s.icon,
+            cefr_level=s.cefr_level.value,
+            character_name=s.character_name,
+            character_role=s.character_role,
+            scene=s.scene,
+            sort_order=s.sort_order,
+        )
+        for s in scenarios
+    ]
 
 @router.post("/end")
 async def end_speaking(
@@ -172,6 +212,7 @@ async def ws_speaking(
     websocket: WebSocket,
     session_id: str,
     token: Optional[str] = None,
+    scenario_id: Optional[str] = None,
     stt_service: SpeechToTextService = Depends(get_stt_service),
     tts_service: TextToSpeechService = Depends(get_tts_service),
     ai_provider = Depends(get_ai_provider)
@@ -199,6 +240,8 @@ async def ws_speaking(
     token_service = get_token_service()
     if not token:
         token = websocket.query_params.get("token")
+    if not scenario_id:
+        scenario_id = websocket.query_params.get("scenario_id")
     if not token:
         await websocket.accept()
         await websocket.send_json({"type": "error", "content": "Authentication token missing"})
@@ -255,12 +298,53 @@ async def ws_speaking(
         ws_logger.exception("Speaking WS attribute error for session %s", session_id)
         return
 
+    speaking_scenario = None
+    if scenario_id:
+        try:
+            async with db_manager.get_session() as db:
+                result = await db.execute(
+                    select(SpeakingScenario).where(SpeakingScenario.id == uuid.UUID(scenario_id))
+                )
+                speaking_scenario = result.scalar_one_or_none()
+        except Exception:
+            pass  # proceed without scenario if load fails
+
     await websocket.accept()
     await websocket.send_json({"type": "ready"})
 
+    level_name = profile.current_level.value if profile.current_level else "A1"
+
+    if speaking_scenario:
+        system_text = f"""You are playing a character in an English speaking practice session.
+
+SCENARIO: {speaking_scenario.scene}
+YOUR CHARACTER: {speaking_scenario.character_name} — {speaking_scenario.character_role}
+STUDENT'S CEFR LEVEL: {level_name}
+
+ABSOLUTE RULES — never break any of these:
+1. You ARE {speaking_scenario.character_name}. Speak only as this character. Never narrate, describe, or step outside the scene.
+2. This is a VOICE conversation. Every response must be 1–3 short sentences. Zero markdown, zero bullet points, zero asterisks.
+3. React naturally to what the student says and move the scene forward with a relevant reply or question.
+4. Adapt vocabulary strictly to CEFR {level_name}: very simple for A1/A2, moderate for B1/B2, rich and nuanced for C1/C2.
+5. When the student makes a clear error, model the correct form once naturally inside your character's reply — e.g. "Oh you mean you 'have been living here' for two years? That's great!" — then continue. Never lecture or stop the scene to teach.
+6. Never say "Great!", "Wonderful!", "Fantastic!" or any hollow praise. React as a real person.
+7. Open the conversation immediately as your character — no meta-commentary, no scene-setting narration.
+
+{speaking_scenario.prompt_context}"""
+    else:
+        system_text = f"""You are having a natural English conversation with a student at CEFR level {level_name}.
+
+ABSOLUTE RULES:
+1. This is a VOICE conversation. Every response must be 1–3 short sentences. Zero markdown, zero bullet points, zero asterisks.
+2. Be warm and natural, like a real conversational partner.
+3. Adapt vocabulary strictly to CEFR {level_name}.
+4. When the student makes a clear error, model the correct form once naturally in your reply. Never lecture.
+5. Ask natural follow-up questions to keep the conversation going.
+6. Never say "Great!", "Wonderful!" or hollow praise. React like a real person."""
+
     conversation_history: List[Dict[str, Any]] = [
-        {"role": "user", "parts": [{"text": f"SYSTEM INSTRUCTION: You are a friendly AI speaking coach. The user's target language code is {target_lang_code} and current level is {profile.current_level or 'A1'}. Speak in clear, natural, and simple language suitable for this level. Keep your responses short (1-3 sentences) and conversational. Do not use complex markdown formatting or bullet points."}]},
-        {"role": "model", "parts": [{"text": "Understood. I will act as the AI Speaking coach according to these instructions."}]}
+        {"role": "user", "parts": [{"text": f"SYSTEM INSTRUCTION: {system_text}"}]},
+        {"role": "model", "parts": [{"text": "Understood. I am in character and will follow all rules exactly."}]}
     ]
 
     audio_buffer = bytearray()
@@ -296,9 +380,14 @@ async def ws_speaking(
         accumulated = ""
         sentence_buffer = ""
 
+        _speaking_config = GenerationConfig(
+            temperature=0.8,
+            max_output_tokens=512,
+            thinking_budget=0,  # disable thinking for low-latency real-time conversation
+        )
         try:
             async with asyncio.timeout(60):
-                async for chunk in ai_provider.generate_content_stream(conversation_history):
+                async for chunk in ai_provider.generate_content_stream(conversation_history, config=_speaking_config):
                     accumulated += chunk
                     sentence_buffer += chunk
                     await websocket.send_json({"type": "chunk", "content": chunk})
@@ -350,6 +439,10 @@ async def ws_speaking(
     try:
         while True:
             msg = await websocket.receive()
+
+            # Low-level receive() returns a disconnect dict instead of raising.
+            if msg.get("type") == "websocket.disconnect":
+                break
 
             # Binary frame: raw PCM packet from the user's mic.
             if msg.get("bytes") is not None:

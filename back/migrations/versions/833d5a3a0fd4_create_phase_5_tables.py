@@ -81,7 +81,7 @@ def upgrade() -> None:
         sa.column('code', sa.String),
         sa.column('title', sa.String),
         sa.column('description', sa.String),
-        sa.column('condition_type', sa.String),
+        sa.column('condition_type', sa.Enum('LESSONS_COMPLETED', 'STREAK_DAYS', 'WORDS_LEARNED', 'EXAMS_PASSED', 'SPEAKING_MINUTES', 'SPECIFIC_ACTION', name='condition_type', create_type=False)),
         sa.column('condition_value', sa.Integer)
     )
     achievements_data = [

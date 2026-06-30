@@ -8,6 +8,8 @@ import remarkGfm from "remark-gfm";
 import { useSelector } from "react-redux";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
+import { clearStoredAuth } from "@/lib/authReset";
+import { getWsBaseUrl } from "@/lib/wsUrl";
 import type { RootState } from "@/store/store";
 import {
   useGetTutorSessionsQuery,
@@ -157,8 +159,8 @@ function CorrectionModal({
     position: "relative",
     width: "100%", maxWidth: 520,
     height: "clamp(320px, 82vh, 640px)",
-    background: "#18181F",
-    border: "1px solid rgba(255,255,255,0.09)",
+    background: "#15151A",
+    border: "1px solid #2A2A32",
     borderRadius: 18,
     overflow: "hidden",
     display: "flex", flexDirection: "column",
@@ -173,7 +175,7 @@ function CorrectionModal({
     <div style={overlay} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={panel}>
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #2A2A32", flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 34, height: 34, borderRadius: 10, background: "linear-gradient(135deg,#6E5BFF,#8B7CFF)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <span className="material-symbols-outlined text-white" style={{ fontSize: 17, fontVariationSettings: "'FILL' 1" }}>auto_fix_high</span>
@@ -196,7 +198,7 @@ function CorrectionModal({
           {/* Original text */}
           <div>
             <p style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700, color: "rgba(255,255,255,0.25)", marginBottom: 8 }}>Your message</p>
-            <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "12px 16px", fontSize: 14, color: "rgba(255,255,255,0.6)", lineHeight: 1.6 }}>
+            <div style={{ background: "#1C1C24", border: "1px solid #2A2A32", borderRadius: 12, padding: "12px 16px", fontSize: 14, color: "rgba(255,255,255,0.6)", lineHeight: 1.6 }}>
               {text}
             </div>
           </div>
@@ -216,7 +218,7 @@ function CorrectionModal({
           ) : result ? (
             <>
               {/* Score */}
-              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "16px" }}>
+              <div style={{ background: "#1C1C24", border: "1px solid #2A2A32", borderRadius: 12, padding: "16px" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                   <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.45)" }}>Fluency score</span>
                   {result.is_correct && (
@@ -351,6 +353,7 @@ function TutorPageInner() {
   const [isAiStreaming,       setIsAiStreaming]        = useState(false);
   const [streamingText,       setStreamingText]       = useState("");
   const [wsStatus,            setWsStatus]            = useState("Disconnected");
+  const [reconnectCount,      setReconnectCount]      = useState(0);
   const [isRecording,         setIsRecording]         = useState(false);
   const [isTranscribing,      setIsTranscribing]      = useState(false);
   const [playingMsgId,        setPlayingMsgId]        = useState<string | null>(null);
@@ -358,16 +361,21 @@ function TutorPageInner() {
   const [translationMap,      setTranslationMap]      = useState<Record<string, string>>({});
   const [translatingId,       setTranslatingId]       = useState<string | null>(null);
 
-  const wsRef          = useRef<WebSocket | null>(null);
-  const chatBottomRef  = useRef<HTMLDivElement>(null);
-  const heartbeatRef   = useRef<ReturnType<typeof setInterval> | null>(null);
-  const textareaRef    = useRef<HTMLTextAreaElement>(null);
-  const streamRef      = useRef("");
-  const mediaRecRef    = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-  const audioRef       = useRef<HTMLAudioElement | null>(null);
-  const wsSttRef       = useRef<WebSocket | null>(null);
-  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const wsRef           = useRef<WebSocket | null>(null);
+  const chatBottomRef   = useRef<HTMLDivElement>(null);
+  const heartbeatRef    = useRef<ReturnType<typeof setInterval> | null>(null);
+  const reconnectRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectCntRef = useRef(0);
+  const textareaRef     = useRef<HTMLTextAreaElement>(null);
+  const streamRef       = useRef("");
+  const mediaRecRef     = useRef<MediaRecorder | null>(null);
+  const audioChunksRef  = useRef<Blob[]>([]);
+  const audioRef        = useRef<HTMLAudioElement | null>(null);
+  const wsSttRef        = useRef<WebSocket | null>(null);
+  const mediaStreamRef  = useRef<MediaStream | null>(null);
+  const activeSessionRef = useRef<TutorSessionResponse | null>(null);
+
+  useEffect(() => { activeSessionRef.current = activeSession; }, [activeSession]);
 
   const { data: sessions = [], refetch: refetchSessions } = useGetTutorSessionsQuery({ include_ended: true });
   const [createSession,  { isLoading: isCreatingSession }] = useCreateTutorSessionMutation();
@@ -399,41 +407,79 @@ function TutorPageInner() {
     return () => { cleanupWs(); };
   }, [activeSession?.id]);
 
-  const connectWs = (sessId: string) => {
-    cleanupWs();
-    const wsDomain = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000";
-    setWsStatus("Connecting...");
+  const connectWs = useCallback((sessId: string, attempt = 0) => {
+    if (reconnectRef.current) { clearTimeout(reconnectRef.current); reconnectRef.current = null; }
+    if (wsRef.current) { wsRef.current.onclose = null; wsRef.current.close(); wsRef.current = null; }
+    if (heartbeatRef.current) { clearInterval(heartbeatRef.current); heartbeatRef.current = null; }
+
+    const wsDomain = getWsBaseUrl();
+    setWsStatus(attempt > 0 ? "Reconnecting..." : "Connecting...");
     const ws = new WebSocket(`${wsDomain}/ws/tutor/${sessId}?token=${token}`);
     wsRef.current = ws;
+
     ws.onopen = () => {
+      reconnectCntRef.current = 0;
+      setReconnectCount(0);
       setWsStatus("Ready");
-      heartbeatRef.current = setInterval(() => { if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "ping" })); }, 30000);
+      heartbeatRef.current = setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "ping" }));
+      }, 25000);
     };
+
     ws.onmessage = (ev) => {
       try {
         const msg = JSON.parse(ev.data);
         if (msg.type === "pong") return;
-        if (msg.type === "chunk") { setIsAiStreaming(true); streamRef.current += msg.content; setStreamingText(streamRef.current); }
-        else if (msg.type === "done") {
+        if (msg.type === "chunk") {
+          setIsAiStreaming(true); streamRef.current += msg.content; setStreamingText(streamRef.current);
+        } else if (msg.type === "done") {
           const full = streamRef.current + (msg.content || "");
           setIsAiStreaming(false);
           setMessages((p) => [...p, { id: Math.random().toString(), session_id: sessId, role: "assistant", content: full, created_at: new Date().toISOString() }]);
           streamRef.current = ""; setStreamingText(""); refetchSessions();
         } else if (msg.type === "session_ended") {
-          setWsStatus("Session Ended"); setActiveSession((p) => p ? { ...p, is_active: false } : p); cleanupWs(); refetchSessions();
-        } else if (msg.type === "error") { setWsStatus(`Error: ${msg.content}`); }
+          setWsStatus("Session Ended"); setActiveSession((p) => p ? { ...p, is_active: false } : p);
+          wsRef.current = null; refetchSessions();
+        } else if (msg.type === "error") {
+          setIsAiStreaming(false); streamRef.current = ""; setStreamingText("");
+        }
       } catch { /* ignore */ }
     };
-    ws.onclose = () => { setWsStatus("Disconnected"); if (heartbeatRef.current) clearInterval(heartbeatRef.current); };
-    ws.onerror = () => setWsStatus("Connection Error");
-  };
 
-  const cleanupWs = () => {
-    wsRef.current?.close(); wsRef.current = null;
-    if (heartbeatRef.current) clearInterval(heartbeatRef.current);
-    heartbeatRef.current = null;
+    ws.onclose = (ev) => {
+      if (heartbeatRef.current) { clearInterval(heartbeatRef.current); heartbeatRef.current = null; }
+      setIsAiStreaming(false); streamRef.current = ""; setStreamingText("");
+      // Invalid token (e.g. the user no longer exists): clear it and return to login.
+      if (ev.code === 4001) {
+        clearStoredAuth();
+        setWsStatus("Disconnected");
+        router.replace("/login");
+        return;
+      }
+      const sess = activeSessionRef.current;
+      const intentional = ev.code === 1000 || ev.code === 4003 || ev.code === 4004;
+      if (!intentional && sess?.is_active && reconnectCntRef.current < 3) {
+        const next = reconnectCntRef.current + 1;
+        reconnectCntRef.current = next;
+        setReconnectCount(next);
+        setWsStatus("Reconnecting...");
+        reconnectRef.current = setTimeout(() => connectWs(sessId, next), 1500 * next);
+      } else {
+        setWsStatus(intentional ? "Session Ended" : "Disconnected");
+      }
+    };
+
+    ws.onerror = () => { /* onclose will fire after onerror */ };
+  }, [token]);
+
+  const cleanupWs = useCallback(() => {
+    if (reconnectRef.current) { clearTimeout(reconnectRef.current); reconnectRef.current = null; }
+    reconnectCntRef.current = 0;
+    setReconnectCount(0);
+    if (wsRef.current) { wsRef.current.onclose = null; wsRef.current.close(); wsRef.current = null; }
+    if (heartbeatRef.current) { clearInterval(heartbeatRef.current); heartbeatRef.current = null; }
     setIsAiStreaming(false); streamRef.current = ""; setStreamingText(""); setWsStatus("Disconnected");
-  };
+  }, []);
 
   const getAuthToken = () => token ?? (typeof window !== "undefined" ? localStorage.getItem("access_token") : null);
 
@@ -516,7 +562,7 @@ function TutorPageInner() {
     audioChunksRef.current = [];
     setIsRecording(true);
 
-    const wsDomain = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000";
+    const wsDomain = getWsBaseUrl();
     const ws = new WebSocket(`${wsDomain}/ws/stt?token=${authToken}`);
     ws.binaryType = "arraybuffer";
     wsSttRef.current = ws;
@@ -613,8 +659,9 @@ function TutorPageInner() {
     }
   }, [inputText, activeSession, wsStatus]);
 
-  const statusDot = wsStatus === "Ready" ? "#3DD68C" : wsStatus === "Connecting..." ? "#E8B339" : "#555";
-  const statusLabel = isAiStreaming ? "Responding…" : wsStatus === "Ready" ? "Online" : wsStatus === "Session Ended" ? "Ended" : "Offline";
+  const isReconnecting = wsStatus === "Reconnecting...";
+  const statusDot = wsStatus === "Ready" ? "#3DD68C" : (wsStatus === "Connecting..." || isReconnecting) ? "#E8B339" : "#474555";
+  const statusLabel = isAiStreaming ? "Responding…" : wsStatus === "Ready" ? "Online" : wsStatus === "Session Ended" ? "Ended" : isReconnecting ? `Reconnecting (${reconnectCount}/3)…` : wsStatus === "Connecting..." ? "Connecting…" : "Offline";
 
   return (
     <>
@@ -636,11 +683,11 @@ function TutorPageInner() {
         />
       )}
 
-      <div className="flex-1 flex flex-col overflow-hidden min-h-0" style={{ background: "#0D0D11" }}>
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0 bg-background">
         {activeSession ? (
           <>
             {/* Header */}
-            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "0 20px", height: 54, borderBottom: "1px solid rgba(255,255,255,0.05)", background: "rgba(13,13,17,0.95)", backdropFilter: "blur(12px)", flexShrink: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "0 20px", height: 54, borderBottom: "1px solid #2A2A32", background: "rgba(10,10,12,0.95)", backdropFilter: "blur(12px)", flexShrink: 0 }}>
               <AiAvatar size={30} pulse={isAiStreaming} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -652,16 +699,27 @@ function TutorPageInner() {
                   <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)" }}>{statusLabel}</span>
                 </div>
               </div>
-              {activeSession.is_active && (
-                <button
-                  onClick={handleEndSession}
-                  disabled={isEndingSession}
-                  style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#F87171", border: "1px solid rgba(248,113,113,0.2)", background: "rgba(248,113,113,0.07)", padding: "6px 12px", borderRadius: 9999, cursor: "pointer", transition: "all 0.15s" }}
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: 13 }}>call_end</span>
-                  <span className="hidden sm:inline">End</span>
-                </button>
-              )}
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                {activeSession.is_active && (wsStatus === "Disconnected" || wsStatus === "Connection Error") && reconnectCntRef.current >= 3 && (
+                  <button
+                    onClick={() => { reconnectCntRef.current = 0; setReconnectCount(0); connectWs(activeSession.id); }}
+                    style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#E8B339", border: "1px solid rgba(232,179,57,0.25)", background: "rgba(232,179,57,0.08)", padding: "5px 10px", borderRadius: 9999, cursor: "pointer" }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: 13 }}>wifi</span>
+                    <span>Reconnect</span>
+                  </button>
+                )}
+                {activeSession.is_active && (
+                  <button
+                    onClick={handleEndSession}
+                    disabled={isEndingSession}
+                    style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#F87171", border: "1px solid rgba(248,113,113,0.2)", background: "rgba(248,113,113,0.07)", padding: "6px 12px", borderRadius: 9999, cursor: "pointer", transition: "all 0.15s" }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: 13 }}>call_end</span>
+                    <span className="hidden sm:inline">End</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Messages */}
@@ -718,7 +776,7 @@ function TutorPageInner() {
                               </div>
                             ) : (
                               <div>
-                                <div style={{ maxWidth: "80%", fontSize: 15, lineHeight: 1.75, padding: "10px 16px", borderRadius: "18px 18px 4px 18px", color: "rgba(255,255,255,0.88)", background: "#1E1E2A", border: "1px solid rgba(255,255,255,0.07)" }}>
+                                <div style={{ maxWidth: "80%", fontSize: 15, lineHeight: 1.75, padding: "10px 16px", borderRadius: "18px 18px 4px 18px", color: "rgba(255,255,255,0.88)", background: "#1E1E24", border: "1px solid #2A2A32" }}>
                                   {m.content}
                                 </div>
                                 {translationMap[m.id] && (
@@ -783,9 +841,9 @@ function TutorPageInner() {
 
             {/* Input */}
             {activeSession.is_active ? (
-              <div style={{ flexShrink: 0, padding: "12px 20px 24px", background: "#0D0D11" }}>
+              <div style={{ flexShrink: 0, padding: "12px 20px 24px", background: "var(--color-background)" }}>
                 <div style={{ width: "100%", maxWidth: 720, margin: "0 auto" }}>
-                  <div style={{ display: "flex", alignItems: "flex-end", gap: 8, background: "#161621", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 18, padding: 8, transition: "border-color 0.2s" }}
+                  <div style={{ display: "flex", alignItems: "flex-end", gap: 8, background: "#1C1C24", border: "1px solid #2A2A32", borderRadius: 18, padding: 8, transition: "border-color 0.2s" }}
                     onFocus={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(110,91,255,0.4)"; }}
                     onBlur={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.07)"; }}>
                     <textarea
@@ -793,7 +851,7 @@ function TutorPageInner() {
                       value={inputText}
                       onChange={(e) => { setInputText(e.target.value); adjustHeight(); }}
                       onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
-                      placeholder={`Message ${AI_PERSONA.name}…`}
+                      placeholder={wsStatus === "Ready" ? `Message ${AI_PERSONA.name}…` : wsStatus === "Reconnecting..." ? "Reconnecting…" : wsStatus === "Connecting..." ? "Connecting…" : "Connection lost — waiting…"}
                       disabled={wsStatus !== "Ready"}
                       rows={1}
                       style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "rgba(255,255,255,0.85)", fontSize: 14, resize: "none", minHeight: 44, maxHeight: 128, overflowY: "auto", padding: "10px 12px", lineHeight: 1.6 }}
@@ -831,7 +889,7 @@ function TutorPageInner() {
                 </div>
               </div>
             ) : (
-              <div style={{ flexShrink: 0, padding: "16px 20px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+              <div style={{ flexShrink: 0, padding: "16px 20px", borderTop: "1px solid #2A2A32" }}>
                 <div style={{ maxWidth: 720, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>This session has ended.</span>
                   <button onClick={handleStartSession} disabled={isCreatingSession}
@@ -844,12 +902,12 @@ function TutorPageInner() {
           </>
         ) : (
           /* Empty state */
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "32px 24px", gap: 24, textAlign: "center" }}>
+          <div className="animate-fade-in" style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "32px 24px", gap: 24, textAlign: "center" }}>
             <div style={{ position: "relative" }}>
               <div style={{ width: 64, height: 64, borderRadius: 18, background: "linear-gradient(135deg,rgba(110,91,255,0.15),rgba(139,124,255,0.06))", border: "1px solid rgba(110,91,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <span className="material-symbols-outlined text-primary" style={{ fontSize: 34, fontVariationSettings: "'FILL' 1" }}>smart_toy</span>
               </div>
-              <div style={{ position: "absolute", bottom: -4, right: -4, width: 16, height: 16, borderRadius: "50%", background: "#3DD68C", border: "2px solid #0D0D11" }} />
+              <div style={{ position: "absolute", bottom: -4, right: -4, width: 16, height: 16, borderRadius: "50%", background: "#3DD68C", border: "2px solid var(--color-background)" }} />
             </div>
             <div>
               <h2 style={{ fontSize: 20, fontWeight: 700, color: "#fff", marginBottom: 4 }}>{AI_PERSONA.name}</h2>
@@ -860,12 +918,12 @@ function TutorPageInner() {
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8 }}>
               {[
-                { icon: "volume_up",     label: "Backend TTS"    },
+                { icon: "volume_up",     label: "Voice TTS"      },
                 { icon: "mic",           label: "Voice input"    },
                 { icon: "auto_fix_high", label: "Grammar check"  },
-                { icon: "markdown",      label: "Rich responses" },
+                { icon: "translate",     label: "Translations"   },
               ].map((f) => (
-                <div key={f.label} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 9999, fontSize: 12, color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.02)" }}>
+                <div key={f.label} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 9999, fontSize: 12, color: "var(--color-on-surface-variant)", border: "1px solid #2A2A32", background: "#15151A" }}>
                   <span className="material-symbols-outlined text-primary" style={{ fontSize: 13, fontVariationSettings: "'FILL' 1" }}>{f.icon}</span>
                   {f.label}
                 </div>

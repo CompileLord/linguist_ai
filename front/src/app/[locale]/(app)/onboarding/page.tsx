@@ -35,9 +35,13 @@ function OnboardingContent() {
     }
   }, [profile, router]);
 
-  const goToStep = (step: OnboardingStep, dir = 1) => {
+  const prevStep = searchParams.get("prev") as OnboardingStep | null;
+
+  const goToStep = (step: OnboardingStep, dir = 1, prev?: OnboardingStep) => {
     setDirection(dir);
-    router.push(`/onboarding?step=${step}`);
+    const params = new URLSearchParams({ step });
+    if (prev) params.set("prev", prev);
+    router.push(`/onboarding?${params.toString()}`);
   };
 
   const variants = {
@@ -80,28 +84,18 @@ function OnboardingContent() {
           />
         );
       case "result":
-        return <PlacementResultStep onNext={() => goToStep("goals", 1)} />;
+        return <PlacementResultStep onNext={() => goToStep("goals", 1, "result")} />;
       case "self-select":
         return (
           <SelfLevelSelectionStep
-            onComplete={(level) => {
-              if (typeof window !== "undefined") {
-                sessionStorage.setItem("user_selected_level", level);
-              }
-              goToStep("goals", 1);
-            }}
+            onComplete={() => goToStep("goals", 1, "self-select")}
             onBack={() => goToStep("selection", -1)}
           />
         );
       case "goals":
         return (
           <GoalSelectionStep
-            onBack={() => {
-              const hasSelfSelected =
-                typeof window !== "undefined" &&
-                sessionStorage.getItem("user_selected_level");
-              goToStep(hasSelfSelected ? "self-select" : "result", -1);
-            }}
+            onBack={() => goToStep(prevStep ?? "self-select", -1)}
           />
         );
       default:

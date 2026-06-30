@@ -244,6 +244,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: "dashboard" },
+    { href: "/speaking", label: "AI Speaking", icon: "voice_chat" },
     { href: "/missions", label: "Missions", icon: "explore" },
     { href: "/tutor", label: "Tutor", icon: "smart_toy" },
     { href: "/vocabulary", label: "Vocabulary", icon: "translate" },
@@ -326,8 +327,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             <nav className="flex flex-col gap-1 flex-1 overflow-y-auto custom-scrollbar pb-2">
               {navItems.map((item) => {
                 const isTutor = item.href === "/tutor";
+                const isSpeaking = item.href === "/speaking";
                 const isActive = isTutor
                   ? pathname.startsWith("/tutor")
+                  : isSpeaking
+                  ? pathname.startsWith("/speaking")
                   : pathname === item.href;
                 return (
                   <div key={item.label}>
